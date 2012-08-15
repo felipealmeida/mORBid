@@ -1,0 +1,12 @@
+
+project tecorb ;
+
+alias idl_parser : /boost//headers : : : <include>idl_parser/include ;
+
+exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
+  /boost//filesystem /boost//program_options
+  : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
+ ;
+
+install install : tecorb_idl ;
+
