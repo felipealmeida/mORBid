@@ -11,6 +11,7 @@ template <typename Iterator>
 struct interface_def
 {
   typedef typename Iterator::base_iterator_type base_iterator;
+
   interface_def() {}
   interface_def(boost::iterator_range<base_iterator> name)
     : name(name) {}
@@ -21,8 +22,7 @@ struct interface_def
 template <typename Iterator>
 std::ostream& operator<<(std::ostream& os, interface_def<Iterator> d)
 {
-  os << "[interface_def name: " << d.name << "]";
-  return os;
+  return os << "[interface_def name: " << d.name << "]";
 }
 
 } }

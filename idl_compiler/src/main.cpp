@@ -58,12 +58,16 @@ int main(int argc, char** argv)
           , last = lexer.end();
 
         tecorb::idl_parser::grammar::interface_definition<iterator_type> grammar;
+        tecorb::idl_parser::interface_def<iterator_type> interface;
 
         bool r = boost::spirit::qi::phrase_parse(iterator, last, grammar
-                                                 , tecorb::idl_parser::skipper<iterator_type>());
+                                                 , tecorb::idl_parser::skipper<iterator_type>()
+                                                 , interface);
         if(r)
         {
           std::cout << "Parsed successfully" << std::endl;
+
+          
         }
         else
         {
