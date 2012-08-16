@@ -6,7 +6,7 @@
 
 project tecorb
  : build-dir bin
- : default-build <link>static
+ : default-build <link>static <threading>multi
  ;
 
 alias idl_parser : /boost//headers : : : <include>idl_parser/include ;
@@ -14,11 +14,12 @@ alias idl_parser : /boost//headers : : : <include>idl_parser/include ;
 exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
   /boost//filesystem /boost//program_options
   : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
+    <include>idl_compiler/include
  ;
 explicit tecorb_idl ;
 
-lib tecorb : orb/src/init.cpp orb/src/poa.cpp
- /boost//headers
+lib tecorb : orb/src/orb.cpp orb/src/poa.cpp
+ /boost//headers /boost//system
  : <include>orb/include
    <include>orb/include_impl
  : : <include>orb/include

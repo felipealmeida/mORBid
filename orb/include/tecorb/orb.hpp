@@ -8,11 +8,13 @@
 #ifndef TECORB_ORB_INIT_HPP
 #define TECORB_ORB_INIT_HPP
 
-#include <boost/shared_ptr.hpp>
 #include <tecorb/var.hpp>
 #include <tecorb/poa.hpp>
 #include <tecorb/object.hpp>
 #include <tecorb/string.hpp>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/asio/io_service.hpp>
 
 namespace tecorb {
 
@@ -29,6 +31,7 @@ struct ORB
 
 private:
   poa::POA_ptr root_poa;
+  boost::asio::io_service io_service;
 };
 
 typedef boost::shared_ptr<ORB> ORB_ptr;

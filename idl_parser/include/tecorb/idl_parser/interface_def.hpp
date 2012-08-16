@@ -11,6 +11,7 @@
 #include <tecorb/idl_parser/op_decl.hpp>
 
 #include <boost/range/iterator_range.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
 
 #include <ostream>
 
@@ -24,9 +25,10 @@ struct interface_def
   interface_def() {}
   interface_def(boost::iterator_range<base_iterator> name
                 , std::vector<op_decl<Iterator> > op_decls)
-    : name(name), op_decls(op_decls) {}
+    : name(name.begin(), name.end()), op_decls(op_decls) {}
 
-  boost::iterator_range<base_iterator> name;
+  /*boost::iterator_range<base_iterator>*/
+  std::string name;
   std::vector<op_decl<Iterator> > op_decls;
 };
 
@@ -40,5 +42,9 @@ std::ostream& operator<<(std::ostream& os, interface_def<Iterator> d)
 }
 
 } }
+
+BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
+                              , (::tecorb::idl_parser::interface_def) (Iterator)
+                              , (std::string, name)(std::vector< ::tecorb::idl_parser::op_decl<Iterator> >, op_decls));
 
 #endif

@@ -34,7 +34,7 @@ struct array_var
   array_var(boost::shared_array<T> p)
     : p(p) {}
 
-  boost::shared_array<T> in() const { return p; }
+  T* in() const { return p.get(); }
 
 private:
   boost::shared_array<T> p;

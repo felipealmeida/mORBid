@@ -10,12 +10,16 @@
 
 #include <tecorb/narrow.hpp>
 #include <tecorb/var.hpp>
+#include <tecorb/string.hpp>
+#include <tecorb/exception.hpp>
 
 namespace tecorb {
 
 struct Object
 {
   virtual ~Object() {} 
+
+  virtual String_ptr ior() const = 0;
 };
 
 typedef boost::shared_ptr<Object> Object_ptr;
@@ -23,7 +27,10 @@ typedef tecorb::var<Object> Object_var;
 
 struct LocalObject : narrow<LocalObject, boost::mpl::vector1<Object> >
 {
-  
+  String_ptr ior() const
+  {
+    throw MARSHALL();
+  }
 };
 
 typedef boost::shared_ptr<LocalObject> LocalObject_ptr;

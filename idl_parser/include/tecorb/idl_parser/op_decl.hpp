@@ -8,6 +8,8 @@
 #ifndef TECORB_IDL_PARSER_OP_DECL_HPP
 #define TECORB_IDL_PARSER_OP_DECL_HPP
 
+#include <boost/fusion/include/adapt_struct.hpp>
+
 namespace tecorb { namespace idl_parser {
 
 template <typename Iterator>
@@ -18,9 +20,9 @@ struct op_decl
   op_decl() {}
   op_decl(boost::iterator_range<base_iterator> type
           , boost::iterator_range<base_iterator> name)
-    : type(type), name(name) {}
+    : type(type.begin(), type.end()), name(name.begin(), name.end()) {}
 
-  boost::iterator_range<base_iterator> type, name;
+  std::string type, name;
 };
 
 template <typename Iterator>
@@ -30,5 +32,10 @@ std::ostream& operator<<(std::ostream& os, op_decl<Iterator> op)
 }
 
 } }
+
+BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
+                              , (::tecorb::idl_parser::op_decl) (Iterator)
+                              , (std::string, type)(std::string, name)
+                              );
 
 #endif

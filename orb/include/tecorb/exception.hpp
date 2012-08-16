@@ -5,12 +5,15 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/var.hpp>
+#ifndef TECORB_EXCEPTION_HPP
+#define TECORB_EXCEPTION_HPP
 
 namespace tecorb {
 
-typedef char* String;
-typedef boost::shared_array<char> String_ptr;
-typedef array_var<char> String_var;
+struct MARSHALL
+{
+};
 
 }
+
+#endif

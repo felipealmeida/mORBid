@@ -7,6 +7,9 @@
 
 #include <tecorb/idl_parser/tokenizer.hpp>
 #include <tecorb/idl_parser/grammar/interface_def.hpp>
+#include <tecorb/idl_compiler/generator/stub_generator.hpp>
+#include <tecorb/idl_compiler/generator/local_stub_generator.hpp>
+#include <tecorb/idl_compiler/generator/poa_stub_generator.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
@@ -76,50 +79,56 @@ int main(int argc, char** argv)
 
           std::cout << "Generating stubs for interface " << interface.name << std::endl;
 
-          std::ofstream ofs("file.h");
-          if(ofs.is_open())
+          std::ofstream header("file.h");
+          std::ofstream cpp("file.cpp");
+          if(header.is_open() && cpp.is_open())
           {
-            ofs << "#ifndef SOMEGUARD\n#define SOMEGUARD\n\n";
-
-            ofs << "#include <tecorb/object.hpp>\n";
-            ofs << "#include <tecorb/narrow.hpp>\n";
-
+            namespace karma = boost::spirit::karma;
+            typedef std::ostream_iterator<char> output_iterator_type;
             {
-              ofs << "\nclass " << interface.name << " : public ::tecorb::narrow<"
-                  << interface.name
-                  << ", ::boost::mpl::vector1< ::tecorb::Object> >"
-                  << "\n{\npublic:\n";
+              output_iterator_type iterator(header);
 
-              for(std::vector<op_decl>::const_iterator first = interface.op_decls.begin()
-                    , last = interface.op_decls.end(); first != last; ++first)
-              {
-                ofs << first->type << " " << first->name << "();\n";
-              }
+              tecorb::idl_compiler::header_stub_generator
+                <output_iterator_type, iterator_type>
+                header_stub_generator;
+              tecorb::idl_compiler::header_local_stub_generator
+                <output_iterator_type, iterator_type>
+                header_local_stub_generator;
+              tecorb::idl_compiler::header_poa_stub_generator
+                <output_iterator_type, iterator_type>
+                header_poa_stub_generator;
 
-              ofs << "\n};\n";
-              ofs << "typedef ::boost::shared_ptr<" << interface.name << "> "
-                  << interface.name << "_ptr;\n";
-              ofs << "typedef ::tecorb::var<" << interface.name << "> "
-                  << interface.name << "_var;\n\n";
+              karma::generate
+                (iterator
+                 , karma::lit("#include <tecorb/poa.hpp>") << karma::eol
+                 << karma::eol
+                );
+
+              karma::generate(iterator, header_stub_generator, interface);
+              karma::generate(iterator, header_local_stub_generator, interface);
+              karma::generate(iterator, header_poa_stub_generator, interface);
             }
-
             {
-              ofs << "\nclass POA_" << interface.name << " : public ::tecorb::narrow<"
-                  << interface.name
-                  << ", ::boost::mpl::vector1< ::tecorb::poa::ServantBase> >"
-                  << "\n{\npublic:\n";
+              output_iterator_type iterator(cpp);
+              tecorb::idl_compiler::cpp_stub_generator
+                <output_iterator_type, iterator_type>
+                cpp_stub_generator;
+              tecorb::idl_compiler::cpp_local_stub_generator
+                <output_iterator_type, iterator_type>
+                cpp_local_stub_generator;
+              tecorb::idl_compiler::cpp_poa_stub_generator
+                <output_iterator_type, iterator_type>
+                cpp_poa_stub_generator;
 
-              for(std::vector<op_decl>::const_iterator first = interface.op_decls.begin()
-                    , last = interface.op_decls.end(); first != last; ++first)
-              {
-                ofs << "virtual " << first->type << " " << first->name << "() = 0;\n";
-              }
-
-              ofs << "\n};\n";
+              karma::generate
+                (iterator
+                 , karma::lit("#include \"file.h\"") << karma::eol
+                 << karma::eol
+                );
+              karma::generate(iterator, cpp_stub_generator, interface);
+              karma::generate(iterator, cpp_local_stub_generator, interface);
+              karma::generate(iterator, cpp_poa_stub_generator, interface);
             }
-
-
-            ofs << "\n#endif\n";
           }
           else
           {

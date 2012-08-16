@@ -5,7 +5,7 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/init.hpp>
+#include <tecorb/orb.hpp>
 
 #include <cstring>
 
@@ -18,8 +18,11 @@ ORB_ptr ORB_init(int argc, const char* argv[], const char* str_op)
 }
 
 ORB::ORB()
-  : root_poa(new poa::POA)
 {
+  const char rootpoa[] = {"RootPOA"};
+  String_ptr p(new char[sizeof(rootpoa)-1]);
+  std::memcpy(p.get(), rootpoa, sizeof(rootpoa)-1);
+  root_poa.reset(new poa::POA(p));
 }
 
 Object_ptr ORB::resolve_initial_references(const char* id)
@@ -28,6 +31,15 @@ Object_ptr ORB::resolve_initial_references(const char* id)
     return Object_ptr(root_poa);
   else
     return Object_ptr();
+}
+
+String_ptr ORB::object_to_string(Object_ptr p)
+{
+  return String_ptr();
+}
+
+void ORB::run()
+{
 }
 
 }

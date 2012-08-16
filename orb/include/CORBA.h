@@ -9,11 +9,14 @@
 #define TECORB_CORBA_H
 
 #include <tecorb/string.hpp>
-#include <tecorb/init.hpp>
+#include <tecorb/orb.hpp>
 #include <tecorb/object.hpp>
 #include <tecorb/poa.hpp>
+#include <tecorb/exception.hpp>
 
 namespace CORBA {
+
+using ::tecorb::MARSHALL;
 
 using ::tecorb::ORB;
 using ::tecorb::ORB_ptr;
