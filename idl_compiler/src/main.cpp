@@ -1,3 +1,9 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
 
 #include <tecorb/idl_parser/tokenizer.hpp>
 #include <tecorb/idl_parser/grammar/interface_def.hpp>
@@ -59,6 +65,7 @@ int main(int argc, char** argv)
 
         tecorb::idl_parser::grammar::interface_definition<iterator_type> grammar;
         tecorb::idl_parser::interface_def<iterator_type> interface;
+        typedef tecorb::idl_parser::op_decl<iterator_type> op_decl;
 
         bool r = boost::spirit::qi::phrase_parse(iterator, last, grammar
                                                  , tecorb::idl_parser::skipper<iterator_type>()
@@ -67,7 +74,57 @@ int main(int argc, char** argv)
         {
           std::cout << "Parsed successfully" << std::endl;
 
-          
+          std::cout << "Generating stubs for interface " << interface.name << std::endl;
+
+          std::ofstream ofs("file.h");
+          if(ofs.is_open())
+          {
+            ofs << "#ifndef SOMEGUARD\n#define SOMEGUARD\n\n";
+
+            ofs << "#include <tecorb/object.hpp>\n";
+            ofs << "#include <tecorb/narrow.hpp>\n";
+
+            {
+              ofs << "\nclass " << interface.name << " : public ::tecorb::narrow<"
+                  << interface.name
+                  << ", ::boost::mpl::vector1< ::tecorb::Object> >"
+                  << "\n{\npublic:\n";
+
+              for(std::vector<op_decl>::const_iterator first = interface.op_decls.begin()
+                    , last = interface.op_decls.end(); first != last; ++first)
+              {
+                ofs << first->type << " " << first->name << "();\n";
+              }
+
+              ofs << "\n};\n";
+              ofs << "typedef ::boost::shared_ptr<" << interface.name << "> "
+                  << interface.name << "_ptr;\n";
+              ofs << "typedef ::tecorb::var<" << interface.name << "> "
+                  << interface.name << "_var;\n\n";
+            }
+
+            {
+              ofs << "\nclass POA_" << interface.name << " : public ::tecorb::narrow<"
+                  << interface.name
+                  << ", ::boost::mpl::vector1< ::tecorb::poa::ServantBase> >"
+                  << "\n{\npublic:\n";
+
+              for(std::vector<op_decl>::const_iterator first = interface.op_decls.begin()
+                    , last = interface.op_decls.end(); first != last; ++first)
+              {
+                ofs << "virtual " << first->type << " " << first->name << "() = 0;\n";
+              }
+
+              ofs << "\n};\n";
+            }
+
+
+            ofs << "\n#endif\n";
+          }
+          else
+          {
+            std::cout << "Couldn't open output file" << std::endl;
+          }
         }
         else
         {

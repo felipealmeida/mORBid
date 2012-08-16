@@ -1,5 +1,13 @@
+# (c) Copyright 2012 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
 
-project tecorb ;
+project tecorb
+ : build-dir bin
+ : default-build <link>static
+ ;
 
 alias idl_parser : /boost//headers : : : <include>idl_parser/include ;
 
@@ -7,6 +15,15 @@ exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
   /boost//filesystem /boost//program_options
   : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  ;
+explicit tecorb_idl ;
 
-install install : tecorb_idl ;
+lib tecorb : orb/src/init.cpp orb/src/poa.cpp
+ /boost//headers
+ : <include>orb/include
+   <include>orb/include_impl
+ : : <include>orb/include
+ ; 
 
+install install : tecorb_idl tecorb ;
+
+install demos : demo/simple//simple_server ;

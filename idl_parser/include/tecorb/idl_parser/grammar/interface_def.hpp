@@ -1,3 +1,10 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
 #ifndef TECORB_IDL_PARSER_GRAMMAR_INTERFACE_DEF_HPP
 #define TECORB_IDL_PARSER_GRAMMAR_INTERFACE_DEF_HPP
 
@@ -54,7 +61,7 @@ struct interface_definition : boost::spirit::qi::grammar
       >> qi::token(token_types::open_curly_bracket)
       >> *( op_decl[phoenix::push_back(qi::_b, qi::_1)] >> qi::token(token_types::semicolon) )
       >> qi::token(token_types::close_curly_bracket)
-      >> qi::eps[qi::_val = phoenix::construct<return_type>(qi::_a)]
+      >> qi::eps[qi::_val = phoenix::construct<return_type>(qi::_a, qi::_b)]
       ;
 
     start.name("interface_def");

@@ -1,0 +1,5 @@
+
+project tecorb/simple ;
+
+exe simple_server : simple_server.cpp /tecorb//tecorb
+ ;
