@@ -38,11 +38,13 @@ struct header_stub_generator : karma::grammar
       << ", ::boost::mpl::vector1< ::tecorb::Object> >"
       << eol << "{" << eol
       << "public:" << eol
-      << common_functions[_1 = _val]
+      << common_functions[_1 = _val] << eol
       << indent << "// Start of operations defined in IDL" << eol
       << (*(operation << eol))
       [_1 = phoenix::at_c<1>(_val)]
       << indent << "// End of operations defined in IDL" << eol
+      << "private:" << eol
+      << members << eol
       << "};" << eol << eol
       << typedefs[_1 = _a] << eol;
       ;
@@ -59,7 +61,16 @@ struct header_stub_generator : karma::grammar
       << karma::string[_1 = phoenix::at_c<0>(_val)] << "() {}" << eol
       << indent << "~" << karma::string[_1 = phoenix::at_c<0>(_val)] << "();"
       << eol
+      << indent << "static boost::shared_ptr<"
+      << karma::string[_1 = phoenix::at_c<0>(_val)] << ">"
+      << " _construct_remote_stub" << eol
+      << indent << "(std::string const& host, unsigned short port" << eol
+      << indent << indent << indent << ", std::string const& object_key);" << eol
       ;
+   members = 
+     indent
+     << "static const char* _repository_id;" << eol
+     ;
     typedefs =
       "typedef boost::shared_ptr<"
       << karma::string[_1 = _val]
@@ -69,7 +80,7 @@ struct header_stub_generator : karma::grammar
     indent = karma::space << karma::space;
   }
 
-  karma::rule<OutputIterator> indent;
+  karma::rule<OutputIterator> indent, members;
   karma::rule<OutputIterator, std::string()> typedefs;
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>()> common_functions;
@@ -97,9 +108,33 @@ struct cpp_stub_generator : karma::grammar
       karma::eps[_a = phoenix::at_c<0>(_val)]
       << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
       << eol
+      << construct_remote_stub[_1 = _a] << eol
+      << members[_1 = _a] << eol
       ;
+    construct_remote_stub =
+      "boost::shared_ptr<"
+      << karma::string[_1 = _val] << "> "
+      << karma::string[_1 = _val]
+      << "::_construct_remote_stub" << eol
+      << indent << "(std::string const& host, unsigned short port" << eol
+      << indent << indent << ", std::string const& object_key)" << eol
+      << "{" << eol
+      << indent << "return " << karma::string[_1 = _val]
+      << "_ptr(new ::tecorb::remote_stub::" << karma::string[_1 = _val]
+      << "(host, port, object_key));" << eol
+      << "}" << eol
+      ;
+    members =
+      "const char* "
+      << karma::string[_1 = _val] << "::_repository_id = \"IDL:"
+      << karma::string[_1 = _val] << ":1.0\";" << eol
+      ;
+    indent = karma::space << karma::space;
   }
 
+  karma::rule<OutputIterator> indent;
+  karma::rule<OutputIterator, std::string()> members;
+  karma::rule<OutputIterator, std::string()> construct_remote_stub;
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>()
               , karma::locals<std::string> > start;

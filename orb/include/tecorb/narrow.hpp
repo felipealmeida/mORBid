@@ -10,7 +10,7 @@
 #ifndef TECORB_NARROW_HPP
 #define TECORB_NARROW_HPP
 
-#include <tecorb/object_fwd.hpp>
+#include <tecorb/object.hpp>
 #include <tecorb/detail/max_args.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -49,7 +49,21 @@ struct narrow<T, V, BOOST_PP_ITERATION()>
 {
   static boost::shared_ptr<T> _narrow(boost::shared_ptr<Object> p)
   {
-    return boost::dynamic_pointer_cast<T>(p);
+    if(boost::shared_ptr<T> q = boost::dynamic_pointer_cast<T>(p))
+      return q;
+    else
+    {
+      if(p->_is_a(T::repository_id))
+        return boost::shared_ptr<T>
+          (T::_construct_remote_stub(p->_host(), p->_port()
+                                     , p->_objectkey()));
+    }
+    return boost::shared_ptr<T>();
+  }
+
+  bool _is_a(const char* id)
+  {
+    return false;
   }
 };
 

@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_COMPILER_LOCAL_STUB_GENERATOR_HPP
-#define TECORB_IDL_COMPILER_LOCAL_STUB_GENERATOR_HPP
+#ifndef TECORB_IDL_COMPILER_REMOTE_STUB_GENERATOR_HPP
+#define TECORB_IDL_COMPILER_REMOTE_STUB_GENERATOR_HPP
 
 #include <tecorb/idl_parser/interface_def.hpp>
 
@@ -17,11 +17,11 @@ namespace tecorb { namespace idl_compiler {
 namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
-struct header_local_stub_generator : karma::grammar
+struct header_remote_stub_generator : karma::grammar
 <OutputIterator, idl_parser::interface_def<Iterator>(), karma::locals<std::string> >
 {
-  header_local_stub_generator()
-    : header_local_stub_generator::base_type(start)
+  header_remote_stub_generator()
+    : header_remote_stub_generator::base_type(start)
   {
     namespace phoenix = boost::phoenix;
     using karma::_1;
@@ -30,7 +30,7 @@ struct header_local_stub_generator : karma::grammar
     using karma::eol;
 
     start = 
-      "namespace tecorb { namespace local_stub {"
+      "namespace tecorb { namespace remote_stub {"
       << eol[_a = phoenix::at_c<0>(_val)]
       << eol << "class "
       << karma::string[_1 = _a] << eol
@@ -52,7 +52,7 @@ struct header_local_stub_generator : karma::grammar
       indent
       << karma::string[_1 = phoenix::at_c<0>(_val)]
       << karma::space << karma::string[_1 = phoenix::at_c<1>(_val)]
-      << "();" << eol
+      << "();"
       ;
 
     common_functions =
@@ -62,10 +62,9 @@ struct header_local_stub_generator : karma::grammar
       << (
           karma::string[_1 = phoenix::at_c<0>(_val)]
           << "(std::string const& host, unsigned short port" << eol
-          << indent << indent << ", ::tecorb::String_ptr poa_name" << eol
-          << indent << indent << ", POA_" << karma::string[_1 = phoenix::at_c<0>(_val)]
-          << "* servant)" << eol
-          << indent << " : host(host), port(port), poa_name(poa_name), servant(servant)" << eol
+          << indent << indent << indent << ", std::string const& object_key)" << eol
+          << indent << indent << " : host(host), port(port), object_key(object_key)"
+          << eol
           << indent << "{}" << eol
          )
       << indent << "~" << karma::string[_1 = phoenix::at_c<0>(_val)] << "();" << eol
@@ -76,8 +75,7 @@ struct header_local_stub_generator : karma::grammar
       << "// Members" << eol
       << indent << "std::string host;" << eol
       << indent << "unsigned short port;" << eol
-      << indent << "::tecorb::String_ptr poa_name;" << eol
-      << indent << "::POA_" << karma::string[_1 = _val] << "* servant;" << eol
+      << indent << "std::string object_key;" << eol
       ;
     indent = karma::space << karma::space;
     ior_function =
@@ -99,11 +97,11 @@ struct header_local_stub_generator : karma::grammar
 };
 
 template <typename OutputIterator, typename Iterator>
-struct cpp_local_stub_generator : karma::grammar
+struct cpp_remote_stub_generator : karma::grammar
 <OutputIterator, idl_parser::interface_def<Iterator>(), karma::locals<std::string> >
 {
-  cpp_local_stub_generator()
-    : cpp_local_stub_generator::base_type(start)
+  cpp_remote_stub_generator()
+    : cpp_remote_stub_generator::base_type(start)
   {
     namespace phoenix = boost::phoenix;
     using karma::_a;
@@ -114,7 +112,7 @@ struct cpp_local_stub_generator : karma::grammar
     using karma::_r1;
 
     start = 
-      "namespace tecorb { namespace local_stub {"
+      "namespace tecorb { namespace remote_stub {"
       << eol << eol
       << karma::eps[_a = phoenix::at_c<0>(_val)]
       << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
@@ -124,6 +122,7 @@ struct cpp_local_stub_generator : karma::grammar
       [_1 = phoenix::at_c<1>(_val)]
       << "// End of operations defined in IDL" << eol
       << ior_function[_1 = _a] << eol
+      << is_a_function[_1 = _a] << eol
       << "} }" << eol << eol
       ;
     ior_function =
@@ -131,7 +130,16 @@ struct cpp_local_stub_generator : karma::grammar
       << karma::string[_1 = _val] << "::ior() const" << eol
       << "{" << eol
       << indent << "return ::tecorb::poa::create_ior_string" << eol
-      << indent << indent << "(host, port, poa_name, servant);" << eol
+      << indent << indent << "(host, port, object_key);" << eol
+      << "}" << eol
+      ;
+    is_a_function =
+      "bool "
+      << karma::string[_1 = _val] << "::_is_a(const char* id)" << eol
+      << "{" << eol
+      << indent << "std::cout << \"Called _is_a in stub remote object\" << std::endl;"
+      << eol
+      << indent << "return false;" << eol
       << "}" << eol
       ;
     operation =
@@ -141,15 +149,16 @@ struct cpp_local_stub_generator : karma::grammar
       << "()" << eol
       << "{" << eol
       << (
-          indent << "return servant->" << karma::string[_1 = phoenix::at_c<1>(_val)]
-          << "();" << eol
+          indent
+          << "std::cout << \"Called " << karma::string[_1 = phoenix::at_c<1>(_val)]
+          << " was called\" << std::endl;" << eol
          )
       << "}" << eol
       ;
     indent = karma::space << karma::space;
   }
 
-  karma::rule<OutputIterator, std::string()> ior_function;
+  karma::rule<OutputIterator, std::string()> ior_function, is_a_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator
               , idl_parser::op_decl<Iterator>(std::string)> operation;

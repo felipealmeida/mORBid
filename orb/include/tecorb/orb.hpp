@@ -28,6 +28,7 @@ struct ORB
 
   Object_ptr resolve_initial_references(const char* id);
   String_ptr object_to_string(Object_ptr);
+  Object_ptr string_to_object(const char* ref);
 
 private:
   poa::POA_ptr root_poa;

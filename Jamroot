@@ -11,6 +11,8 @@ project tecorb
 
 alias idl_parser : /boost//headers : : : <include>idl_parser/include ;
 
+alias ior : /boost//headers : : : <include>ior/include ;
+
 exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
   /boost//filesystem /boost//program_options
   : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
@@ -19,12 +21,15 @@ exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
 explicit tecorb_idl ;
 
 lib tecorb : orb/src/orb.cpp orb/src/poa.cpp
+ orb/src/object.cpp
+ ior
  /boost//headers /boost//system
  : <include>orb/include
    <include>orb/include_impl
+   <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  : : <include>orb/include
  ; 
 
 install install : tecorb_idl tecorb ;
 
-install demos : demo/simple//simple_server ;
+install demos : demo/simple//simple_server demo/simple//simple_client ;

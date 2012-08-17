@@ -23,6 +23,7 @@ struct var
   operator boost::shared_ptr<T>() const { return p; }
 
   boost::shared_ptr<T> in() const { return p; }
+  bool operator!() const { return !p; }
 
 private:
   boost::shared_ptr<T> p;

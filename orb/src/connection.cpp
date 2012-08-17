@@ -5,8 +5,10 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-namespace tecorb {
+#include <tecorb/poa/connection.hpp>
 
-struct Object;
+namespace tecorb { namespace poa {
 
-}
+
+
+} }

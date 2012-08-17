@@ -32,11 +32,9 @@ struct header_poa_stub_generator : karma::grammar
     start = 
       karma::eps[_a = phoenix::at_c<0>(_val)]
       << eol << "class POA_"
-      << karma::string[_1 = _a]
-      << eol << " : public ::tecorb::narrow< POA_"
-      << karma::string[_1 = _a]
-      << ", ::boost::mpl::vector1< ::tecorb::poa::ServantBase> >"
-      << eol << "{" << eol
+      << karma::string[_1 = _a] << eol
+      << " : public ::tecorb::poa::ServantBase" << eol
+      << "{" << eol
       << "public:" << eol
       << common_functions[_1 = _val]
       << indent << "// Start of operations defined in IDL" << eol
@@ -64,10 +62,11 @@ struct header_poa_stub_generator : karma::grammar
     construct_local_stub_function = 
       indent
       << "::tecorb::Object_ptr _construct_local_stub(std::string const& host" << eol
-      << indent << indent << ", unsigned short port, ::tecorb::String_ptr poa_name) const" << eol
+      << indent << indent << ", unsigned short port, ::tecorb::String_ptr poa_name)"
+      << eol
       << indent << "{" << eol
       << indent << indent << "return ::tecorb::Object_ptr(new ::tecorb::local_stub::"
-      << karma::string[_1 = _val] << "(host, port, poa_name));" << eol
+      << karma::string[_1 = _val] << "(host, port, poa_name, this));" << eol
       << indent << "}" << eol
       ;
   }

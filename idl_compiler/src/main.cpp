@@ -9,6 +9,7 @@
 #include <tecorb/idl_parser/grammar/interface_def.hpp>
 #include <tecorb/idl_compiler/generator/stub_generator.hpp>
 #include <tecorb/idl_compiler/generator/local_stub_generator.hpp>
+#include <tecorb/idl_compiler/generator/remote_stub_generator.hpp>
 #include <tecorb/idl_compiler/generator/poa_stub_generator.hpp>
 
 #include <boost/program_options.hpp>
@@ -102,6 +103,7 @@ int main(int argc, char** argv)
                 (iterator
                  , karma::lit("#include <tecorb/poa.hpp>") << karma::eol
                  << karma::eol
+                 << "class POA_" << interface.name << ";" << karma::eol << karma::eol
                 );
 
               karma::generate(iterator, header_stub_generator, interface);
@@ -116,6 +118,12 @@ int main(int argc, char** argv)
               tecorb::idl_compiler::cpp_local_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_local_stub_generator;
+              tecorb::idl_compiler::header_remote_stub_generator
+                <output_iterator_type, iterator_type>
+                header_remote_stub_generator;
+              tecorb::idl_compiler::cpp_remote_stub_generator
+                <output_iterator_type, iterator_type>
+                cpp_remote_stub_generator;
               tecorb::idl_compiler::cpp_poa_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_poa_stub_generator;
@@ -125,6 +133,9 @@ int main(int argc, char** argv)
                  , karma::lit("#include \"file.h\"") << karma::eol
                  << karma::eol
                 );
+
+              karma::generate(iterator, header_remote_stub_generator, interface);
+              karma::generate(iterator, cpp_remote_stub_generator, interface);
               karma::generate(iterator, cpp_stub_generator, interface);
               karma::generate(iterator, cpp_local_stub_generator, interface);
               karma::generate(iterator, cpp_poa_stub_generator, interface);
