@@ -24,9 +24,14 @@
 namespace tecorb { namespace poa {
 
 struct connection;
+
 struct POA;
 typedef boost::shared_ptr<POA> POA_ptr;
 typedef tecorb::var<POA> POA_var;
+
+struct POAManager;
+typedef boost::shared_ptr<POAManager> POAManager_ptr;
+typedef tecorb::var<POAManager> POAManager_var;
 
 struct ServantBase
 {
@@ -43,11 +48,13 @@ struct POAManager : narrow<POAManager, boost::mpl::vector1<LocalObject> >
     : poa(poa) {}
   void activate();
 
+  // Object
+  bool _is_a(const char* id) { return true; }
+  static POAManager_ptr _construct_remote_stub(std::string const&, unsigned short
+                                               , std::string const&) { std::abort(); }
+
   POA_ptr poa;
 };
-
-typedef boost::shared_ptr<POAManager> POAManager_ptr;
-typedef tecorb::var<POAManager> POAManager_var;
 
 struct POA : narrow<POA, boost::mpl::vector1<LocalObject> >
            , boost::enable_shared_from_this<POA>
@@ -60,6 +67,8 @@ struct POA : narrow<POA, boost::mpl::vector1<LocalObject> >
   Object_ptr id_to_reference(const char*);
 
   POAManager_ptr the_POAManager();
+  // Object
+  bool _is_a(const char* id) { return true; }
   static POA_ptr _construct_remote_stub(std::string const&, unsigned short
                                         , std::string const&) { std::abort(); }
 private:

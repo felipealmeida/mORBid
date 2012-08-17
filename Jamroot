@@ -13,6 +13,8 @@ alias idl_parser : /boost//headers : : : <include>idl_parser/include ;
 
 alias ior : /boost//headers : : : <include>ior/include ;
 
+alias iiop : /boost//headers : : : <include>iiop/include ;
+
 exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
   /boost//filesystem /boost//program_options
   : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
@@ -21,8 +23,8 @@ exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
 explicit tecorb_idl ;
 
 lib tecorb : orb/src/orb.cpp orb/src/poa.cpp
- orb/src/object.cpp
- ior
+ orb/src/object.cpp orb/src/connection.cpp
+ ior iiop
  /boost//headers /boost//system
  : <include>orb/include
    <include>orb/include_impl

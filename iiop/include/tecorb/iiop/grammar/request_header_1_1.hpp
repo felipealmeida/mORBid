@@ -1,0 +1,61 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
+#ifndef TECORB_IIOP_GRAMMAR_REQUEST_HEADER_1_1_HPP
+#define TECORB_IIOP_GRAMMAR_REQUEST_HEADER_1_1_HPP
+
+#include <tecorb/iiop/request_header.hpp>
+#include <tecorb/iiop/grammar/service_context_list.hpp>
+#include <tecorb/iiop/grammar/integer.hpp>
+#include <tecorb/iiop/grammar/align.hpp>
+#include <tecorb/iiop/grammar/sequence.hpp>
+
+#include <boost/spirit/home/qi.hpp>
+#include <boost/spirit/home/phoenix.hpp>
+
+#include <boost/integer.hpp>
+
+namespace tecorb { namespace iiop { namespace grammar {
+
+namespace qi = boost::spirit::qi;
+
+template <typename Iterator>
+struct request_header_1_1 : qi::grammar
+<Iterator, iiop::request_header(Iterator, bool)
+ , qi::locals<boost::uint_t<32u>::least> >
+{
+  request_header_1_1()
+    : request_header_1_1::base_type(start)
+  {
+    using qi::_r1;
+    using qi::_r2;
+    using qi::_a;
+    using qi::_1;
+    using qi::_val;
+
+    start %=
+      service_context_list_grammar(/*_r1, */_r2)
+      >> align(_r1, 4) >> dword(_r2)
+      >> qi::char_
+      >> align(_r1, 4) >> octet_sequence(_r2)
+      >> align(_r1, 4) >> octet_sequence(_r2)
+      >> align(_r1, 4) >> octet_sequence(_r2)
+      ;
+    start.name("request_header_1_1");
+    qi::debug(start);
+  }
+
+  grammar::sequence<Iterator, char> octet_sequence;
+  grammar::dword<Iterator> dword;
+  service_context_list<Iterator> service_context_list_grammar;
+  qi::rule<Iterator, iiop::request_header(Iterator, bool)
+           , qi::locals<boost::uint_t<32u>::least> > start;
+};
+
+} } }
+
+#endif

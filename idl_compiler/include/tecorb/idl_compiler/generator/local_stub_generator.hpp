@@ -69,6 +69,10 @@ struct header_local_stub_generator : karma::grammar
           << indent << "{}" << eol
          )
       << indent << "~" << karma::string[_1 = phoenix::at_c<0>(_val)] << "();" << eol
+      << indent << "bool _is_a(const char*)" << eol
+      << indent << "{" << eol
+      << indent << indent << "return true;" << eol
+      << indent << "}" << eol
       ;
 
     common_members =

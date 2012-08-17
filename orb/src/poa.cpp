@@ -42,6 +42,8 @@ void POA::handle_accept(boost::shared_ptr<connection> c)
 {
   std::cout << "handle_accept" << std::endl;
 
+  c->start();
+
   boost::shared_ptr<connection> new_c(new connection(acceptor.get_io_service()));
   acceptor.async_accept(new_c->socket
                         , boost::bind(&POA::handle_accept, shared_from_this(), new_c));

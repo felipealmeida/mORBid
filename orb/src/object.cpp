@@ -6,6 +6,7 @@
  */
 
 #include <tecorb/object.hpp>
+#include <tecorb/synchronous_call.hpp>
 
 #include <iostream>
 
@@ -19,8 +20,11 @@ Object::~Object() {}
 
 bool Object::_is_a(const char* id)
 {
-  std::cout << "remote_stub::Object::_is_a" << std::endl;
-  return true;
+  using ::tecorb::synchronous_call::type_tag;
+  using ::tecorb::synchronous_call::in;
+  return ::tecorb::synchronous_call::call
+    <bool, type_tag<char*, in> >(tecorb::Object::repository_id, "_is_a"
+                                 , host, port, object_key, id);
 }
 
 } }

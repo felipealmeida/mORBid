@@ -60,11 +60,6 @@ struct narrow<T, V, BOOST_PP_ITERATION()>
     }
     return boost::shared_ptr<T>();
   }
-
-  bool _is_a(const char* id)
-  {
-    return false;
-  }
 };
 
 #undef TECORB_NARROW_base

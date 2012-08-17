@@ -38,6 +38,12 @@ typedef String ObjectId;
 typedef String_ptr ObjectId_ptr;
 typedef String_var ObjectId_var;
 
+typedef bool Boolean;
+typedef unsigned int UInt;
+typedef int Int;
+typedef unsigned long ULong;
+typedef long Long;
+
 }
 
 namespace PortableServer {
