@@ -5,6 +5,11 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#ifndef TECORB_POA_CONNECTION_HPP
+#define TECORB_POA_CONNECTION_HPP
+
+#include <tecorb/poa.hpp>
+
 #include <boost/array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -17,8 +22,9 @@ namespace tecorb { namespace poa {
 
 struct connection : boost::enable_shared_from_this<connection>
 {
-  connection(boost::asio::io_service& io_service)
-    : socket(io_service) {}
+  connection(boost::asio::io_service& io_service
+             , boost::weak_ptr<POA> poa_)
+    : socket(io_service), poa_(poa_) {}
 
   void start();
 
@@ -32,6 +38,9 @@ struct connection : boost::enable_shared_from_this<connection>
   std::vector<char> processing_buffer;
   boost::array<char, 512*1024> read_buffer;
   boost::asio::ip::tcp::socket socket;
+  boost::weak_ptr<POA> poa_;
 };
 
 } }
+
+#endif

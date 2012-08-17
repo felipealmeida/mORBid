@@ -176,6 +176,26 @@ bool connection::handle_request(std::vector<char>::const_iterator first
     std::copy(request_header.operation.begin(), request_header.operation.end()
               , std::ostream_iterator<char>(std::cout));
     std::cout << "|" << std::endl;
+    
+    if(boost::shared_ptr<POA> poa = poa_.lock())
+    {
+      std::cout << "POA still alive" << std::endl;
+      std::vector<char>::const_iterator first
+        = request_header.object_key.begin()
+        , last = request_header.object_key.end();
+      std::string poa_name;
+      std::size_t impl_;
+      if(qi::parse(first, last, +(qi::char_ - qi::char_('/'))
+                   >> qi::omit[qi::char_] >> qi::hex
+                   , poa_name, impl_))
+      {
+        std::cout << "POA name " << poa_name << std::endl;
+        ServantBase* impl = 0;
+        std::memcpy(&impl, &impl_, sizeof(impl));
+        std::cout << "ServantBase pointer " << impl << std::endl;
+        
+      }
+    }
   }
   else
     std::cout << "Failed parsing service_context_list" << std::endl;

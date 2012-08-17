@@ -40,6 +40,7 @@ struct ServantBase
   virtual Object_ptr _construct_local_stub(std::string const& host
                                            , unsigned short port
                                            , String_ptr poa_name) = 0;
+  
 };
 
 struct POAManager : narrow<POAManager, boost::mpl::vector1<LocalObject> >
@@ -55,6 +56,8 @@ struct POAManager : narrow<POAManager, boost::mpl::vector1<LocalObject> >
 
   POA_ptr poa;
 };
+
+struct connection;
 
 struct POA : narrow<POA, boost::mpl::vector1<LocalObject> >
            , boost::enable_shared_from_this<POA>
@@ -72,6 +75,8 @@ struct POA : narrow<POA, boost::mpl::vector1<LocalObject> >
   static POA_ptr _construct_remote_stub(std::string const&, unsigned short
                                         , std::string const&) { std::abort(); }
 private:
+  friend struct connection;
+
   void handle_accept(boost::shared_ptr<connection> c);
 
   String_ptr name;

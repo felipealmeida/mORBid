@@ -33,7 +33,7 @@ void POA::activate()
 {
   acceptor.listen();
 
-  boost::shared_ptr<connection> c(new connection(acceptor.get_io_service()));
+  boost::shared_ptr<connection> c(new connection(acceptor.get_io_service(), shared_from_this()));
   acceptor.async_accept(c->socket
                         , boost::bind(&POA::handle_accept, shared_from_this(), c));
 }
@@ -44,7 +44,7 @@ void POA::handle_accept(boost::shared_ptr<connection> c)
 
   c->start();
 
-  boost::shared_ptr<connection> new_c(new connection(acceptor.get_io_service()));
+  boost::shared_ptr<connection> new_c(new connection(acceptor.get_io_service(), shared_from_this()));
   acceptor.async_accept(new_c->socket
                         , boost::bind(&POA::handle_accept, shared_from_this(), new_c));
 }
@@ -89,7 +89,7 @@ String_ptr create_ior_string(std::string const& host, unsigned short port
 {
   std::string string;
   std::size_t impl_;
-  std::memcpy(&impl_, impl, sizeof(impl));
+  std::memcpy(&impl_, &impl, sizeof(impl));
   namespace karma = boost::spirit::karma;
   karma::generate(std::back_inserter<std::string>(string)
                   , "corbaloc::" << karma::lit(host)
