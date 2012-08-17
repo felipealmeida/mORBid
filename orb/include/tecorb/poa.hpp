@@ -68,6 +68,7 @@ private:
   String_ptr name;
   POAManager_ptr poa_manager;
   boost::asio::ip::tcp::acceptor acceptor;
+  boost::asio::ip::tcp::endpoint local_endpoint;
   std::set<ServantBase*> object_map;
 };
 

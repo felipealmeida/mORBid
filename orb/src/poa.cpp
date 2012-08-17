@@ -31,24 +31,16 @@ POAManager_ptr POA::the_POAManager()
 
 void POA::activate()
 {
-  boost::asio::ip::tcp::resolver resolver(acceptor.get_io_service());
-  boost::asio::ip::tcp::resolver::query query("localhost", "1888");
-  boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
-  acceptor.open(endpoint.protocol());
-  acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-  acceptor.bind(endpoint);
   acceptor.listen();
 
   boost::shared_ptr<connection> c(new connection(acceptor.get_io_service()));
   acceptor.async_accept(c->socket
-                        , boost::bind(&POA::handle_accept, shared_from_this()
-                                      , c));
+                        , boost::bind(&POA::handle_accept, shared_from_this(), c));
 }
 
 void POA::handle_accept(boost::shared_ptr<connection> c)
 {
   std::cout << "handle_accept" << std::endl;
-  
 
   boost::shared_ptr<connection> new_c(new connection(acceptor.get_io_service()));
   acceptor.async_accept(new_c->socket
@@ -59,6 +51,14 @@ POA::POA(String_ptr name, boost::asio::io_service& io_service)
   : name(name)
   , acceptor(io_service)
 {
+  boost::asio::ip::tcp::endpoint endpoint;
+  acceptor.open(endpoint.protocol());
+  acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+  acceptor.bind(endpoint);
+
+  local_endpoint = acceptor.local_endpoint();
+
+  std::cout << "port " << local_endpoint.port() << std::endl;
 }
 
 String_ptr POA::activate_object(ServantBase* impl)
@@ -79,7 +79,7 @@ Object_ptr POA::id_to_reference(const char* s)
   std::stringstream stm(s);
   stm >> impl_void;
   ServantBase* p = static_cast<ServantBase*>(impl_void);
-  return p->_construct_local_stub("localhost", 1888, name);
+  return p->_construct_local_stub("localhost", local_endpoint.port(), name);
 }
 
 String_ptr create_ior_string(std::string const& host, unsigned short port
