@@ -98,4 +98,17 @@ String_ptr create_ior_string(std::string const& host, unsigned short port
   return r;
 }
 
+String_ptr create_ior_string(std::string const& host, unsigned short port
+                             , std::string const& object_key)
+{
+  std::string string;
+  namespace karma = boost::spirit::karma;
+  karma::generate(std::back_inserter<std::string>(string)
+                  , "corbaloc::" << karma::lit(host)
+                  << ":" << karma::ushort_(port) << "/" << karma::lit(object_key));
+  String_ptr r( new char[string.size()+1] );
+  std::strcpy(r.get(), string.c_str());
+  return r;
+}
+
 } }

@@ -73,6 +73,8 @@ private:
 
 String_ptr create_ior_string(std::string const& host, unsigned short port
                              , String_ptr poa_name, ServantBase* impl);
+String_ptr create_ior_string(std::string const& host, unsigned short port
+                             , std::string const& object_key);
 
 } }
 
