@@ -186,14 +186,21 @@ bool connection::handle_request(std::vector<char>::const_iterator first
       std::string poa_name;
       std::size_t impl_;
       if(qi::parse(first, last, +(qi::char_ - qi::char_('/'))
-                   >> qi::omit[qi::char_] >> qi::hex
+                   >> qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
                    , poa_name, impl_))
       {
         std::cout << "POA name " << poa_name << std::endl;
         ServantBase* impl = 0;
         std::memcpy(&impl, &impl_, sizeof(impl));
         std::cout << "ServantBase pointer " << impl << std::endl;
-        
+        if(poa->object_map.find(impl) != poa->object_map.end())
+        {
+          std::cout << "Found servant" << std::endl;
+        }
+        else
+        {
+          std::cout << "Servant not found, should throw OBJECT_NOT_EXIST" << std::endl;
+        }
       }
     }
   }

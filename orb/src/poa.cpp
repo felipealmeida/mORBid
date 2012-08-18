@@ -65,6 +65,7 @@ POA::POA(String_ptr name, boost::asio::io_service& io_service)
 
 String_ptr POA::activate_object(ServantBase* impl)
 {
+  std::cout << "Activating " << impl << std::endl;
   object_map.insert(impl);
   std::stringstream stm;
   stm << static_cast<void*>(impl);
@@ -90,11 +91,12 @@ String_ptr create_ior_string(std::string const& host, unsigned short port
   std::string string;
   std::size_t impl_;
   std::memcpy(&impl_, &impl, sizeof(impl));
+  assert(sizeof(std::size_t) >= sizeof(ServantBase*));
   namespace karma = boost::spirit::karma;
   karma::generate(std::back_inserter<std::string>(string)
                   , "corbaloc::" << karma::lit(host)
                   << ":" << karma::ushort_(port) << "/" << karma::lit(poa_name.get())
-                  << "/" << karma::hex(impl_));
+                  << "/" << karma::uint_generator<std::size_t, 16u>()(impl_));
   String_ptr r( new char[string.size()+1] );
   std::strcpy(r.get(), string.c_str());
   return r;
