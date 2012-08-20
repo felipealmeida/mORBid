@@ -1,3 +1,4 @@
+// -*- c++ -*-
 
 interface HelloWorld {
   void hello ();
