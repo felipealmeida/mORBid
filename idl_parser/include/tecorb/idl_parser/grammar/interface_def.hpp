@@ -41,29 +41,29 @@ struct interface_definition : boost::spirit::qi::grammar
 {
   typedef typename Iterator::base_iterator_type base_iterator;
 
-  interface_definition()
+  template <typename TokenDef>
+  interface_definition(TokenDef const& tok)
     : interface_definition::base_type(start)
+    , op_decl(tok)
   {
     namespace qi = boost::spirit::qi;
     namespace lex = boost::spirit::lex;
     namespace phoenix = boost::phoenix;
-    using namespace token_types;
-    using qi::token;
 
     typedef idl_parser::interface_def<Iterator> return_type;
 
-    start %= qi::omit[token(interface_keyword)]
-      >> token(identifier)
+    start %= qi::omit[tok.interface_keyword]
+      >> tok.identifier
       >> qi::omit
       [
        -(
-         token(colon)
-         >> (token(identifier) % token(comma))
+         ':'
+         >> (tok.identifier % ',')
         )
       ]
-      >> qi::omit[token(open_curly_bracket)]
-      >> *(op_decl >> qi::omit[token(semicolon)])
-      >> qi::omit[token(close_curly_bracket)]
+      >> qi::omit[qi::char_('{')]
+      >> *(op_decl >> qi::omit[qi::char_(';')])
+      >> qi::omit[qi::char_('}')]
       ;
 
     start.name("interface_def");

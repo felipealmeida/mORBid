@@ -27,28 +27,28 @@ struct op_decl : qi::grammar
 {
   typedef typename Iterator::base_iterator_type base_iterator;
 
-  op_decl()
+  template <typename TokenDef>
+  op_decl(TokenDef const& tok)
     : op_decl::base_type(start)
   {
     using qi::_val;
-    using qi::token; using namespace token_types;
 
     typedef idl_parser::op_decl<Iterator> return_type;
 
-    start %= token(identifier)
-      >> token(identifier)
-      >> qi::omit[token(open_parenthesis)]
+    start %= tok.identifier
+      >> tok.identifier
+      >> qi::omit[qi::char_('(')]
       >> (
           (&param >> (param % ","))
           | qi::eps
          )
-      >> qi::omit[token(close_parenthesis)]
+      >> qi::omit[qi::char_(')')]
       >> qi::attr(true)
       ;
     param %=
-      (token(in_keyword) | token(out_keyword) | token(inout_keyword))
-      >> token(identifier)
-      >> qi::omit[token(identifier)]
+      (tok.in_keyword | tok.out_keyword | tok.inout_keyword)
+      >> tok.identifier
+      >> qi::omit[tok.identifier]
       ;      
     start.name("op_decl");
     param.name("param");

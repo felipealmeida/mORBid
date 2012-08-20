@@ -18,56 +18,97 @@ namespace tecorb { namespace idl_parser {
 namespace qi = boost::spirit::qi;
 namespace lex = boost::spirit::lex;
 
-namespace token_types {
+// namespace token_types {
 
-const std::size_t identifier = 1;
-const std::size_t blank = 3;
-const std::size_t interface_keyword = 4;
-const std::size_t colon = 5;
-const std::size_t comma = 6;
-const std::size_t open_curly_bracket = 7;
-const std::size_t close_curly_bracket = 8;
-const std::size_t open_parenthesis = 9;
-const std::size_t close_parenthesis = 10;
-const std::size_t in_keyword = 11;
-const std::size_t out_keyword = 12;
-const std::size_t inout_keyword = 13;
-const std::size_t semicolon = 14;
+// const std::size_t identifier = 1;
+// const std::size_t blank = 3;
+// const std::size_t interface_keyword = 4;
+// const std::size_t colon = 5;
+// const std::size_t comma = 6;
+// const std::size_t open_curly_bracket = 7;
+// const std::size_t close_curly_bracket = 8;
+// const std::size_t open_parenthesis = 9;
+// const std::size_t close_parenthesis = 10;
+// const std::size_t in_keyword = 11;
+// const std::size_t out_keyword = 12;
+// const std::size_t inout_keyword = 13;
+// const std::size_t semicolon = 14;
 
-}
+// }
+
+struct set_lexer_state
+{
+  set_lexer_state(char const* state)
+    : state(state) {}
+
+  template <typename Iterator, typename Context>
+  void operator()(Iterator const&, Iterator const&
+                  , BOOST_SCOPED_ENUM(boost::spirit::lex::pass_flags)&
+                  , std::size_t&, Context& ctx) const
+  {
+    ctx.set_state_name(state);
+  }
+
+  char const* state;
+};
 
 template <typename Lexer>
-struct tokens : boost::spirit::lex::lexer<Lexer>
+struct tokens : lex::lexer<Lexer>
 {
   tokens()
   {
-    this->self.add
-      ("interface", token_types::interface_keyword)
-      ("in", token_types::in_keyword)
-      ("out", token_types::out_keyword)
-      ("inout", token_types::inout_keyword)
-      ("[a-zA-Z][a-zA-Z0-9]*", token_types::identifier)
-      (':', token_types::colon)
-      (',', token_types::comma)
-      ('{', token_types::open_curly_bracket)
-      ('}', token_types::close_curly_bracket)
-      ('(', token_types::open_parenthesis)
-      (')', token_types::close_parenthesis)
-      (';', token_types::semicolon)
-      ("(\t|\r|\n| )+", token_types::blank)
+    identifier = "[a-zA-Z][a-zA-Z0-9_]*";
+    interface_keyword = "interface";
+    in_keyword = "in";
+    out_keyword = "out";
+    inout_keyword = "inout";
+    blanks = "[\r\n\t ]+";
+    cppcomment = "\\/\\/[^\n]*\n";
+    any = ".";
+    comment_any = ".";
+    ccomment = "\\/\\*";
+    endccomment = "\\*\\/";
+
+    this->self
+      = lex::token_def<>('(')
+      | ')' | '{' | '}' | ';' | ':' | in_keyword
+      | interface_keyword | out_keyword | inout_keyword
+      | identifier | blanks | ccomment | cppcomment
+      | any
+      ;
+    this->self("COMMENT")
+      = endccomment
+      | comment_any
       ;
   }
+
+  lex::token_def<lex::omit> ccomment, cppcomment, endccomment, interface_keyword, blanks
+    , comment_any;
+  lex::token_def<std::string> identifier, in_keyword, out_keyword, inout_keyword;
+  lex::token_def<> any;
 };
 
 template <typename Iterator>
-struct skipper : boost::spirit::qi::grammar<Iterator>
+struct skipper : qi::grammar<Iterator>
 {
-  skipper()
+  template <typename TokenDef>
+  skipper(TokenDef const& tok)
     : skipper::base_type(start)
   {
-    start = boost::spirit::qi::token(token_types::blank);
+    start = 
+      +(tok.blanks | tok.cppcomment
+      | (
+         tok.ccomment > qi::in_state("COMMENT")
+         [
+          *tok.comment_any
+          > tok.endccomment
+         ]
+        )
+       )
+       ;
   }
-  boost::spirit::qi::rule<Iterator> start;
+  
+  qi::rule<Iterator> start;
 };
 
 } }

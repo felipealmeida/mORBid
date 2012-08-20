@@ -67,14 +67,14 @@ int main(int argc, char** argv)
          iterator_type iterator = lexer.begin(buffer_begin, buffer_end)
           , last = lexer.end();
 
-        tecorb::idl_parser::grammar::interface_definition<iterator_type> grammar;
+        tecorb::idl_parser::grammar::interface_definition<iterator_type> grammar(lexer);
         tecorb::idl_parser::interface_def<iterator_type> interface;
         typedef tecorb::idl_parser::op_decl<iterator_type> op_decl;
         using tecorb::idl_parser::param_decl;
+        tecorb::idl_parser::skipper<iterator_type> skipper(lexer);
 
         bool r = boost::spirit::qi::phrase_parse(iterator, last, grammar
-                                                 , tecorb::idl_parser::skipper<iterator_type>()
-                                                 , interface);
+                                                 , skipper, interface);
         if(r)
         {
           std::cout << "Parsed successfully" << std::endl;
