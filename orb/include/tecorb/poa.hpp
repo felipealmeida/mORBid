@@ -13,6 +13,7 @@
 #include <tecorb/object.hpp>
 #include <tecorb/local_object.hpp>
 #include <tecorb/string.hpp>
+#include <tecorb/reply.hpp>
 
 #include <boost/mpl/vector.hpp>
 #include <boost/asio/io_service.hpp>
@@ -40,7 +41,10 @@ struct ServantBase
   virtual Object_ptr _construct_local_stub(std::string const& host
                                            , unsigned short port
                                            , String_ptr poa_name) = 0;
-  
+  virtual void _dispatch(const char* name
+                         , const char* first, const char* request_body_first
+                         , const char* request_body_last
+                         , bool little_endian, reply&) = 0;
 };
 
 struct POAManager : narrow<POAManager, boost::mpl::vector1<LocalObject> >

@@ -70,6 +70,7 @@ int main(int argc, char** argv)
         tecorb::idl_parser::grammar::interface_definition<iterator_type> grammar;
         tecorb::idl_parser::interface_def<iterator_type> interface;
         typedef tecorb::idl_parser::op_decl<iterator_type> op_decl;
+        using tecorb::idl_parser::param_decl;
 
         bool r = boost::spirit::qi::phrase_parse(iterator, last, grammar
                                                  , tecorb::idl_parser::skipper<iterator_type>()
@@ -77,6 +78,18 @@ int main(int argc, char** argv)
         if(r)
         {
           std::cout << "Parsed successfully" << std::endl;
+
+          interface.repoids.push_back("IDL:omg.org/CORBA/Object:1.0");
+          interface.repoids.push_back("IDL:" + interface.name + ":1.0");
+          assert(interface.repoids.size() == 2);
+
+          {
+            op_decl is_a_op_decl = {"bool", "_is_a"};
+            param_decl param = {"in", "string"};
+            is_a_op_decl.params.push_back(param);
+            is_a_op_decl.user_defined = false;
+            interface.op_decls.push_back(is_a_op_decl);
+          }
 
           std::cout << "Generating stubs for interface " << interface.name << std::endl;
 
@@ -99,16 +112,22 @@ int main(int argc, char** argv)
                 <output_iterator_type, iterator_type>
                 header_poa_stub_generator;
 
-              karma::generate
+              bool r = karma::generate
                 (iterator
-                 , karma::lit("#include <tecorb/poa.hpp>") << karma::eol
+                 ,  karma::lit("#include <tecorb/poa.hpp>") << karma::eol
+                 << karma::lit("#include <tecorb/handle_request_body.hpp>") << karma::eol
+                 << karma::lit("#include <tecorb/reply.hpp>") << karma::eol
                  << karma::eol
                  << "class POA_" << interface.name << ";" << karma::eol << karma::eol
                 );
+              if(!r) std::cout << "Failed generating #includes for header" << std::endl;
 
-              karma::generate(iterator, header_stub_generator, interface);
-              karma::generate(iterator, header_local_stub_generator, interface);
-              karma::generate(iterator, header_poa_stub_generator, interface);
+              r = karma::generate(iterator, header_stub_generator, interface);
+              if(!r) std::cout << "Failed generating header_stub_generator" << std::endl;
+              r = karma::generate(iterator, header_local_stub_generator, interface);
+              if(!r) std::cout << "Failed generating header_local_stub_generator" << std::endl;
+              r = karma::generate(iterator, header_poa_stub_generator, interface);
+              if(!r) std::cout << "Failed generating header_poa_stub_generator" << std::endl;
             }
             {
               output_iterator_type iterator(cpp);
@@ -134,11 +153,18 @@ int main(int argc, char** argv)
                  << karma::eol
                 );
 
-              karma::generate(iterator, header_remote_stub_generator, interface);
-              karma::generate(iterator, cpp_remote_stub_generator, interface);
-              karma::generate(iterator, cpp_stub_generator, interface);
-              karma::generate(iterator, cpp_local_stub_generator, interface);
-              karma::generate(iterator, cpp_poa_stub_generator, interface);
+              bool r;
+              r = karma::generate(iterator, header_remote_stub_generator, interface);
+              if(!r) std::cout << "Failed generating header_remote_stub_generator for cpp" << std::endl;
+              r = karma::generate(iterator, cpp_remote_stub_generator, interface);
+              if(!r) std::cout << "Failed generating cpp_remote_stub_generator for cpp" << std::endl;
+              r = karma::generate(iterator, cpp_stub_generator, interface);
+              if(!r) std::cout << "Failed generating cpp_stub_generator for cpp" << std::endl;
+              r = karma::generate(iterator, cpp_local_stub_generator, interface);
+              if(!r) std::cout << "Failed generating cpp_local_stub_generator for cpp" << std::endl;
+              assert(interface.repoids.size() == 2);
+              r = karma::generate(iterator, cpp_poa_stub_generator, interface);
+              if(!r) std::cout << "Failed generating cpp_poa_stub_generator for cpp" << std::endl;
             }
           }
           else

@@ -9,9 +9,9 @@
 
 #include "file.h"
 
-struct hello_impl : POA_Hello
+struct hello_impl : POA_HelloWorld
 {
-  void sayHello()
+  void hello()
   {
     std::cout << "Hello!" << std::endl;
   }

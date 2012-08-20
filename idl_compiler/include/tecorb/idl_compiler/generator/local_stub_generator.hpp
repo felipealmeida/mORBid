@@ -28,6 +28,7 @@ struct header_local_stub_generator : karma::grammar
     using karma::_val;
     using karma::_a;
     using karma::eol;
+    using phoenix::at_c;
 
     start = 
       "namespace tecorb { namespace local_stub {"
@@ -52,7 +53,9 @@ struct header_local_stub_generator : karma::grammar
       indent
       << karma::string[_1 = phoenix::at_c<0>(_val)]
       << karma::space << karma::string[_1 = phoenix::at_c<1>(_val)]
-      << "();" << eol
+      << "("
+      << -(param % " ,")[_1 = at_c<2>(_val)]
+      << ");" << eol
       ;
 
     common_functions =
@@ -69,10 +72,6 @@ struct header_local_stub_generator : karma::grammar
           << indent << "{}" << eol
          )
       << indent << "~" << karma::string[_1 = phoenix::at_c<0>(_val)] << "();" << eol
-      << indent << "bool _is_a(const char*)" << eol
-      << indent << "{" << eol
-      << indent << indent << "return true;" << eol
-      << indent << "}" << eol
       ;
 
     common_members =
@@ -88,8 +87,19 @@ struct header_local_stub_generator : karma::grammar
       indent
       << "::tecorb::String_ptr ior() const;" << eol
       ;
+    param =
+      (
+       (karma::eps(at_c<1>(_val) == "string")
+        << -(karma::eps(at_c<0>(_val) == "in")
+             << "const ")
+        << "char*"
+       )
+       | karma::string[_1 = at_c<1>(_val)]
+      )
+      ;
   }
 
+  karma::rule<OutputIterator, idl_parser::param_decl()> param;
   karma::rule<OutputIterator> ior_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator, std::string()> common_members;
@@ -116,16 +126,17 @@ struct cpp_local_stub_generator : karma::grammar
     using karma::_2;
     using karma::eol;
     using karma::_r1;
+    using phoenix::at_c;
 
     start = 
       "namespace tecorb { namespace local_stub {"
       << eol << eol
-      << karma::eps[_a = phoenix::at_c<0>(_val)]
+      << karma::eps[_a = at_c<0>(_val)]
       << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
       << eol
       << "// Start of operations defined in IDL" << eol
       << (*(operation(_a) << eol))
-      [_1 = phoenix::at_c<1>(_val)]
+      [_1 = at_c<1>(_val)]
       << "// End of operations defined in IDL" << eol
       << ior_function[_1 = _a] << eol
       << "} }" << eol << eol
@@ -139,24 +150,44 @@ struct cpp_local_stub_generator : karma::grammar
       << "}" << eol
       ;
     operation =
-      karma::string[_1 = phoenix::at_c<0>(_val)]
+      karma::eps[_a = 0]
+      << karma::string[_1 = at_c<0>(_val)]
       << karma::space << karma::string[_1 = _r1]
-      << "::" << karma::string[_1 = phoenix::at_c<1>(_val)]
-      << "()" << eol
+      << "::" << karma::string[_1 = at_c<1>(_val)]
+      << "("
+      << -(param(++_a) % ", ")[_1 = at_c<2>(_val)]
+      << ")" << eol
       << "{" << eol
+      << karma::eps[_a = 0]
       << (
-          indent << "return servant->" << karma::string[_1 = phoenix::at_c<1>(_val)]
-          << "();" << eol
+          indent << "return servant->" << karma::string[_1 = at_c<1>(_val)]
+          << "(" << -(args(++_a) % ", ")[_1 = at_c<2>(_val)]
+          << ");" << eol
          )
       << "}" << eol
       ;
     indent = karma::space << karma::space;
+    param =
+      (
+       (karma::eps(at_c<1>(_val) == "string")
+        << -(karma::eps(at_c<0>(_val) == "in")
+             << "const ")
+        << "char*"
+       )
+       | karma::string[_1 = at_c<1>(_val)]
+      ) << " arg" << karma::lit(_r1)
+      ;
+    args = "arg" << karma::lit(_r1)
+      ;
   }
 
+  karma::rule<OutputIterator, idl_parser::param_decl(unsigned int)> args;
+  karma::rule<OutputIterator, idl_parser::param_decl(unsigned int)> param;
   karma::rule<OutputIterator, std::string()> ior_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(std::string)> operation;
+              , idl_parser::op_decl<Iterator>(std::string)
+              , karma::locals<unsigned int> > operation;
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>()
               , karma::locals<std::string> > start;

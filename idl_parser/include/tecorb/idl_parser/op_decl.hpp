@@ -12,30 +12,45 @@
 
 namespace tecorb { namespace idl_parser {
 
+struct param_decl
+{
+  std::string direction;
+  std::string type;
+};
+
 template <typename Iterator>
 struct op_decl
 {
   typedef typename Iterator::base_iterator_type base_iterator;
 
-  op_decl() {}
-  op_decl(boost::iterator_range<base_iterator> type
-          , boost::iterator_range<base_iterator> name)
-    : type(type.begin(), type.end()), name(name.begin(), name.end()) {}
-
   std::string type, name;
+  std::vector<param_decl> params;
+  bool user_defined;
 };
+
+inline std::ostream& operator<<(std::ostream& os, param_decl op)
+{
+  return os << "[param_decl direction: " << op.direction << " type: " << op.type << "]";
+}
 
 template <typename Iterator>
 std::ostream& operator<<(std::ostream& os, op_decl<Iterator> op)
 {
-  return os << "[op_decl type: " << op.type << " name: " << op.name << "]";
+  return os << "[op_decl type: " << op.type << " name: " << op.name << " user_defined: " << op.user_defined
+            << " params: " << boost::make_iterator_range(op.params.begin(), op.params.end()) << "]";
 }
 
 } }
 
+BOOST_FUSION_ADAPT_STRUCT( ::tecorb::idl_parser::param_decl
+                           , (std::string, direction)(std::string, type)
+                          );
+
 BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
                               , (::tecorb::idl_parser::op_decl) (Iterator)
                               , (std::string, type)(std::string, name)
+                              (std::vector< ::tecorb::idl_parser::param_decl>, params)
+                              (bool, user_defined)
                               );
 
 #endif

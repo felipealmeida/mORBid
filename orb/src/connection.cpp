@@ -9,12 +9,15 @@
 #include <tecorb/iiop/message_header.hpp>
 #include <tecorb/iiop/grammar/message_header.hpp>
 #include <tecorb/iiop/grammar/request_header_1_1.hpp>
+#include <tecorb/iiop/generator/reply_header.hpp>
+#include <tecorb/iiop/generator/message_header.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
 #include <boost/utility.hpp>
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>
+#include <boost/asio.hpp>
 
 #include <iomanip>
 
@@ -159,6 +162,8 @@ bool connection::handle_request(std::vector<char>::const_iterator first
   namespace qi = boost::spirit::qi;
   namespace phoenix = boost::phoenix;
 
+  std::vector<char>::const_iterator first_first = first;
+
   iiop::request_header request_header;
   iiop::grammar::request_header_1_1<iterator> request_header_grammar;
 
@@ -176,30 +181,80 @@ bool connection::handle_request(std::vector<char>::const_iterator first
     std::copy(request_header.operation.begin(), request_header.operation.end()
               , std::ostream_iterator<char>(std::cout));
     std::cout << "|" << std::endl;
-    
-    if(boost::shared_ptr<POA> poa = poa_.lock())
+    if(boost::distance(request_header.operation) != 0
+       && *boost::prior(request_header.operation.end()) == 0)
     {
-      std::cout << "POA still alive" << std::endl;
-      std::vector<char>::const_iterator first
-        = request_header.object_key.begin()
-        , last = request_header.object_key.end();
-      std::string poa_name;
-      std::size_t impl_;
-      if(qi::parse(first, last, +(qi::char_ - qi::char_('/'))
-                   >> qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
-                   , poa_name, impl_))
+      if(boost::shared_ptr<POA> poa = poa_.lock())
       {
-        std::cout << "POA name " << poa_name << std::endl;
-        ServantBase* impl = 0;
-        std::memcpy(&impl, &impl_, sizeof(impl));
-        std::cout << "ServantBase pointer " << impl << std::endl;
-        if(poa->object_map.find(impl) != poa->object_map.end())
+        std::cout << "POA still alive" << std::endl;
+        std::vector<char>::const_iterator header_first
+          = request_header.object_key.begin()
+          , header_last = request_header.object_key.end();
+        std::string poa_name;
+        std::size_t impl_;
+        std::cout << "== " << std::distance(first, last) << std::endl;
+        if(qi::parse(header_first, header_last, +(qi::char_ - qi::char_('/'))
+                     >> qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
+                     , poa_name, impl_))
         {
-          std::cout << "Found servant" << std::endl;
-        }
-        else
-        {
-          std::cout << "Servant not found, should throw OBJECT_NOT_EXIST" << std::endl;
+          std::cout << "POA name " << poa_name << std::endl;
+          ServantBase* impl = 0;
+          std::memcpy(&impl, &impl_, sizeof(impl));
+          std::cout << "ServantBase pointer " << impl << std::endl;
+          if(poa->object_map.find(impl) != poa->object_map.end())
+          {
+            std::cout << "Found servant " << std::distance(first, last) << std::endl;
+            try
+            {
+              reply r = {request_header.request_id};
+              impl->_dispatch(&*request_header.operation.begin(), &*first_first, &*first
+                              , &*first + std::distance(first, last)
+                              , little_endian, r);
+
+              if(request_header.response_expected)
+              {
+                namespace karma = boost::spirit::karma;
+                std::cout << "Reply body size: " << r.reply_body.size() << std::endl;
+                std::vector<char> reply_buffer(12 + 12);
+                reply_buffer.insert(reply_buffer.end(), r.reply_body.begin()
+                                    , r.reply_body.end());
+                std::vector<char>::iterator iterator = reply_buffer.begin();
+                iiop::generator::message_header<std::vector<char>::iterator> message_header_grammar;
+                if(karma::generate(iterator, message_header_grammar(little_endian, 1, reply_buffer.size())))
+                {
+                  std::cout << "generated message header" << std::endl;
+                  iiop::generator::reply_header<std::vector<char>::iterator> reply_header_grammar;
+                  if(karma::generate(iterator, reply_header_grammar(little_endian, request_header.request_id)))
+                  {
+                    std::cout << "generated reply header grammar" << std::endl;
+                    boost::system::error_code ec;
+                    std::cout << "reply_buffer " << reply_buffer.size() << std::endl;
+                    int rs =
+                    boost::asio::write(socket, boost::asio::buffer(reply_buffer)
+                                       , boost::asio::transfer_all(), ec);
+                    assert(rs == reply_buffer.size());
+                    if(!ec)
+                    {
+                      std::cout << "Successful transfer" << std::endl;
+                      return true;
+                    }
+                    else
+                    {
+                      std::cout << "Failed transfering" << std::endl;
+                    }
+                  }
+                }
+              }
+            }
+            catch(std::runtime_error const&)
+            {
+              std::cout << "Error running dispatch" << std::endl;
+            }
+          }
+          else
+          {
+            std::cout << "Servant not found, should throw OBJECT_NOT_EXIST" << std::endl;
+          }
         }
       }
     }

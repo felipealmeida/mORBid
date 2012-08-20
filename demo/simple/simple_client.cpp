@@ -16,7 +16,7 @@ int main(int argc, char** argv)
   assert(argc > 1);
 
   CORBA::Object_var obj = orb->string_to_object (argv[1]);
-  Hello_var hello = Hello::_narrow (obj);
+  HelloWorld_var hello = HelloWorld::_narrow (obj);
 
   if (CORBA::is_nil (hello))
   {
@@ -24,5 +24,5 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  hello->sayHello();
+  hello->hello();
 }

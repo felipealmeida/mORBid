@@ -11,6 +11,7 @@
 #define TECORB_SYNCHRONOUS_CALL_HPP
 
 #include <tecorb/detail/max_args.hpp>
+#include <tecorb/type_tag.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -25,36 +26,6 @@
 #include <iostream>
 
 namespace tecorb { namespace synchronous_call {
-
-struct in {};
-struct out {};
-struct inout {};
-
-template <typename T>
-struct in_type_traits
-{
-  typedef T type;
-};
-
-template <>
-struct in_type_traits<char*>
-{
-  typedef const char* type;
-};
-
-template <typename T, typename Tag>
-struct type_tag;
-
-template <typename T>
-struct type_tag<T, in>
-{
-  typedef T type;
-  typedef in tag;
-
-  type_tag(typename in_type_traits<type>::type value) : value(value) {}
-
-  typename in_type_traits<type>::type value;
-};
 
 #define BOOST_PP_ITERATION_PARAMS_1 (3, (0, TECORB_MAX_ARGS \
                                          , "tecorb/synchronous_call.hpp"))

@@ -47,21 +47,23 @@ struct interface_definition : boost::spirit::qi::grammar
     namespace qi = boost::spirit::qi;
     namespace lex = boost::spirit::lex;
     namespace phoenix = boost::phoenix;
+    using namespace token_types;
+    using qi::token;
 
     typedef idl_parser::interface_def<Iterator> return_type;
 
-    start = qi::token(token_types::interface_keyword)
-      >> qi::token(token_types::identifier)
-      [qi::_a = qi::_1]
-      >> -(
-           qi::token(token_types::colon)
-           >> qi::token(token_types::identifier)
-           >> *( qi::token(token_types::comma)
-                 >> qi::token(token_types::identifier)))
-      >> qi::token(token_types::open_curly_bracket)
-      >> *( op_decl[phoenix::push_back(qi::_b, qi::_1)] >> qi::token(token_types::semicolon) )
-      >> qi::token(token_types::close_curly_bracket)
-      >> qi::eps[qi::_val = phoenix::construct<return_type>(qi::_a, qi::_b)]
+    start %= qi::omit[token(interface_keyword)]
+      >> token(identifier)
+      >> qi::omit
+      [
+       -(
+         token(colon)
+         >> (token(identifier) % token(comma))
+        )
+      ]
+      >> qi::omit[token(open_curly_bracket)]
+      >> *(op_decl >> qi::omit[token(semicolon)])
+      >> qi::omit[token(close_curly_bracket)]
       ;
 
     start.name("interface_def");

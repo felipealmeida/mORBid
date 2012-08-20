@@ -49,11 +49,13 @@ struct header_stub_generator : karma::grammar
       << typedefs[_1 = _a] << eol;
       ;
     operation =
-      indent
-      << "virtual "
-      << karma::string[_1 = phoenix::at_c<0>(_val)]
-      << karma::space << karma::stream[_1 = phoenix::at_c<1>(_val)]
-      << "() = 0;"
+      -(
+        karma::eps(phoenix::at_c<3>(_val))
+        << indent << "virtual "
+        << karma::string[_1 = phoenix::at_c<0>(_val)]
+        << karma::space << karma::stream[_1 = phoenix::at_c<1>(_val)]
+        << "() = 0;"
+       )
       ;
 
     common_functions =

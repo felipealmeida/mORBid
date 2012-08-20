@@ -20,11 +20,12 @@ Object::~Object() {}
 
 bool Object::_is_a(const char* id)
 {
-  using ::tecorb::synchronous_call::type_tag;
-  using ::tecorb::synchronous_call::in;
+  using ::tecorb::type_tag::value_type_tag;
+  using ::tecorb::type_tag::in_tag;
   return ::tecorb::synchronous_call::call
-    <bool, type_tag<char*, in> >(tecorb::Object::repository_id, "_is_a"
-                                 , host, port, object_key, id);
+    <bool, value_type_tag<char*, in_tag> >
+    (tecorb::Object::repository_id, "_is_a"
+     , host, port, object_key, id);
 }
 
 } }
