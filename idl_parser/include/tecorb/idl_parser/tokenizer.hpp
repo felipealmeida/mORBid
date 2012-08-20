@@ -73,11 +73,13 @@ struct tokens : lex::lexer<Lexer>
       = lex::token_def<>('(')
       | ')' | '{' | '}' | ';' | ':' | in_keyword
       | interface_keyword | out_keyword | inout_keyword
-      | identifier | blanks | ccomment | cppcomment
-      | any
+      | identifier
+      | blanks
+      | ccomment        [ set_lexer_state("COMMENT") ]
+      | cppcomment
       ;
     this->self("COMMENT")
-      = endccomment
+      = endccomment     [ set_lexer_state("INITIAL") ]
       | comment_any
       ;
   }
@@ -98,11 +100,9 @@ struct skipper : qi::grammar<Iterator>
     start = 
       +(tok.blanks | tok.cppcomment
       | (
-         tok.ccomment > qi::in_state("COMMENT")
-         [
+         tok.ccomment >
           *tok.comment_any
           > tok.endccomment
-         ]
         )
        )
        ;
