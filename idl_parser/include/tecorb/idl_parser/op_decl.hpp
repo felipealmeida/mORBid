@@ -10,6 +10,12 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include <boost/range/iterator_range.hpp>
+
+#include <string>
+#include <vector>
+#include <ostream>
+
 namespace tecorb { namespace idl_parser {
 
 struct param_decl

@@ -11,6 +11,7 @@
 #include <tecorb/idl_compiler/generator/local_stub_generator.hpp>
 #include <tecorb/idl_compiler/generator/remote_stub_generator.hpp>
 #include <tecorb/idl_compiler/generator/poa_stub_generator.hpp>
+#include <tecorb/idl_compiler/common_types.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
@@ -55,20 +56,19 @@ int main(int argc, char** argv)
       {
         ifs.rdbuf()->sgetn(&buffer[0], buffer.size());
 
-        typedef boost::spirit::lex::lexertl::token<std::vector<char>::const_iterator> token_type;
-        typedef boost::spirit::lex::lexertl::actor_lexer<token_type> lexer_type;
+        using tecorb::idl_compiler::lexer_type;
         
         tecorb::idl_parser::tokens<lexer_type> lexer;
 
         std::vector<char>::const_iterator buffer_begin = buffer.begin()
           , buffer_end = buffer.end();
 
-        typedef lexer_type::iterator_type iterator_type;
+        typedef tecorb::idl_compiler::parser_iterator_type iterator_type;
          iterator_type iterator = lexer.begin(buffer_begin, buffer_end)
           , last = lexer.end();
 
         tecorb::idl_parser::grammar::interface_definition<iterator_type> grammar(lexer);
-        tecorb::idl_parser::interface_def<iterator_type> interface;
+        tecorb::idl_compiler::interface_def_type interface;
         typedef tecorb::idl_parser::op_decl<iterator_type> op_decl;
         using tecorb::idl_parser::param_decl;
         tecorb::idl_parser::skipper<iterator_type> skipper(lexer);
@@ -98,17 +98,17 @@ int main(int argc, char** argv)
           if(header.is_open() && cpp.is_open())
           {
             namespace karma = boost::spirit::karma;
-            typedef std::ostream_iterator<char> output_iterator_type;
+            using tecorb::idl_compiler::output_iterator_type;
             {
               output_iterator_type iterator(header);
 
-              tecorb::idl_compiler::header_stub_generator
+              tecorb::idl_compiler::generator::header_stub_generator
                 <output_iterator_type, iterator_type>
                 header_stub_generator;
-              tecorb::idl_compiler::header_local_stub_generator
+              tecorb::idl_compiler::generator::header_local_stub_generator
                 <output_iterator_type, iterator_type>
                 header_local_stub_generator;
-              tecorb::idl_compiler::header_poa_stub_generator
+              tecorb::idl_compiler::generator::header_poa_stub_generator
                 <output_iterator_type, iterator_type>
                 header_poa_stub_generator;
 
@@ -131,19 +131,19 @@ int main(int argc, char** argv)
             }
             {
               output_iterator_type iterator(cpp);
-              tecorb::idl_compiler::cpp_stub_generator
+              tecorb::idl_compiler::generator::cpp_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_stub_generator;
-              tecorb::idl_compiler::cpp_local_stub_generator
+              tecorb::idl_compiler::generator::cpp_local_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_local_stub_generator;
-              tecorb::idl_compiler::header_remote_stub_generator
+              tecorb::idl_compiler::generator::header_remote_stub_generator
                 <output_iterator_type, iterator_type>
                 header_remote_stub_generator;
-              tecorb::idl_compiler::cpp_remote_stub_generator
+              tecorb::idl_compiler::generator::cpp_remote_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_remote_stub_generator;
-              tecorb::idl_compiler::cpp_poa_stub_generator
+              tecorb::idl_compiler::generator::cpp_poa_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_poa_stub_generator;
 

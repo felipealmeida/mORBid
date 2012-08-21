@@ -15,7 +15,12 @@ alias ior : /boost//headers : : : <include>ior/include ;
 
 alias iiop : /boost//headers : : : <include>iiop/include ;
 
-exe tecorb_idl : idl_compiler/src/main.cpp idl_parser
+exe tecorb_idl : idl_compiler/src/main.cpp
+ idl_compiler/src/stub_generator.cpp
+ idl_compiler/src/local_stub_generator.cpp
+ idl_compiler/src/remote_stub_generator.cpp
+ idl_compiler/src/poa_stub_generator.cpp
+ idl_parser
   /boost//filesystem /boost//program_options
   : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
     <include>idl_compiler/include
