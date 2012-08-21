@@ -23,6 +23,8 @@ struct word : karma::grammar<OutputIterator, boost::uint_t<16u>::least(bool)>
     using karma::_r1;
     start %= (karma::eps(_r1) << karma::little_word)
       | karma::big_word;
+    start.name("word");
+    karma::debug(start);
   }
 
   karma::rule<OutputIterator, boost::uint_t<16u>::least(bool)> start;
@@ -36,6 +38,8 @@ struct dword : karma::grammar<OutputIterator, boost::uint_t<32u>::least(bool)>
     using karma::_r1;
     start %= (karma::eps(_r1) << karma::little_dword)
       | karma::big_dword;
+    start.name("dword");
+    karma::debug(start);
   }
 
   karma::rule<OutputIterator, boost::uint_t<32u>::least(bool)> start;

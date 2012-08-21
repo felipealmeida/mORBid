@@ -21,7 +21,7 @@ struct request_header
   boost::uint_t<32u>::least request_id;
   bool response_expected;
   std::vector<char> object_key;
-  std::vector<char> operation;
+  std::string operation;
   std::vector<char> requesting_principal;
 };
 
@@ -31,6 +31,6 @@ BOOST_FUSION_ADAPT_STRUCT(tecorb::iiop::request_header
                           , (tecorb::iiop::service_context_list, service_context_list)
                           (boost::uint_t<32u>::least, request_id)
                           (bool, response_expected)(std::vector<char>, object_key)
-                          (std::vector<char>, operation)(std::vector<char>, requesting_principal));
+                          (std::string, operation)(std::vector<char>, requesting_principal));
 
 #endif
