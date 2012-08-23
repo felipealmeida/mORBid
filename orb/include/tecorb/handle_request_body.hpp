@@ -10,6 +10,7 @@
 #ifndef TECORB_HANDLE_REQUEST_BODY_HPP
 #define TECORB_HANDLE_REQUEST_BODY_HPP
 
+#include <tecorb/any.hpp>
 #include <tecorb/detail/max_args.hpp>
 #include <tecorb/parse_argument.hpp>
 
@@ -35,10 +36,125 @@ struct wrapped_type<const char*>
   typedef std::vector<char> type;
 };
 
-inline
-const char* unwrap(std::vector<char>const& v)
+template <>
+struct wrapped_type<bool>
+{
+  typedef bool type;
+};
+
+template <>
+struct wrapped_type<char>
+{
+  typedef char type;
+};
+
+template <>
+struct wrapped_type<double>
+{
+  typedef double type;
+};
+
+template <>
+struct wrapped_type<float>
+{
+  typedef float type;
+};
+
+template <>
+struct wrapped_type<long>
+{
+  typedef long type;
+};
+
+template <>
+struct wrapped_type<const unsigned char*>
+{
+  typedef std::vector<unsigned char> type;
+};
+
+template <>
+struct wrapped_type<short>
+{
+  typedef short type;
+};
+
+template <>
+struct wrapped_type<wchar_t>
+{
+  typedef wchar_t type;
+};
+
+template <>
+struct wrapped_type<const wchar_t*>
+{
+  typedef std::vector<wchar_t> type;
+};
+
+template <>
+struct wrapped_type<const tecorb::Any_ptr>
+{
+  typedef tecorb::Any_ptr type;
+};
+
+template <>
+struct wrapped_type<tecorb::Any_ptr>
+{
+  typedef tecorb::Any_ptr type;
+};
+
+inline const char* unwrap(std::vector<char>const& v)
 {
   return &v[0];
+}
+
+inline const unsigned char* unwrap(std::vector<unsigned char>const& v)
+{
+  return &v[0];
+}
+
+inline bool unwrap(bool v)
+{
+  return v;
+}
+
+inline char unwrap(char v)
+{
+  return v;
+}
+
+inline double unwrap(double v)
+{
+  return v;
+}
+
+inline float unwrap(float v)
+{
+  return v;
+}
+
+inline long unwrap(long v)
+{
+  return v;
+}
+
+inline short unwrap(short v)
+{
+  return v;
+}
+
+inline wchar_t unwrap(wchar_t v)
+{
+  return v;
+}
+
+inline const wchar_t* unwrap(std::vector<wchar_t>const& v)
+{
+  return &v[0];
+}
+
+inline tecorb::Any_ptr unwrap(tecorb::Any_ptr v)
+{
+  return v;
 }
 
 #define BOOST_PP_ITERATION_PARAMS_1 (3, (0, TECORB_MAX_ARGS \

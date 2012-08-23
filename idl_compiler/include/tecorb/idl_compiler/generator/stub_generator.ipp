@@ -28,6 +28,7 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
   using karma::_val;
   using karma::_a;
   using karma::eol;
+  using phoenix::at_c;
 
   start = 
     karma::eps[_a = phoenix::at_c<0>(_val)]
@@ -54,7 +55,9 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
       << indent << "virtual "
       << karma::string[_1 = phoenix::at_c<0>(_val)]
       << karma::space << karma::stream[_1 = phoenix::at_c<1>(_val)]
-      << "() = 0;"
+      << "("
+      << -(parameter % ", ")[_1 = at_c<2>(_val)]
+      << ") = 0;"
      )
     ;
 

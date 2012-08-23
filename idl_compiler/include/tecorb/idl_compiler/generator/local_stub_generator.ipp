@@ -54,7 +54,7 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     << karma::string[_1 = phoenix::at_c<0>(_val)]
     << karma::space << karma::string[_1 = phoenix::at_c<1>(_val)]
     << "("
-    << -(param % " ,")[_1 = at_c<2>(_val)]
+    << -(parameter % ", ")[_1 = at_c<2>(_val)]
     << ");" << eol
     ;
 
@@ -86,16 +86,6 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
   ior_function =
     indent
     << "::tecorb::String_ptr ior() const;" << eol
-    ;
-  param =
-    (
-     (karma::eps(at_c<1>(_val) == "string")
-      << -(karma::eps(at_c<0>(_val) == "in")
-           << "const ")
-      << "char*"
-     )
-     | karma::string[_1 = at_c<1>(_val)]
-    )
     ;
 }
 
@@ -139,7 +129,7 @@ cpp_local_stub_generator<OutputIterator, Iterator>::cpp_local_stub_generator()
     << karma::space << karma::string[_1 = _r1]
     << "::" << karma::string[_1 = at_c<1>(_val)]
     << "("
-    << -(param(++_a) % ", ")[_1 = at_c<2>(_val)]
+    << -((parameter << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
     << ")" << eol
     << "{" << eol
     << karma::eps[_a = 0]
@@ -151,16 +141,6 @@ cpp_local_stub_generator<OutputIterator, Iterator>::cpp_local_stub_generator()
     << "}" << eol
     ;
   indent = karma::space << karma::space;
-  param =
-    (
-     (karma::eps(at_c<1>(_val) == "string")
-      << -(karma::eps(at_c<0>(_val) == "in")
-           << "const ")
-      << "char*"
-     )
-     | karma::string[_1 = at_c<1>(_val)]
-    ) << " arg" << karma::lit(_r1)
-    ;
   args = "arg" << karma::lit(_r1)
     ;
 }

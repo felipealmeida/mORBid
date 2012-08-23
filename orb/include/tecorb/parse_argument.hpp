@@ -20,6 +20,79 @@ struct argument_tag
 {
 };
 
+inline bool parse_argument(const char* first, const char*& rq_current
+                           , const char* rq_last, bool little_endian
+                           , argument_tag<bool>)
+{
+  if(rq_current != rq_last)
+  {
+    return *rq_current++;
+  }
+  else
+    throw std::runtime_error("Format error");
+}
+
+inline char parse_argument(const char* first, const char*& rq_current
+                           , const char* rq_last, bool little_endian
+                           , argument_tag<char>)
+{
+  if(rq_current != rq_last)
+  {
+    return *rq_current++;
+  }
+  else
+    throw std::runtime_error("Format error");
+}
+
+inline double parse_argument(const char* first, const char*& rq_current
+                           , const char* rq_last, bool little_endian
+                           , argument_tag<double>)
+{
+  throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
+inline float parse_argument(const char* first, const char*& rq_current
+                            , const char* rq_last, bool little_endian
+                            , argument_tag<float>)
+{
+  throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
+inline long parse_argument(const char* first, const char*& rq_current
+                           , const char* rq_last, bool little_endian
+                           , argument_tag<long>)
+{
+  throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
+inline short parse_argument(const char* first, const char*& rq_current
+                           , const char* rq_last, bool little_endian
+                           , argument_tag<short>)
+{
+  throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
+inline wchar_t parse_argument(const char* first, const char*& rq_current
+                           , const char* rq_last, bool little_endian
+                           , argument_tag<wchar_t>)
+{
+  throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
+inline std::vector<wchar_t> parse_argument(const char* first, const char*& rq_current
+                           , const char* rq_last, bool little_endian
+                           , argument_tag<const wchar_t*>)
+{
+  throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
+inline tecorb::Any_ptr parse_argument(const char* first, const char*& rq_current
+                                      , const char* rq_last, bool little_endian
+                                      , argument_tag<tecorb::Any_ptr>)
+{
+  throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
 inline
 std::vector<char> parse_argument(const char* first, const char*& rq_current
                                  , const char* rq_last, bool little_endian
@@ -83,6 +156,18 @@ std::vector<char> parse_argument(const char* first, const char*& rq_current
       return sequence;
   }
   throw std::runtime_error("Error parsing argument");
+}
+
+inline std::vector<unsigned char>
+parse_argument(const char* first, const char*& rq_current
+               , const char* rq_last, bool little_endian
+               , argument_tag<const unsigned char*>)
+{
+  std::vector<char> v = parse_argument(first, rq_current
+                                       , rq_last, little_endian
+                                       , argument_tag<const char*>());
+  std::vector<unsigned char> r(v.begin(), v.end());
+  return r;
 }
 
 }

@@ -9,6 +9,7 @@
 #define TECORB_IDL_COMPILER_LOCAL_STUB_GENERATOR_HPP
 
 #include <tecorb/idl_parser/interface_def.hpp>
+#include <tecorb/idl_compiler/generator/parameter.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 
@@ -22,7 +23,7 @@ struct header_local_stub_generator : karma::grammar
 {
   header_local_stub_generator();
 
-  karma::rule<OutputIterator, idl_parser::param_decl()> param;
+  idl_compiler::parameter<OutputIterator> parameter;
   karma::rule<OutputIterator> ior_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator, std::string()> common_members;
@@ -41,8 +42,8 @@ struct cpp_local_stub_generator : karma::grammar
 {
   cpp_local_stub_generator();
 
+  idl_compiler::parameter<OutputIterator> parameter;
   karma::rule<OutputIterator, idl_parser::param_decl(unsigned int)> args;
-  karma::rule<OutputIterator, idl_parser::param_decl(unsigned int)> param;
   karma::rule<OutputIterator, std::string()> ior_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator

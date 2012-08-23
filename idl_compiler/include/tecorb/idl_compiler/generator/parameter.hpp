@@ -29,11 +29,42 @@ struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl()>
     using phoenix::at_c;
 
     start =
-       (karma::eps(at_c<1>(_val) == "string")
-        << -(karma::eps(at_c<0>(_val) == "in")
-             << "const ")
+       (
+        karma::eps(at_c<1>(_val) == "string")
+        << -(
+             karma::eps(at_c<0>(_val) == "in") << "const "
+            )
         << "char*"
        )
+      | (
+         karma::eps(at_c<1>(_val) == "wstring")
+         << -(
+              karma::eps(at_c<0>(_val) == "in") << "const "
+             )
+         << "wchar_t*"
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "boolean") << "bool"
+         << -(karma::eps(at_c<0>(_val) != "in")
+              << "&")
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "octet")
+         << -(
+              karma::eps(at_c<0>(_val) == "in") << "const "
+             )
+         << "unsigned char*"
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "wchar") << "wchar_t"
+         << -(karma::eps(at_c<0>(_val) != "in")
+              << "&")
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "any")
+         << -(karma::eps(at_c<0>(_val) == "in") << "const ")
+          << "CORBA::Any_ptr"
+        )
       | karma::string[_1 = at_c<1>(_val)]
       ;
   }

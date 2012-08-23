@@ -138,7 +138,7 @@ cpp_remote_stub_generator<OutputIterator, Iterator>::cpp_remote_stub_generator()
     << "::" << karma::string[_1 = phoenix::at_c<1>(_val)]
     << "("
     << karma::eps[_a = 0]
-    << -((parameter << "arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
+    << -((parameter << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
     << ")" << eol
     << "{" << eol
     << (

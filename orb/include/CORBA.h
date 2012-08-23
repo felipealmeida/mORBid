@@ -8,6 +8,7 @@
 #ifndef TECORB_CORBA_H
 #define TECORB_CORBA_H
 
+#include <tecorb/any.hpp>
 #include <tecorb/string.hpp>
 #include <tecorb/orb.hpp>
 #include <tecorb/object.hpp>
@@ -15,6 +16,10 @@
 #include <tecorb/exception.hpp>
 
 namespace CORBA {
+
+using ::tecorb::Any;
+using ::tecorb::Any_var;
+using ::tecorb::Any_ptr;
 
 using ::tecorb::MARSHALL;
 

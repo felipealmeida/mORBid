@@ -52,18 +52,10 @@ header_poa_stub_generator<OutputIterator, Iterator>::header_poa_stub_generator()
     << karma::string[_1 = at_c<0>(_val)]
     << karma::space << karma::stream[_1 = at_c<1>(_val)]
     << "("
-    << -(param % ", ")[_1 = at_c<2>(_val)]
+    << -(parameter % ", ")[_1 = at_c<2>(_val)]
     << ")"
     << -(karma::eps(at_c<3>(_val)) << " = 0")
     << ";" << eol
-    ;
-  param =
-    (karma::eps(at_c<1>(_val) == "string")
-     << -(karma::eps(at_c<0>(_val) == "in")
-          << "const ")
-     << "char*"
-    )
-    | karma::string[_1 = at_c<1>(_val)]
     ;
   common_functions =
     indent
@@ -88,13 +80,11 @@ header_poa_stub_generator<OutputIterator, Iterator>::header_poa_stub_generator()
     ;
     
   start.name("header_poa_stub_generator");
-  param.name("param");
   construct_local_stub_function.name("construct_local_stub_function");
   dispatch_function.name("dispatch_function");
   common_functions.name("common_functions");
   operation.name("operation");
   karma::debug(start);
-  karma::debug(param);
   karma::debug(construct_local_stub_function);
   karma::debug(dispatch_function);
   karma::debug(common_functions);
@@ -154,22 +144,12 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
       karma::eps(!at_c<3>(_val))[_a = 0u]
       << karma::string[_1 = at_c<0>(_val)] << " " << class_name(at_c<0>(_r1)) << "::"
       << karma::string[_1 = at_c<1>(_val)]
-      << "(" << -(param(++_a) % ", ")[_1 = at_c<2>(_val)]
+      << "(" << -((parameter << "arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
       << ")" << eol
       << "{" << eol
       << non_user_defined_implementation(1, _r1)[_1 = _val]
       << "}" << eol
      )
-    ;
-  param =
-    (
-     (karma::eps(at_c<1>(_val) == "string")
-      << -(karma::eps(at_c<0>(_val) == "in")
-           << "const ")
-      << "char*"
-     )
-     | karma::string[_1 = at_c<1>(_val)]
-    ) << " arg" << karma::uint_(_r1)
     ;
   non_user_defined_implementation %= 
     karma::omit[karma::eps(at_c<1>(_val) == "_is_a")] << is_a_impl(_r1, _r2)
@@ -188,7 +168,6 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
     ;
 
   start.name("cpp_poa_stub_generator");
-  param.name("param");
   non_user_defined_operations.name("non_user_defined_operations");
   non_user_defined_implementation.name("non_user_defined_implementation");
   is_a_impl.name("is_a_impl");
@@ -197,7 +176,6 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
   dispatch_function.name("dispatching_function");
   is_a_impl_strcmp.name("is_a_impl_strcmp");
   karma::debug(start);
-  karma::debug(param);
   karma::debug(non_user_defined_operations);
   karma::debug(class_name);
   karma::debug(dispatching_if);
