@@ -40,3 +40,8 @@ lib tecorb : orb/src/orb.cpp orb/src/poa.cpp
 install install : tecorb_idl tecorb ;
 
 install demos : demo/simple//simple_server demo/simple//simple_client ;
+
+alias allprimitives : tests//allprimitives ;
+
+alias tests : allprimitives ;
+
