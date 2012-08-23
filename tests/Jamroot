@@ -6,8 +6,30 @@
 
 import testing ;
 
+project tecorb/tests ;
+
+path-constant current : . ;
+path-constant install : ../install ;
+
+make allprimitives.h : allprimitives.idl : @compileidl ;
+make allprimitives.cpp : allprimitives.h : @donothing ;
+
+actions donothing
+{
+}
+actions compileidl
+{
+  $(install:G=)/tecorb_idl -i $(>) -o $(<:S=)
+}
+
 alias allprimitives :
- [ run allprimitives_client.cpp /tecorb//tecorb file.cpp ]
- [ run allprimitives_server.cpp /tecorb//tecorb file.cpp ]
+ [ run allprimitives_client.cpp /tecorb//tecorb allprimitives.cpp
+  : : : <implicit-dependency>allprimitives.h
+    <implicit-dependency>allprimitives.cpp
+ ]
+ [ run allprimitives_server.cpp /tecorb//tecorb allprimitives.cpp
+  : : : <implicit-dependency>allprimitives.h
+    <implicit-dependency>allprimitives.cpp
+ ]
  ;
 

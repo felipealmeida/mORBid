@@ -43,5 +43,5 @@ install demos : demo/simple//simple_server demo/simple//simple_client ;
 
 alias allprimitives : tests//allprimitives ;
 
-alias tests : allprimitives ;
+alias tests : install allprimitives ;
 

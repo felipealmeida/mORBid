@@ -93,8 +93,22 @@ int main(int argc, char** argv)
 
           std::cout << "Generating stubs for interface " << interface.name << std::endl;
 
-          std::ofstream header("file.h");
-          std::ofstream cpp("file.cpp");
+          boost::filesystem::path header_path, impl_path;
+          if(vm.count("output"))
+          {
+            header_path = vm["output"].as<std::string>() + ".h";
+            impl_path = vm["output"].as<std::string>() + ".cpp";
+          }
+          else
+          {
+            header_path = input_file;
+            header_path.replace_extension(".h");
+            impl_path = input_file;
+            impl_path.replace_extension(".cpp");
+          }
+
+          boost::filesystem::ofstream header(header_path);
+          boost::filesystem::ofstream cpp(impl_path);
           if(header.is_open() && cpp.is_open())
           {
             namespace karma = boost::spirit::karma;
@@ -114,7 +128,9 @@ int main(int argc, char** argv)
 
               bool r = karma::generate
                 (iterator
-                 ,  karma::lit("#include <tecorb/poa.hpp>") << karma::eol
+                 , karma::lit("// -*- c++ -*-") << karma::eol
+                 << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
+                 << karma::lit("#include <tecorb/poa.hpp>") << karma::eol
                  << karma::lit("#include <tecorb/handle_request_body.hpp>") << karma::eol
                  << karma::lit("#include <tecorb/reply.hpp>") << karma::eol
                  << karma::lit("#include <CORBA.h>") << karma::eol
@@ -150,7 +166,9 @@ int main(int argc, char** argv)
 
               karma::generate
                 (iterator
-                 , karma::lit("#include \"file.h\"") << karma::eol
+                 , karma::lit("// -*- c++ -*-") << karma::eol
+                 << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
+                 << "#include \"" << karma::lit(header_path.filename().native()) << "\"" << karma::eol
                  << karma::eol
                 );
 
