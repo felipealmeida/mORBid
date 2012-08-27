@@ -62,6 +62,11 @@ Object_ptr ORB::string_to_object(const char* ref)
   }
 }
 
+void ORB::shutdown(bool wait_for_completion)
+{
+  io_service.stop();
+}
+
 void ORB::run()
 {
   boost::asio::io_service::work w(io_service);

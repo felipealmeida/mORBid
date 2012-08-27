@@ -109,10 +109,13 @@ void connection::process_input()
 
   if(qi::parse(iterator, last, message_header_grammar, message_header))
   {
+    std::cout << "message header was parsed" << std::endl;
     unsigned char size_tmp = message_header.message_size;
-    std::size_t size = size_tmp;
+    int size = size_tmp;
+    std::cout << "message is size " << size << std::endl;
     if(std::distance(iterator, last) >= size)
     {
+      std::cout << "message was completely read" << std::endl;
       std::vector<char>::const_iterator begin = processing_buffer.begin();
       std::vector<char>::iterator last
         = boost::next(processing_buffer.begin()
@@ -121,6 +124,7 @@ void connection::process_input()
       switch(message_header.message_type)
       {
       case 0: // Request
+        std::cout << "message is a request" << std::endl;
         success = handle_request(iterator, last, (message_header.flags & 1) == 1);
         break;
       case 1: // Reply
@@ -232,7 +236,8 @@ bool connection::handle_request(std::vector<char>::const_iterator first
                     int rs =
                     boost::asio::write(socket, boost::asio::buffer(reply_buffer)
                                        , boost::asio::transfer_all(), ec);
-                    assert(rs == reply_buffer.size());
+                    int size = reply_buffer.size();
+                    assert(rs == size);
                     if(!ec)
                     {
                       std::cout << "Successful transfer" << std::endl;

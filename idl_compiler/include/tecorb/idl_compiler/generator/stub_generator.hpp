@@ -28,7 +28,7 @@ struct header_stub_generator : karma::grammar
   header_stub_generator();
 
   idl_compiler::parameter<OutputIterator> parameter;
-  karma::rule<OutputIterator> indent, members;
+  karma::rule<OutputIterator> indent, public_members;
   karma::rule<OutputIterator, std::string()> typedefs;
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>()> common_functions;

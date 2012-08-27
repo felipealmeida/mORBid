@@ -112,7 +112,6 @@ cpp_remote_stub_generator<OutputIterator, Iterator>::cpp_remote_stub_generator()
     [_1 = phoenix::at_c<1>(_val)]
     << "// End of operations defined in IDL" << eol
     << ior_function[_1 = _a] << eol
-    // << is_a_function[_1 = _a] << eol
     << "} }" << eol << eol
     ;
   ior_function =
@@ -123,15 +122,6 @@ cpp_remote_stub_generator<OutputIterator, Iterator>::cpp_remote_stub_generator()
     << indent << indent << "(host, port, object_key);" << eol
     << "}" << eol
     ;
-  // is_a_function =
-  //   "bool "
-  //   << karma::string[_1 = _val] << "::_is_a(const char* id)" << eol
-  //   << "{" << eol
-  //   << indent << "std::cout << \"Called _is_a in stub remote object\" << std::endl;"
-  //   << eol
-  //   << indent << "return false;" << eol
-  //   << "}" << eol
-  //   ;
   operation =
     karma::string[_1 = phoenix::at_c<0>(_val)]
     << karma::space << karma::string[_1 = _r1]
@@ -145,9 +135,24 @@ cpp_remote_stub_generator<OutputIterator, Iterator>::cpp_remote_stub_generator()
         indent
         << "std::cout << \"Called " << karma::string[_1 = phoenix::at_c<1>(_val)]
         << " was called\" << std::endl;" << eol
+        << indent << "return ::tecorb::synchronous_call::call" << eol
+        << indent << indent << "<" << karma::string[_1 = at_c<0>(_val)]
+        << (*(eol << indent << indent << ", " << synchronous_template_args))[_1 = at_c<2>(_val)]
+        << eol << indent << indent << ">" << eol
+        << indent << indent
+        << "(_repository_id, \"" << karma::string[_1 = at_c<1>(_val)]
+        << "\", host, port, object_key"
+        << (*(", " << synchronous_args))[_1 = at_c<2>(_val)]
+        << ");" << eol
        )
     << "}" << eol
     ;
+  synchronous_template_args
+    = "::tecorb::type_tag::value_type_tag<"
+    << parameter[_1 = _val]
+    << ", ::tecorb::type_tag::" << karma::string[_1 = at_c<0>(_val)]
+    << "_tag>";
+  synchronous_args = karma::eps[_a = 0u] << "arg" << karma::lit(++_a);
   indent = karma::space << karma::space;
 }
 

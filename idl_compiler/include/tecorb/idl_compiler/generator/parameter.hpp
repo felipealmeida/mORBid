@@ -44,7 +44,7 @@ struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl()>
          << "wchar_t*"
         )
       | (
-         karma::eps(at_c<1>(_val) == "boolean") << "bool"
+         karma::eps(at_c<1>(_val) == "boolean") << "CORBA::Boolean"
          << -(karma::eps(at_c<0>(_val) != "in")
               << "&")
         )
@@ -64,6 +64,22 @@ struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl()>
          karma::eps(at_c<1>(_val) == "any")
          << -(karma::eps(at_c<0>(_val) == "in") << "const ")
           << "CORBA::Any_ptr"
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "long")
+         << "CORBA::Long"
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "short")
+         << "CORBA::Short"
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "double")
+         << "CORBA::Double"
+        )
+      | (
+         karma::eps(at_c<1>(_val) == "float")
+         << "CORBA::Float"
         )
       | karma::string[_1 = at_c<1>(_val)]
       ;

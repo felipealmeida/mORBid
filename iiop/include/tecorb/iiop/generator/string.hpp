@@ -30,6 +30,7 @@ struct string : karma::grammar<OutputIterator, std::string(bool)>
 
     start
       = dword(_r1)[_1 = phoenix::size(_val)+1]
+      << karma::eps(_val[phoenix::size(_val)-1] != 0)
       << karma::string[_1 = _val]
       << karma::char_('\0')
       ;

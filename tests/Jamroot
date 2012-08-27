@@ -11,7 +11,7 @@ project tecorb/tests ;
 path-constant current : . ;
 path-constant install : ../install ;
 
-make allprimitives.h : allprimitives.idl : @compileidl ;
+make allprimitives.h : allprimitives.idl : @compileidl : <dependency>/tecorb//install ;
 make allprimitives.cpp : allprimitives.h : @donothing ;
 
 actions donothing
@@ -22,14 +22,29 @@ actions compileidl
   $(install:G=)/tecorb_idl -i $(>) -o $(<:S=)
 }
 
-alias allprimitives :
- [ run allprimitives_client.cpp /tecorb//tecorb allprimitives.cpp
-  : : : <implicit-dependency>allprimitives.h
-    <implicit-dependency>allprimitives.cpp
- ]
- [ run allprimitives_server.cpp /tecorb//tecorb allprimitives.cpp
-  : : : <implicit-dependency>allprimitives.h
-    <implicit-dependency>allprimitives.cpp
- ]
+exe allprimitives_client
+ : allprimitives_client.cpp /tecorb//tecorb allprimitives.cpp
+  : <implicit-dependency>allprimitives.h
+ ;
+exe allprimitives_server
+ : allprimitives_server.cpp /tecorb//tecorb allprimitives.cpp
+  : <implicit-dependency>allprimitives.h
  ;
 
+make allprimitives.output : allprimitives_client allprimitives_server : @run-server-client ;
+actions run-server-client
+{
+  $(>[2]) $(>[2]).ior > $(<).server &
+  server_pid=$!
+  sleep 1
+  $(>[1]) $(>[2]).ior > $(<).client
+  if [ "$?" -eq 0 ]
+  then
+    wait $server_pid
+  else
+    kill -s KILL $server_pid
+    exit 1
+  fi
+}
+
+alias allprimitives : allprimitives.output ;

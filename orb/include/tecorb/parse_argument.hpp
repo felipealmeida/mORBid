@@ -10,7 +10,12 @@
 
 #include <tecorb/iiop/grammar/sequence.hpp>
 #include <tecorb/iiop/grammar/align.hpp>
+#include <tecorb/any.hpp>
+#include <tecorb/primitive_types.hpp>
 
+#include <boost/mpl/assert.hpp>
+
+#include <limits>
 #include <iomanip>
 
 namespace tecorb {
@@ -44,30 +49,82 @@ inline char parse_argument(const char* first, const char*& rq_current
     throw std::runtime_error("Format error");
 }
 
-inline double parse_argument(const char* first, const char*& rq_current
-                           , const char* rq_last, bool little_endian
-                           , argument_tag<double>)
+inline Double parse_argument(const char* first, const char*& rq_current
+                             , const char* rq_last, bool little_endian
+                             , argument_tag< ::tecorb::Double>)
 {
-  throw std::runtime_error("NOT_IMPLEMENTED");
+  BOOST_MPL_ASSERT_RELATION( (std::numeric_limits< ::tecorb::Double>::is_iec559), ==, true);
+  BOOST_MPL_ASSERT_RELATION( sizeof(::tecorb::Double), ==, 8u);
+  int const size = sizeof(::tecorb::Double);
+  if(std::distance(rq_current, rq_last) >= size)
+  {
+    ::tecorb::Double r;
+    if(little_endian && true /* am I little endian? */)
+    {
+      std::memcpy(&r, rq_current, sizeof(::tecorb::Double));
+    }
+    else // endianness doesnt match
+    {
+      std::reverse_copy(rq_current, rq_current + sizeof(::tecorb::Double), &r);
+    }
+    rq_current += sizeof(::tecorb::Double);
+    return r;
+  }
+  else
+    throw std::runtime_error("Error parsing");
 }
 
-inline float parse_argument(const char* first, const char*& rq_current
+inline Float parse_argument(const char* first, const char*& rq_current
                             , const char* rq_last, bool little_endian
-                            , argument_tag<float>)
+                            , argument_tag< ::tecorb::Float>)
 {
-  throw std::runtime_error("NOT_IMPLEMENTED");
+  BOOST_MPL_ASSERT_RELATION( (std::numeric_limits< ::tecorb::Float>::is_iec559), ==, true);
+  BOOST_MPL_ASSERT_RELATION( sizeof(::tecorb::Float), ==, 4u);
+  int const size = sizeof(::tecorb::Float);
+  if(std::distance(rq_current, rq_last) >= size)
+  {
+    ::tecorb::Float r;
+    if(little_endian && true /* am I little endian? */)
+    {
+      std::memcpy(&r, rq_current, sizeof(::tecorb::Float));
+    }
+    else // endianness doesnt match
+    {
+      std::reverse_copy(rq_current, rq_current + sizeof(::tecorb::Float), &r);
+    }
+    rq_current += sizeof(::tecorb::Float);
+    return r;
+  }
+  else
+    throw std::runtime_error("Error parsing");
 }
 
-inline long parse_argument(const char* first, const char*& rq_current
-                           , const char* rq_last, bool little_endian
-                           , argument_tag<long>)
+inline ::tecorb::Long parse_argument(const char* first, const char*& rq_current
+                                     , const char* rq_last, bool little_endian
+                                     , argument_tag< ::tecorb::Long>)
 {
-  throw std::runtime_error("NOT_IMPLEMENTED");
+  int const size = sizeof(::tecorb::Long);
+  if(std::distance(rq_current, rq_last) >= size)
+  {
+    ::tecorb::Long r;
+    if(little_endian && true /* am I little endian? */)
+    {
+      std::memcpy(&r, rq_current, sizeof(::tecorb::Long));
+    }
+    else // endianness doesnt match
+    {
+      std::reverse_copy(rq_current, rq_current + sizeof(::tecorb::Long), &r);
+    }
+    rq_current += sizeof(::tecorb::Long);
+    return r;
+  }
+  else
+    throw std::runtime_error("Error parsing");
 }
 
-inline short parse_argument(const char* first, const char*& rq_current
-                           , const char* rq_last, bool little_endian
-                           , argument_tag<short>)
+inline ::tecorb::Short parse_argument(const char* first, const char*& rq_current
+                                      , const char* rq_last, bool little_endian
+                                      , argument_tag< ::tecorb::Short>)
 {
   throw std::runtime_error("NOT_IMPLEMENTED");
 }

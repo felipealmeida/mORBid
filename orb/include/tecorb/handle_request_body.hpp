@@ -13,6 +13,7 @@
 #include <tecorb/any.hpp>
 #include <tecorb/detail/max_args.hpp>
 #include <tecorb/parse_argument.hpp>
+#include <tecorb/primitive_types.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -37,7 +38,7 @@ struct wrapped_type<const char*>
 };
 
 template <>
-struct wrapped_type<bool>
+struct wrapped_type< ::tecorb::Boolean>
 {
   typedef bool type;
 };
@@ -61,7 +62,7 @@ struct wrapped_type<float>
 };
 
 template <>
-struct wrapped_type<long>
+struct wrapped_type< ::tecorb::Long>
 {
   typedef long type;
 };
@@ -73,7 +74,7 @@ struct wrapped_type<const unsigned char*>
 };
 
 template <>
-struct wrapped_type<short>
+struct wrapped_type< ::tecorb::Short>
 {
   typedef short type;
 };
@@ -255,4 +256,5 @@ handle_parameter (T* self, F f, const char* first, const char* rq_current
                           BOOST_PP_ENUM_TRAILING_PARAMS(N(), a), r);
 }
 
+#undef N
 #endif

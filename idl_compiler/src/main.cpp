@@ -133,7 +133,8 @@ int main(int argc, char** argv)
                  << karma::lit("#include <tecorb/poa.hpp>") << karma::eol
                  << karma::lit("#include <tecorb/handle_request_body.hpp>") << karma::eol
                  << karma::lit("#include <tecorb/reply.hpp>") << karma::eol
-                 << karma::lit("#include <CORBA.h>") << karma::eol
+                 << karma::lit("#include <CORBA.h>") << karma::eol << karma::eol
+                 << karma::lit("#include <boost/integer.hpp>") << karma::eol
                  << karma::eol
                  << "class POA_" << interface.name << ";" << karma::eol << karma::eol
                 );
@@ -169,6 +170,7 @@ int main(int argc, char** argv)
                  , karma::lit("// -*- c++ -*-") << karma::eol
                  << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
                  << "#include \"" << karma::lit(header_path.filename().native()) << "\"" << karma::eol
+                 << "#include <tecorb/synchronous_call.hpp>" << karma::eol
                  << karma::eol
                 );
 

@@ -13,6 +13,7 @@
 #include <tecorb/iiop/generator/string.hpp>
 #include <tecorb/iiop/generator/sequence.hpp>
 #include <tecorb/iiop/generator/service_context_list.hpp>
+#include <tecorb/iiop/generator/align.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/phoenix.hpp>
@@ -25,17 +26,21 @@ struct request_header : karma::grammar<OutputIterator, iiop::request_header(bool
   request_header()
     : request_header::base_type(start)
   {
+    namespace phoenix = boost::phoenix;
     using karma::_1;
-    using karma::_r1;
+    using karma::_r1; using karma::_r2;
     using karma::_val;
+    using phoenix::ref;
 
     start %= 
+      alignable[
       service_context_list(_r1)
       << dword(_r1)
-      << karma::char_
-      << sequence(_r1)
-      << string(_r1)
-      << sequence(_r1)
+      << karma::char_ << '\0' << '\0' << '\0'
+      << generator::align(4u) << sequence(_r1)
+      << generator::align(4u) << string(_r1)
+      << generator::align(4u) << sequence(_r1)
+      ]
       ;
     start.name("request_header");
     karma::debug(start);

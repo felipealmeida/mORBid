@@ -29,7 +29,7 @@ struct sequence : karma::grammar<OutputIterator, std::vector<T>(bool)>
     using karma::_val;
 
     start
-      = karma::omit[dword(true)[_1 = phoenix::size(_val)]]
+      = dword(_r1)[_1 = phoenix::size(_val)]
       << (*karma::char_)[_1 = _val]
       ;
     start.name("sequence");

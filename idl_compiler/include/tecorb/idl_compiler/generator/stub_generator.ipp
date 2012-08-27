@@ -44,8 +44,7 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << (*(operation << eol))
     [_1 = phoenix::at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
-    << "private:" << eol
-    << members << eol
+    << public_members << eol
     << "};" << eol << eol
     << typedefs[_1 = _a] << eol;
   ;
@@ -72,7 +71,7 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << indent << "(std::string const& host, unsigned short port" << eol
     << indent << indent << indent << ", std::string const& object_key);" << eol
     ;
-  members = 
+  public_members = 
     indent
     << "static const char* _repository_id;" << eol
     ;

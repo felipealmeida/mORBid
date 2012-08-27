@@ -12,9 +12,13 @@
 
 #include <tecorb/detail/max_args.hpp>
 #include <tecorb/type_tag.hpp>
+#include <tecorb/parse_argument.hpp>
 #include <tecorb/iiop/serialize_object.hpp>
 #include <tecorb/iiop/generator/request_header.hpp>
 #include <tecorb/iiop/generator/message_header.hpp>
+#include <tecorb/iiop/message_header.hpp>
+#include <tecorb/iiop/grammar/message_header.hpp>
+#include <tecorb/iiop/grammar/reply_header_1_1.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -26,13 +30,63 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/completion_condition.hpp>
+#include <boost/ref.hpp>
 
 #include <string>
 #include <typeinfo>
 #include <iostream>
 #include <iterator>
 
+namespace std {
+
+inline ostream& operator<<(ostream& os, vector<char>::iterator it)
+{
+  return os << "[ char iterator ]";
+}
+
+}
+
 namespace tecorb { namespace synchronous_call {
+
+inline
+void reply_return(std::vector<char>::iterator begin, std::vector<char>::iterator first
+               , std::vector<char>::iterator last, bool little_endian
+               , tecorb::argument_tag<void>)
+{
+  namespace qi = boost::spirit::qi;
+  namespace phoenix = boost::phoenix;
+  iiop::reply_header reply_header;
+  iiop::grammar::reply_header_1_1<std::vector<char>::iterator> reply_header_grammar;
+  if(qi::parse(first, last, reply_header_grammar(phoenix::val(begin), little_endian), reply_header))
+  {
+    std::cout << "Parsed successfully but no return type" << std::endl;
+    return;
+  }
+  else
+    throw std::runtime_error("Failed parsing reply header");
+}
+
+template <typename R>
+R reply_return(std::vector<char>::iterator begin, std::vector<char>::iterator first
+               , std::vector<char>::iterator last, bool little_endian
+               , tecorb::argument_tag<R>)
+{
+  namespace qi = boost::spirit::qi;
+  namespace phoenix = boost::phoenix;
+  iiop::reply_header reply_header;
+  iiop::grammar::reply_header_1_1<std::vector<char>::iterator> reply_header_grammar;
+  if(qi::parse(first, last, reply_header_grammar(phoenix::val(first), little_endian), reply_header))
+  {
+    std::cout << "Reply header parsed" << std::endl;
+    const char* first_ = &*first;
+    return parse_argument(&*begin, first_
+                          , boost::next(&*begin, std::distance(begin, last))
+                          , little_endian
+                          , tecorb::argument_tag<R>());
+  }
+  else
+    throw std::runtime_error("Failed parsing reply header");
+}
 
 #define BOOST_PP_ITERATION_PARAMS_1 (3, (0, TECORB_MAX_ARGS \
                                          , "tecorb/synchronous_call.hpp"))
@@ -46,8 +100,7 @@ namespace tecorb { namespace synchronous_call {
 #define N() BOOST_PP_ITERATION()
 
 #define TECORB_SYNCHRONOUS_CALL_SERIALIZE(z, n, data)                   \
-  iiop::serialize_object(std::back_inserter                             \
-                         (request_body), true                           \
+  iiop::serialize_object(iterator, true                                 \
                          , BOOST_PP_CAT(a, n).value);                       
 
 template <typename R BOOST_PP_ENUM_TRAILING_PARAMS(N(), typename A)>
@@ -64,10 +117,15 @@ R call(const char* repoid, const char* method
 
   std::vector<char> request_body;
 
-  BOOST_PP_REPEAT(N(), TECORB_SYNCHRONOUS_CALL_SERIALIZE, ~)
+  {
+    std::back_insert_iterator<std::vector<char> > iterator(request_body);
+
+    BOOST_PP_REPEAT(N(), TECORB_SYNCHRONOUS_CALL_SERIALIZE, ~)
+  }
 
   namespace karma = boost::spirit::karma;
-  typedef std::back_insert_iterator<std::vector<char> > iterator_type;
+  typedef std::back_insert_iterator<std::vector<char> > iterator_base_type;
+  typedef iterator_base_type iterator_type;
 
   std::cout << "request_body size: " << request_body.size() << std::endl;
   std::vector<char> request_header_buffer;
@@ -75,7 +133,8 @@ R call(const char* repoid, const char* method
   typedef iiop::generator::request_header<iterator_type> 
     request_header_grammar;
   request_header_grammar request_header_grammar_;
-  iterator_type iterator(request_header_buffer);
+  iterator_base_type iterator_base(request_header_buffer);
+  iterator_type iterator(iterator_base);
 
   iiop::request_header request_header
     = {
@@ -86,21 +145,21 @@ R call(const char* repoid, const char* method
   request_header.object_key.insert
     (request_header.object_key.end(), object_key.begin(), object_key.end());
   request_header.operation.insert
-    (request_header.operation.end(), method, method + std::strlen(method)+1);
+    (request_header.operation.end(), method, method + std::strlen(method));
 
-  if(karma::generate(iterator, request_header_grammar_(true)
-                     , request_header))
+  if(karma::generate(iterator, request_header_grammar_(true), request_header))
   {
     std::cout << "generated request_header" << std::endl;
 
     std::vector<char> message_header_buffer;
-    iterator_type iterator(message_header_buffer);
+    iterator_base_type iterator_base(message_header_buffer);
+    iterator_type iterator(iterator_base);
     
     typedef iiop::generator::message_header<iterator_type>
       message_header_grammar;
     message_header_grammar message_header_grammar_;
     if(karma::generate(iterator, message_header_grammar_
-                       (true, true, 12 + request_header_buffer.size()
+                       (true, 0u /*request*/, 12 + request_header_buffer.size()
                         + request_body.size())))
     {
       std::cout << "Generated message_header" << std::endl;
@@ -119,6 +178,64 @@ R call(const char* repoid, const char* method
                            , boost::asio::transfer_all());
         boost::asio::write(socket, boost::asio::buffer(request_body)
                            , boost::asio::transfer_all());
+
+        namespace qi = boost::spirit::qi;
+
+        std::vector<char> reply_buffer(1024u);
+        std::size_t offset = 0;
+        std::vector<char>::iterator first;
+        bool little_endian;
+        do
+        {
+          if(reply_buffer.size() - offset < 128u)
+            reply_buffer.resize(reply_buffer.size() + 1024u);
+          boost::system::error_code ec;
+          std::size_t bytes_read
+            = socket.read_some(boost::asio::buffer(&reply_buffer[0], reply_buffer.size() - offset), ec);
+          std::cout << "Read " << bytes_read << " bytes" << std::endl;
+          if(ec)
+            throw ec;
+          else
+          {
+            iiop::message_header message_header;
+            iiop::grammar::message_header<std::vector<char>::iterator> message_header_grammar;
+            offset += bytes_read;
+            std::vector<char>::iterator last = boost::next(reply_buffer.begin(), offset);
+            first = reply_buffer.begin();
+            if(qi::parse(first, last, message_header_grammar, message_header))
+            {
+              unsigned char size_tmp = message_header.message_size;
+              int size = size_tmp;
+              if(std::distance(first, last) >= size)
+              {
+                std::cout << "All message received" << std::endl;
+                if(message_header.message_type == 1 /* reply */)
+                {
+                  little_endian = message_header.flags & 1;
+                  reply_buffer.erase(last, reply_buffer.end());
+                  break;
+                }
+                else
+                  throw std::runtime_error("Error, response not what we expected");
+              }
+              else
+              {
+                std::cout << "Continue reading" << std::endl;
+              }
+            }
+            else if(std::distance(first, last) >= 12)
+            {
+              std::cout << "Failed reading GIOP" << std::endl;
+              throw std::runtime_error("Failed reading GIOP reply");
+            }
+          }
+        }
+        while(true);
+
+        std::cout << "Process reply" << std::endl;
+        return synchronous_call::reply_return(reply_buffer.begin(), first
+                                              , reply_buffer.end(), little_endian
+                                              , argument_tag<R>());
       }      
     }
     else
@@ -133,5 +250,5 @@ R call(const char* repoid, const char* method
 
   return R();
 }
-
+#undef N
 #endif

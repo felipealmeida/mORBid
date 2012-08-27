@@ -14,6 +14,7 @@
 #include <tecorb/object.hpp>
 #include <tecorb/poa.hpp>
 #include <tecorb/exception.hpp>
+#include <tecorb/primitive_types.hpp>
 
 namespace CORBA {
 
@@ -43,11 +44,13 @@ typedef String ObjectId;
 typedef String_ptr ObjectId_ptr;
 typedef String_var ObjectId_var;
 
-typedef bool Boolean;
-typedef unsigned int UInt;
-typedef int Int;
-typedef unsigned long ULong;
-typedef long Long;
+using ::tecorb::Boolean;
+using ::tecorb::ULong;
+using ::tecorb::Long;
+using ::tecorb::UShort;
+using ::tecorb::Short;
+using ::tecorb::Double;
+using ::tecorb::Float;
 
 }
 
