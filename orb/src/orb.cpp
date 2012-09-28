@@ -5,12 +5,12 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/orb.hpp>
-#include <tecorb/ior/grammar/corbaloc.hpp>
+#include <morbid/orb.hpp>
+#include <morbid/ior/grammar/corbaloc.hpp>
 
 #include <cstring>
 
-namespace tecorb {
+namespace morbid {
 
 ORB_ptr ORB_init(int argc, const char* argv[], const char* str_op)
 {
@@ -43,8 +43,8 @@ Object_ptr ORB::string_to_object(const char* ref)
 {
   const char *first = ref
     , *last = ref + std::strlen(ref);
-  tecorb::ior::grammar::corbaloc<const char*> corbaloc_grammar;
-  tecorb::ior::iiop_profile iiop_profile;
+  morbid::ior::grammar::corbaloc<const char*> corbaloc_grammar;
+  morbid::ior::iiop_profile iiop_profile;
   if(boost::spirit::qi::parse(first, last, corbaloc_grammar, iiop_profile))
   {
     std::cout << "parsed successfully corbaloc" << std::endl;
@@ -52,7 +52,7 @@ Object_ptr ORB::string_to_object(const char* ref)
               << " port: " << iiop_profile.port
               << " objectkey: " << iiop_profile.object_key << std::endl;
     return Object_ptr
-      (new ::tecorb::remote_stub::Object(iiop_profile.host, iiop_profile.port
+      (new ::morbid::remote_stub::Object(iiop_profile.host, iiop_profile.port
                                          , iiop_profile.object_key));
   }
   else

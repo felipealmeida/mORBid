@@ -8,61 +8,61 @@
 #ifndef TECORB_CORBA_H
 #define TECORB_CORBA_H
 
-#include <tecorb/any.hpp>
-#include <tecorb/string.hpp>
-#include <tecorb/orb.hpp>
-#include <tecorb/object.hpp>
-#include <tecorb/poa.hpp>
-#include <tecorb/exception.hpp>
-#include <tecorb/primitive_types.hpp>
+#include <morbid/any.hpp>
+#include <morbid/string.hpp>
+#include <morbid/orb.hpp>
+#include <morbid/object.hpp>
+#include <morbid/poa.hpp>
+#include <morbid/exception.hpp>
+#include <morbid/primitive_types.hpp>
 
 namespace CORBA {
 
-using ::tecorb::Any;
-using ::tecorb::Any_var;
-using ::tecorb::Any_ptr;
+using ::morbid::Any;
+using ::morbid::Any_var;
+using ::morbid::Any_ptr;
 
-using ::tecorb::MARSHALL;
+using ::morbid::MARSHALL;
 
-using ::tecorb::ORB;
-using ::tecorb::ORB_ptr;
-using ::tecorb::ORB_var;
+using ::morbid::ORB;
+using ::morbid::ORB_ptr;
+using ::morbid::ORB_var;
 
-using ::tecorb::ORB_init;
+using ::morbid::ORB_init;
 
-using ::tecorb::Object;
-using ::tecorb::Object_ptr;
-using ::tecorb::Object_var;
+using ::morbid::Object;
+using ::morbid::Object_ptr;
+using ::morbid::Object_var;
 
-using ::tecorb::is_nil;
+using ::morbid::is_nil;
 
-using ::tecorb::String;
-using ::tecorb::String_ptr;
-using ::tecorb::String_var;
+using ::morbid::String;
+using ::morbid::String_ptr;
+using ::morbid::String_var;
 
 typedef String ObjectId;
 typedef String_ptr ObjectId_ptr;
 typedef String_var ObjectId_var;
 
-using ::tecorb::Boolean;
-using ::tecorb::ULong;
-using ::tecorb::Long;
-using ::tecorb::UShort;
-using ::tecorb::Short;
-using ::tecorb::Double;
-using ::tecorb::Float;
+using ::morbid::Boolean;
+using ::morbid::ULong;
+using ::morbid::Long;
+using ::morbid::UShort;
+using ::morbid::Short;
+using ::morbid::Double;
+using ::morbid::Float;
 
 }
 
 namespace PortableServer {
 
-using ::tecorb::poa::POA;
-using ::tecorb::poa::POA_var;
-using ::tecorb::poa::POA_ptr;
+using ::morbid::poa::POA;
+using ::morbid::poa::POA_var;
+using ::morbid::poa::POA_ptr;
 
-using ::tecorb::poa::POAManager;
-using ::tecorb::poa::POAManager_var;
-using ::tecorb::poa::POAManager_ptr;
+using ::morbid::poa::POAManager;
+using ::morbid::poa::POAManager_var;
+using ::morbid::poa::POAManager_ptr;
 
 typedef CORBA::String ObjectId;
 typedef CORBA::String_ptr ObjectId_ptr;

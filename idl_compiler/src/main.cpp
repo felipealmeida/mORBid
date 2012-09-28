@@ -5,13 +5,13 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/idl_parser/tokenizer.hpp>
-#include <tecorb/idl_parser/grammar/interface_def.hpp>
-#include <tecorb/idl_compiler/generator/stub_generator.hpp>
-#include <tecorb/idl_compiler/generator/local_stub_generator.hpp>
-#include <tecorb/idl_compiler/generator/remote_stub_generator.hpp>
-#include <tecorb/idl_compiler/generator/poa_stub_generator.hpp>
-#include <tecorb/idl_compiler/common_types.hpp>
+#include <morbid/idl_parser/tokenizer.hpp>
+#include <morbid/idl_parser/grammar/interface_def.hpp>
+#include <morbid/idl_compiler/generator/stub_generator.hpp>
+#include <morbid/idl_compiler/generator/local_stub_generator.hpp>
+#include <morbid/idl_compiler/generator/remote_stub_generator.hpp>
+#include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
+#include <morbid/idl_compiler/common_types.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
@@ -56,22 +56,22 @@ int main(int argc, char** argv)
       {
         ifs.rdbuf()->sgetn(&buffer[0], buffer.size());
 
-        using tecorb::idl_compiler::lexer_type;
+        using morbid::idl_compiler::lexer_type;
         
-        tecorb::idl_parser::tokens<lexer_type> lexer;
+        morbid::idl_parser::tokens<lexer_type> lexer;
 
         std::vector<char>::const_iterator buffer_begin = buffer.begin()
           , buffer_end = buffer.end();
 
-        typedef tecorb::idl_compiler::parser_iterator_type iterator_type;
+        typedef morbid::idl_compiler::parser_iterator_type iterator_type;
          iterator_type iterator = lexer.begin(buffer_begin, buffer_end)
           , last = lexer.end();
 
-        tecorb::idl_parser::grammar::interface_definition<iterator_type> grammar(lexer);
-        tecorb::idl_compiler::interface_def_type interface;
-        typedef tecorb::idl_parser::op_decl<iterator_type> op_decl;
-        using tecorb::idl_parser::param_decl;
-        tecorb::idl_parser::skipper<iterator_type> skipper(lexer);
+        morbid::idl_parser::grammar::interface_definition<iterator_type> grammar(lexer);
+        morbid::idl_compiler::interface_def_type interface;
+        typedef morbid::idl_parser::op_decl<iterator_type> op_decl;
+        using morbid::idl_parser::param_decl;
+        morbid::idl_parser::skipper<iterator_type> skipper(lexer);
 
         bool r = boost::spirit::qi::phrase_parse(iterator, last, grammar
                                                  , skipper, interface);
@@ -112,17 +112,17 @@ int main(int argc, char** argv)
           if(header.is_open() && cpp.is_open())
           {
             namespace karma = boost::spirit::karma;
-            using tecorb::idl_compiler::output_iterator_type;
+            using morbid::idl_compiler::output_iterator_type;
             {
               output_iterator_type iterator(header);
 
-              tecorb::idl_compiler::generator::header_stub_generator
+              morbid::idl_compiler::generator::header_stub_generator
                 <output_iterator_type, iterator_type>
                 header_stub_generator;
-              tecorb::idl_compiler::generator::header_local_stub_generator
+              morbid::idl_compiler::generator::header_local_stub_generator
                 <output_iterator_type, iterator_type>
                 header_local_stub_generator;
-              tecorb::idl_compiler::generator::header_poa_stub_generator
+              morbid::idl_compiler::generator::header_poa_stub_generator
                 <output_iterator_type, iterator_type>
                 header_poa_stub_generator;
 
@@ -130,9 +130,9 @@ int main(int argc, char** argv)
                 (iterator
                  , karma::lit("// -*- c++ -*-") << karma::eol
                  << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
-                 << karma::lit("#include <tecorb/poa.hpp>") << karma::eol
-                 << karma::lit("#include <tecorb/handle_request_body.hpp>") << karma::eol
-                 << karma::lit("#include <tecorb/reply.hpp>") << karma::eol
+                 << karma::lit("#include <morbid/poa.hpp>") << karma::eol
+                 << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
+                 << karma::lit("#include <morbid/reply.hpp>") << karma::eol
                  << karma::lit("#include <CORBA.h>") << karma::eol << karma::eol
                  << karma::lit("#include <boost/integer.hpp>") << karma::eol
                  << karma::eol
@@ -149,19 +149,19 @@ int main(int argc, char** argv)
             }
             {
               output_iterator_type iterator(cpp);
-              tecorb::idl_compiler::generator::cpp_stub_generator
+              morbid::idl_compiler::generator::cpp_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_stub_generator;
-              tecorb::idl_compiler::generator::cpp_local_stub_generator
+              morbid::idl_compiler::generator::cpp_local_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_local_stub_generator;
-              tecorb::idl_compiler::generator::header_remote_stub_generator
+              morbid::idl_compiler::generator::header_remote_stub_generator
                 <output_iterator_type, iterator_type>
                 header_remote_stub_generator;
-              tecorb::idl_compiler::generator::cpp_remote_stub_generator
+              morbid::idl_compiler::generator::cpp_remote_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_remote_stub_generator;
-              tecorb::idl_compiler::generator::cpp_poa_stub_generator
+              morbid::idl_compiler::generator::cpp_poa_stub_generator
                 <output_iterator_type, iterator_type>
                 cpp_poa_stub_generator;
 
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
                  , karma::lit("// -*- c++ -*-") << karma::eol
                  << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
                  << "#include \"" << karma::lit(header_path.filename().native()) << "\"" << karma::eol
-                 << "#include <tecorb/synchronous_call.hpp>" << karma::eol
+                 << "#include <morbid/synchronous_call.hpp>" << karma::eol
                  << karma::eol
                 );
 

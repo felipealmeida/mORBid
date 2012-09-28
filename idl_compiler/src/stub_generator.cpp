@@ -5,15 +5,15 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/idl_compiler/generator/stub_generator.ipp>
-#include <tecorb/idl_compiler/common_types.hpp>
+#include <morbid/idl_compiler/generator/stub_generator.ipp>
+#include <morbid/idl_compiler/common_types.hpp>
 
 template struct
-tecorb::idl_compiler::generator::header_stub_generator
- < ::tecorb::idl_compiler::output_iterator_type
-   , ::tecorb::idl_compiler::parser_iterator_type>;
+morbid::idl_compiler::generator::header_stub_generator
+ < ::morbid::idl_compiler::output_iterator_type
+   , ::morbid::idl_compiler::parser_iterator_type>;
 template struct
-tecorb::idl_compiler::generator::cpp_stub_generator
- < ::tecorb::idl_compiler::output_iterator_type
-   , ::tecorb::idl_compiler::parser_iterator_type>;
+morbid::idl_compiler::generator::cpp_stub_generator
+ < ::morbid::idl_compiler::output_iterator_type
+   , ::morbid::idl_compiler::parser_iterator_type>;
 

@@ -5,12 +5,12 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/poa/connection.hpp>
-#include <tecorb/iiop/message_header.hpp>
-#include <tecorb/iiop/grammar/message_header.hpp>
-#include <tecorb/iiop/grammar/request_header_1_1.hpp>
-#include <tecorb/iiop/generator/reply_header.hpp>
-#include <tecorb/iiop/generator/message_header.hpp>
+#include <morbid/poa/connection.hpp>
+#include <morbid/iiop/message_header.hpp>
+#include <morbid/iiop/grammar/message_header.hpp>
+#include <morbid/iiop/grammar/request_header_1_1.hpp>
+#include <morbid/iiop/generator/reply_header.hpp>
+#include <morbid/iiop/generator/message_header.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
@@ -30,7 +30,7 @@ std::ostream& operator<<(std::ostream& os, std::vector<char>::const_iterator it)
 
 }
 
-namespace tecorb { namespace poa {
+namespace morbid { namespace poa {
 
 void connection::start()
 {

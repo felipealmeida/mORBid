@@ -5,12 +5,12 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/object.hpp>
-#include <tecorb/synchronous_call.hpp>
+#include <morbid/object.hpp>
+#include <morbid/synchronous_call.hpp>
 
 #include <iostream>
 
-namespace tecorb {
+namespace morbid {
 
 const char* Object::repository_id = "IDL:omg.org/CORBA/Object:1.0";
 
@@ -20,11 +20,11 @@ Object::~Object() {}
 
 bool Object::_is_a(const char* id)
 {
-  using ::tecorb::type_tag::value_type_tag;
-  using ::tecorb::type_tag::in_tag;
-  return ::tecorb::synchronous_call::call
+  using ::morbid::type_tag::value_type_tag;
+  using ::morbid::type_tag::in_tag;
+  return ::morbid::synchronous_call::call
     <bool, value_type_tag<char*, in_tag> >
-    (tecorb::Object::repository_id, "_is_a"
+    (morbid::Object::repository_id, "_is_a"
      , host, port, object_key, id);
 }
 

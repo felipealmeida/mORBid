@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <tecorb/poa.hpp>
-#include <tecorb/poa/connection.hpp>
+#include <morbid/poa.hpp>
+#include <morbid/poa/connection.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/bind.hpp>
@@ -15,7 +15,7 @@
 #include <string>
 #include <cstring>
 
-namespace tecorb { namespace poa {
+namespace morbid { namespace poa {
 
 void POAManager::activate()
 {
