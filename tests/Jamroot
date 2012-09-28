@@ -6,12 +6,12 @@
 
 import testing ;
 
-project tecorb/tests ;
+project morbid/tests ;
 
 path-constant current : . ;
 path-constant install : ../install ;
 
-make allprimitives.h : allprimitives.idl : @compileidl : <dependency>/tecorb//install ;
+make allprimitives.h : allprimitives.idl : @compileidl : <dependency>/morbid//install ;
 make allprimitives.cpp : allprimitives.h : @donothing ;
 
 actions donothing
@@ -19,15 +19,15 @@ actions donothing
 }
 actions compileidl
 {
-  $(install:G=)/tecorb_idl -i $(>) -o $(<:S=)
+  $(install:G=)/morbid_idl -i $(>) -o $(<:S=)
 }
 
 exe allprimitives_client
- : allprimitives_client.cpp /tecorb//tecorb allprimitives.cpp
+ : allprimitives_client.cpp /morbid//morbid allprimitives.cpp
   : <implicit-dependency>allprimitives.h
  ;
 exe allprimitives_server
- : allprimitives_server.cpp /tecorb//tecorb allprimitives.cpp
+ : allprimitives_server.cpp /morbid//morbid allprimitives.cpp
   : <implicit-dependency>allprimitives.h
  ;
 

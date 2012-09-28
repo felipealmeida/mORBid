@@ -4,7 +4,7 @@
 # accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-project tecorb
+project morbid
  : build-dir bin
  : default-build <link>static <threading>multi
  ;
@@ -15,7 +15,7 @@ alias ior : /boost//headers : : : <include>ior/include ;
 
 alias iiop : /boost//headers : : : <include>iiop/include ;
 
-exe tecorb_idl : idl_compiler/src/main.cpp
+exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/stub_generator.cpp
  idl_compiler/src/local_stub_generator.cpp
  idl_compiler/src/remote_stub_generator.cpp
@@ -25,9 +25,9 @@ exe tecorb_idl : idl_compiler/src/main.cpp
   : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
     <include>idl_compiler/include
  ;
-explicit tecorb_idl ;
+explicit morbid_idl ;
 
-lib tecorb : orb/src/orb.cpp orb/src/poa.cpp
+lib morbid : orb/src/orb.cpp orb/src/poa.cpp
  orb/src/object.cpp orb/src/connection.cpp
  ior iiop
  /boost//headers /boost//system
@@ -37,7 +37,7 @@ lib tecorb : orb/src/orb.cpp orb/src/poa.cpp
  : : <include>orb/include
  ; 
 
-install install : tecorb_idl tecorb ;
+install install : morbid_idl morbid ;
 
 install demos : demo/simple//simple_server demo/simple//simple_client ;
 
