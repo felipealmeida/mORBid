@@ -10,3 +10,8 @@
 *.lai
 *.la
 *.a
+^bin
+^boost-build.jam
+^install
+^project-config.jam
+^tests/bin
