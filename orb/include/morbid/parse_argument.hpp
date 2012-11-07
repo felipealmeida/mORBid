@@ -126,7 +126,23 @@ inline ::morbid::Short parse_argument(const char* first, const char*& rq_current
                                       , const char* rq_last, bool little_endian
                                       , argument_tag< ::morbid::Short>)
 {
-  throw std::runtime_error("NOT_IMPLEMENTED");
+  int const size = sizeof(::morbid::Short);
+  if(std::distance(rq_current, rq_last) >= size)
+  {
+    ::morbid::Short r;
+    if(little_endian && true /* am I little endian? */)
+    {
+      std::memcpy(&r, rq_current, sizeof(::morbid::Short));
+    }
+    else // endianness doesnt match
+    {
+      std::reverse_copy(rq_current, rq_current + sizeof(::morbid::Short), &r);
+    }
+    rq_current += sizeof(::morbid::Short);
+    return r;
+  }
+  else
+    throw std::runtime_error("Error parsing");
 }
 
 inline wchar_t parse_argument(const char* first, const char*& rq_current
@@ -147,7 +163,7 @@ inline morbid::Any_ptr parse_argument(const char* first, const char*& rq_current
                                       , const char* rq_last, bool little_endian
                                       , argument_tag<morbid::Any_ptr>)
 {
-  throw std::runtime_error("NOT_IMPLEMENTED");
+  return Any_ptr(new Any);
 }
 
 inline

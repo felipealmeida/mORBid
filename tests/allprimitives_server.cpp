@@ -20,79 +20,78 @@ struct allprimitives_impl : POA_allprimitives
 
   void foo1(CORBA::Boolean b)
   {
-    std::cout << "foo1" << std::endl;
+    std::cout << "== foo1" << std::endl;
     assert(!foo1_);
     assert(b == true);
     foo1_ = true;
   }
   void foo2(char c)
   {
-    std::cout << "foo2" << std::endl;
+    std::cout << "== foo2" << std::endl;
     assert(!foo2_ && foo1_);
     assert(c == 'c');
     foo2_ = true;
   }
   void foo3(double d)
   {
-    std::cout << "foo3" << std::endl;
+    std::cout << "== foo3" << std::endl;
     assert(!foo3_ && foo2_ && foo1_);
     assert(d == 2.0);
     foo3_ = true;
   }
   void foo4(float f)
   {
-    std::cout << "foo4" << std::endl;
+    std::cout << "== foo4" << std::endl;
     assert(!foo4_ && foo3_ && foo2_ && foo1_);
     assert(f == 2.0f);
     foo4_ = true;
   }
   void foo5(CORBA::Long l)
   {
-    std::cout << "foo5" << std::endl;
+    std::cout << "== foo5" << std::endl;
     assert(!foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     assert(l == 2l);
     foo5_ = true;
   }
   void foo6(const unsigned char* s)
   {
-    std::cout << "foo6" << std::endl;
+    std::cout << "== foo6" << std::endl;
     assert(!foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     assert(!std::strcmp((const char*)s, "asd"));
     foo6_ = true;
   }
   void foo7(CORBA::Short s)
   {
-    std::cout << "foo7" << std::endl;
+    std::cout << "== foo7" << std::endl;
     assert(!foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     assert(s == 2);
     foo7_ = true;
   }
   void foo8(const char* str)
   {
-    std::cout << "foo8" << std::endl;
+    std::cout << "== foo8" << std::endl;
     assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     assert(!std::strcmp(str, "qwe"));
     foo8_ = true;
   }
-  void foo9(wchar_t wc)
-  {
-    std::cout << "foo9" << std::endl;
-    assert(!foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    assert(wc == L'q');
-    foo9_ = true;
-  }
-  void foo10(const wchar_t* str)
-  {
-    std::cout << "foo10" << std::endl;
-    assert(!foo10_ && foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    assert(false);
-    foo10_ = true;
-  }
+  // void foo9(wchar_t wc)
+  // {
+  //   std::cout << "== foo9" << std::endl;
+  //   assert(!foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+  //   assert(wc == L'q');
+  //   foo9_ = true;
+  // }
+  // void foo10(const wchar_t* str)
+  // {
+  //   std::cout << "== foo10" << std::endl;
+  //   assert(!foo10_ && foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+  //   assert(false);
+  //   foo10_ = true;
+  // }
   void foo11(CORBA::Any_ptr)
   {
-    std::cout << "foo11" << std::endl;
-    assert(!foo11_ && foo10_ && foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    assert(false);
+    std::cout << "== foo11" << std::endl;
+    assert(!foo11_ && /*foo10_ && foo9_ &&*/ foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     foo11_ = true;
     orb->shutdown(true);
   }

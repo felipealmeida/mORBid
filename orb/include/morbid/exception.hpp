@@ -14,6 +14,10 @@ struct MARSHALL
 {
 };
 
+struct INVALID_PARAM
+{
+};
+
 }
 
 #endif

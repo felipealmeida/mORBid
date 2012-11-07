@@ -58,7 +58,7 @@ Object_ptr ORB::string_to_object(const char* ref)
   else
   {
     std::cout << "Couldn't handle corbaloc (should throw INVALID_PARAM)" << std::endl;
-    return Object_ptr();
+    throw morbid::INVALID_PARAM();
   }
 }
 

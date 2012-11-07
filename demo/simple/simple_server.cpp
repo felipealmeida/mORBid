@@ -7,7 +7,7 @@
 
 #include <CORBA.h>
 
-#include "file.h"
+#include "hello.h"
 
 struct hello_impl : POA_HelloWorld
 {

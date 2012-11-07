@@ -251,9 +251,9 @@ bool connection::handle_request(std::vector<char>::const_iterator first
                 }
               }
             }
-            catch(std::runtime_error const&)
+            catch(std::runtime_error const& e)
             {
-              std::cout << "Error running dispatch" << std::endl;
+              std::cout << "Error running dispatch " << e.what() << " name: " << typeid(e).name() << std::endl;
             }
           }
           else

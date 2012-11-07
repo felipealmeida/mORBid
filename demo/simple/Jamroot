@@ -1,5 +1,20 @@
 
 project morbid/simple ;
 
-exe simple_server : simple_server.cpp /morbid//morbid ;
-exe simple_client : simple_client.cpp /morbid//morbid ;
+path-constant install : ../../install ;
+
+exe simple_server : simple_server.cpp hello.cpp /morbid//morbid
+ : <implicit-dependency>hello.h ;
+exe simple_client : simple_client.cpp hello.cpp /morbid//morbid
+ : <implicit-dependency>hello.h ;
+
+make hello.h : hello.idl : @compileidl : <dependency>/morbid//install ;
+make hello.cpp : hello.h : @donothing ;
+
+actions donothing
+{
+}
+actions compileidl
+{
+  $(install:G=)/morbid_idl -i $(>) -o $(<:S=)
+}
