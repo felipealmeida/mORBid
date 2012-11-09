@@ -6,10 +6,15 @@
 
 project morbid
  : build-dir bin
+ : requirements <toolset>gcc:<cxxflags>-ftemplate-depth=1000
+ : usage-requirements <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  : default-build <link>static <threading>multi
  ;
 
-alias idl_parser : /boost//headers : : : <include>idl_parser/include ;
+alias idl_parser : /boost//headers : :
+ : <include>idl_parser/include
+   <define>BOOST_VARIANT_VISITATION_UNROLLING_LIMIT=30
+ ;
 
 alias ior : /boost//headers : : : <include>ior/include ;
 
@@ -20,22 +25,22 @@ exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/local_stub_generator.cpp
  idl_compiler/src/remote_stub_generator.cpp
  idl_compiler/src/poa_stub_generator.cpp
- idl_parser
-  /boost//filesystem /boost//program_options
-  : <toolset>gcc:<cxxflags>-ftemplate-depth=1000
+ idl_compiler/src/generate_modules_visitor.cpp
+ idl_parser /boost//filesystem /boost//program_options
+  : <toolset>gcc:<cxxflags>-Wno-sign-compare
     <include>idl_compiler/include
  ;
 explicit morbid_idl ;
 
 lib morbid : orb/src/orb.cpp orb/src/poa.cpp
  orb/src/object.cpp orb/src/connection.cpp
- ior iiop
- /boost//headers /boost//system
+ ior iiop /boost//headers /boost//system
  : <include>orb/include
    <include>orb/include_impl
    <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  : : <include>orb/include
  ; 
+explicit morbid ;
 
 install install : morbid_idl morbid ;
 

@@ -66,8 +66,8 @@ struct interface_definition : boost::spirit::qi::grammar
       >> qi::omit[qi::char_('}')]
       ;
 
-    start.name("interface_def");
-    qi::debug(start);
+    // start.name("interface_def");
+    // qi::debug(start);
   }
 
   grammar::op_decl<Iterator> op_decl;

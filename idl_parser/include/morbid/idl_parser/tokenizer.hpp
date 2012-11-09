@@ -59,9 +59,28 @@ struct tokens : lex::lexer<Lexer>
   {
     identifier = "[a-zA-Z][a-zA-Z0-9_]*";
     interface_keyword = "interface";
+    module_keyword = "module";
+    struct_keyword = "struct";
+    typedef_keyword = "typedef";
+    exception_keyword = "exception";
+    raises_keyword = "raises";
     in_keyword = "in";
     out_keyword = "out";
     inout_keyword = "inout";
+    long_type = "long";
+    float_type = "float";
+    double_type = "double";
+    short_type = "short";
+    unsigned_type = "unsigned";
+    char_type = "char";
+    wchar_type = "wchar";
+    boolean_type = "boolean";
+    octet_type = "octet";
+    any_type = "any";
+    object_type = "Object";
+    value_base_type = "ValueBase";
+    void_type = "void";
+    sequence_type = "sequence";
     blanks = "[\r\n\t ]+";
     cppcomment = "\\/\\/[^\n]*\n";
     any = ".";
@@ -71,8 +90,32 @@ struct tokens : lex::lexer<Lexer>
 
     this->self
       = lex::token_def<>('(')
-      | ')' | '{' | '}' | ';' | ':' | in_keyword
-      | interface_keyword | out_keyword | inout_keyword
+      | ')' | '{' | '}' | ';' | '<' | '>' | ','
+      | "::"
+      | ':'
+      | interface_keyword
+      | module_keyword
+      | struct_keyword
+      | typedef_keyword
+      | exception_keyword
+      | raises_keyword
+      | in_keyword
+      | out_keyword
+      | inout_keyword
+      | long_type
+      | float_type
+      | double_type
+      | short_type
+      | unsigned_type
+      | char_type
+      | wchar_type
+      | boolean_type
+      | octet_type
+      | any_type
+      | object_type
+      | value_base_type
+      | void_type
+      | sequence_type
       | identifier
       | blanks
       | ccomment        [ set_lexer_state("COMMENT") ]
@@ -84,8 +127,13 @@ struct tokens : lex::lexer<Lexer>
       ;
   }
 
-  lex::token_def<lex::omit> ccomment, cppcomment, endccomment, interface_keyword, blanks
+  lex::token_def<lex::omit> ccomment, cppcomment, endccomment, blanks
     , comment_any;
+  lex::token_def<lex::omit> interface_keyword, module_keyword, struct_keyword
+    , typedef_keyword, exception_keyword, raises_keyword;
+  lex::token_def<std::string> long_type, float_type, double_type
+    , short_type, unsigned_type, char_type, wchar_type, boolean_type
+    , octet_type, any_type, object_type, value_base_type, sequence_type, void_type;
   lex::token_def<std::string> identifier, in_keyword, out_keyword, inout_keyword;
   lex::token_def<> any;
 };

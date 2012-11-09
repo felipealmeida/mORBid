@@ -163,7 +163,7 @@ inline morbid::Any_ptr parse_argument(const char* first, const char*& rq_current
                                       , const char* rq_last, bool little_endian
                                       , argument_tag<morbid::Any_ptr>)
 {
-  return Any_ptr(new Any);
+  throw std::runtime_error("NOT_IMPLEMENTED");
 }
 
 inline

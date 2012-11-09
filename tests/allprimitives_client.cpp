@@ -36,8 +36,8 @@ int main(int argc, char* argv[])
   allprimitives_->foo8("qwe");
   // allprimitives_->foo9(L'q');
   // allprimitives_->foo10(L"qwe");
-  CORBA::Any_ptr any(new CORBA::Any);
-  allprimitives_->foo11(any);
+  // CORBA::Any_ptr any(new CORBA::Any);
+  // allprimitives_->foo11(any);
 
   std::cout << "Finished" << std::endl;
 }

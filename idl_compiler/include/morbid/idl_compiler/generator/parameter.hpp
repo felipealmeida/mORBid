@@ -18,8 +18,8 @@ namespace morbid { namespace idl_compiler {
 namespace karma = boost::spirit::karma;
 namespace phoenix = boost::phoenix;
 
-template <typename OutputIterator>
-struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl()>
+template <typename OutputIterator, typename Iterator>
+struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl<Iterator>()>
 {
   parameter()
     : parameter::base_type(start)
@@ -85,7 +85,7 @@ struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl()>
       ;
   }
 
-  karma::rule<OutputIterator, idl_parser::param_decl()> start;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()> start;
 };
 
 } }

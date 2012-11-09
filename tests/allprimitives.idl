@@ -17,5 +17,5 @@ interface allprimitives
   void foo8(in string a);
   // void foo9(in wchar a);
   // void foo10(in wstring a);
-  void foo11(in any a);
+  // void foo11(in any a);
 };

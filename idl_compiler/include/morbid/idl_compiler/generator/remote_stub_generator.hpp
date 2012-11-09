@@ -23,7 +23,7 @@ struct header_remote_stub_generator : karma::grammar
 {
   header_remote_stub_generator();
 
-  idl_compiler::parameter<OutputIterator> parameter;
+  idl_compiler::parameter<OutputIterator, Iterator> parameter;
   karma::rule<OutputIterator> ior_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator, std::string()> common_members;
@@ -42,9 +42,9 @@ struct cpp_remote_stub_generator : karma::grammar
 {
   cpp_remote_stub_generator();
 
-  idl_compiler::parameter<OutputIterator> parameter;
-  karma::rule<OutputIterator, idl_parser::param_decl()> synchronous_template_args;
-  karma::rule<OutputIterator, idl_parser::param_decl()
+  idl_compiler::parameter<OutputIterator, Iterator> parameter;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()> synchronous_template_args;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()
               , karma::locals<unsigned int> > synchronous_args;
   karma::rule<OutputIterator, std::string()> ior_function;
   karma::rule<OutputIterator> indent;

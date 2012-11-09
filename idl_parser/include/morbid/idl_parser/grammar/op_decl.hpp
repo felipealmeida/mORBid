@@ -8,6 +8,8 @@
 #ifndef TECORB_IDL_PARSER_GRAMMAR_OP_DECL_HPP
 #define TECORB_IDL_PARSER_GRAMMAR_OP_DECL_HPP
 
+#include <morbid/idl_parser/grammar/type_spec.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>
@@ -30,33 +32,55 @@ struct op_decl : qi::grammar
   template <typename TokenDef>
   op_decl(TokenDef const& tok)
     : op_decl::base_type(start)
+    , scoped_name(tok)
+    , type_spec(tok)
   {
     using qi::_val;
 
     typedef idl_parser::op_decl<Iterator> return_type;
 
-    start %= tok.identifier
+    start %= type_spec
       >> tok.identifier
-      >> qi::omit[qi::char_('(')]
+      >> qi::omit['(']
       >> (
           (&param >> (param % ","))
           | qi::eps
          )
-      >> qi::omit[qi::char_(')')]
+      >> qi::omit[')']
+      >> -qi::omit
+      [
+       tok.raises_keyword
+       >> '('
+       >> (scoped_name % ',')
+       >> ')'
+      ]
       >> qi::attr(true)
       ;
+    direction = 
+      tok.in_keyword[_val = idl_parser::direction::in()]
+      | tok.out_keyword[_val = idl_parser::direction::out()]
+      | tok.inout_keyword[_val = idl_parser::direction::inout()]
+      ;
     param %=
-      (tok.in_keyword | tok.out_keyword | tok.inout_keyword)
-      >> tok.identifier
+      direction
+      >> type_spec
       >> qi::omit[tok.identifier]
       ;      
-    start.name("op_decl");
-    param.name("param");
-    qi::debug(start);
-    qi::debug(param);
+    // start.name("op_decl");
+    // param.name("param");
+    // direction.name("direction");
+    // qi::debug(start);
+    // qi::debug(param);
+    // qi::debug(direction);
   }
 
-  qi::rule<Iterator, idl_parser::param_decl()
+  grammar::scoped_name<Iterator> scoped_name;
+  grammar::type_spec<Iterator> type_spec;
+  qi::rule<Iterator, boost::variant<idl_parser::direction::in
+                                    , idl_parser::direction::out
+                                    , idl_parser::direction::inout>()
+           , skipper<Iterator> > direction;
+  qi::rule<Iterator, idl_parser::param_decl<Iterator>()
            , skipper<Iterator> > param;
   qi::rule<Iterator, idl_parser::op_decl<Iterator>()
            , skipper<Iterator> > start;
