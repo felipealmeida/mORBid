@@ -5,6 +5,7 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#include <morbid/idl_compiler/generator/stub_generator.hpp>
 #include <morbid/idl_compiler/generate_modules_visitor.hpp>
 #include <morbid/idl_compiler/module.hpp>
 
@@ -15,12 +16,24 @@ namespace morbid { namespace idl_compiler {
 void generate_modules_visitor::examine_vertex
   (vertex_descriptor v, modules_tree_type const& modules)
 {
+  namespace karma = boost::spirit::karma;
   typedef typename boost::property_map<modules_tree_type, module_property_t>
     ::const_type module_map;
   module_map map = get(module_property_t(), modules);
   module const& m = *boost::get(map, v);
   std::cout << "Module " << m.name << std::endl;
   typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
+
+  morbid::idl_compiler::generator::header_stub_generator
+    <output_iterator_type, parser_iterator_type>
+    header_stub_generator;
+
+  for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
+        , last = m.interfaces.end(); first != last; ++first)
+  {
+    bool r = karma::generate(state->iterator, header_stub_generator, first->definition);
+    if(!r) throw std::runtime_error("Failed generating header_stub_generator");
+  }
 
   // std::pair<in_edge_iterator, in_edge_iterator>
   //   edges = in_edges(v, modules);

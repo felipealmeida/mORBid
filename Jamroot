@@ -13,7 +13,6 @@ project morbid
 
 alias idl_parser : /boost//headers : :
  : <include>idl_parser/include
-   <define>BOOST_VARIANT_VISITATION_UNROLLING_LIMIT=30
  ;
 
 alias ior : /boost//headers : : : <include>ior/include ;

@@ -8,14 +8,6 @@
 #ifndef TECORB_IDL_PARSER_TYPE_SPEC_HPP
 #define TECORB_IDL_PARSER_TYPE_SPEC_HPP
 
-#ifdef BOOST_VARIANT_VISITATION_UNROLLING_LIMIT
-#if BOOST_VARIANT_VISITATION_UNROLLING_LIMIT < 22
-#error  BOOST_VARIANT_VISITATION_UNROLLING_LIMIT must be at least > 22  or not be defined before #includeing <morbid/idl_parser/type_spec.hpp>
-#endif
-#else
-#define BOOST_VARIANT_VISITATION_UNROLLING_LIMIT 22
-#endif
-
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
@@ -180,12 +172,16 @@ namespace types {
 template <typename Iterator>
 struct type_spec
 {
-  boost::variant<types::floating_point, types::integer, types::char_
-                 , types::wchar_, types::boolean, types::octet
-                 , types::any, types::object, types::value_base
-                 , types::void_
-                 , types::scoped_name
-                 , boost::recursive_wrapper<types::sequence<Iterator> > > type;
+  typedef boost::variant<types::floating_point, types::integer, types::char_
+                         , types::wchar_, types::boolean, types::octet
+                         , types::any, types::object, types::value_base
+                         , types::void_
+                         , types::scoped_name
+                         , boost::recursive_wrapper<types::sequence<Iterator> > >
+    variant_type;
+  variant_type type;
+  type_spec(variant_type v)
+    : type(v) {}
   type_spec() {}
   type_spec(types::floating_point::floating_enum e)
     : type(types::floating_point(e)) {}
@@ -229,10 +225,41 @@ std::ostream& operator<<(std::ostream& os, type_spec<Iterator> d)
 
 } }
 
+BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
+                              , (::morbid::idl_parser::type_spec)(Iterator)
+                              , (typename ::morbid::idl_parser::type_spec<Iterator>::variant_type, type)
+                              );
+
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::scoped_name
                           , (bool, globally_qualified)
-                          (std::vector<std::string>, identifiers)
-                          );
+                          (std::vector<std::string>, identifiers));
 
+BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
+                              , (::morbid::idl_parser::types::sequence)(Iterator)
+                              , (::morbid::idl_parser::type_spec<Iterator>, type));
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::char_
+                          , BOOST_PP_EMPTY());
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::wchar_
+                          , BOOST_PP_EMPTY());
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::boolean
+                          , BOOST_PP_EMPTY());
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::octet
+                          , BOOST_PP_EMPTY());
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::any
+                          , BOOST_PP_EMPTY());
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::object
+                          , BOOST_PP_EMPTY());
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::value_base
+                          , BOOST_PP_EMPTY());
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::void_
+                          , BOOST_PP_EMPTY());
 
 #endif

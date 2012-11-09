@@ -10,6 +10,7 @@
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
+#include <morbid/idl_compiler/generator/type_spec.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 
@@ -27,7 +28,8 @@ struct header_stub_generator : karma::grammar
 {
   header_stub_generator();
 
-  idl_compiler::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   karma::rule<OutputIterator> indent, public_members;
   karma::rule<OutputIterator, std::string()> typedefs;
   karma::rule<OutputIterator
@@ -45,7 +47,7 @@ struct cpp_stub_generator : karma::grammar
 {
   cpp_stub_generator();
 
-  idl_compiler::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator, std::string()> members;
   karma::rule<OutputIterator, std::string()> construct_remote_stub;

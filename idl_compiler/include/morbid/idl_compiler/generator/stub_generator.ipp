@@ -52,7 +52,7 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     -(
       karma::eps(phoenix::at_c<3>(_val))
       << indent << "virtual "
-      << karma::string[_1 = phoenix::at_c<0>(_val)]
+      << type_spec[_1 = phoenix::at_c<0>(_val)]
       << karma::space << karma::stream[_1 = phoenix::at_c<1>(_val)]
       << "("
       << -(parameter % ", ")[_1 = at_c<2>(_val)]
@@ -82,6 +82,11 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << "typedef ::morbid::var<" << karma::string[_1 = _val] << "> "
     << karma::string[_1 = _val] << "_var;" << eol;
   indent = karma::space << karma::space;
+
+  start.name("header_stub_generator");
+  karma::debug(start);
+  common_functions.name("common_functions");
+  karma::debug(common_functions);
 }
 
 template <typename OutputIterator, typename Iterator>
@@ -94,32 +99,32 @@ cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
   using karma::_1;
   using karma::eol;
   
-  start = 
-    karma::eps[_a = phoenix::at_c<0>(_val)]
-    << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
-    << eol
-    << construct_remote_stub[_1 = _a] << eol
-    << members[_1 = _a] << eol
-    ;
-  construct_remote_stub =
-    "boost::shared_ptr<"
-    << karma::string[_1 = _val] << "> "
-    << karma::string[_1 = _val]
-    << "::_construct_remote_stub" << eol
-    << indent << "(std::string const& host, unsigned short port" << eol
-    << indent << indent << ", std::string const& object_key)" << eol
-    << "{" << eol
-    << indent << "return " << karma::string[_1 = _val]
-    << "_ptr(new ::morbid::remote_stub::" << karma::string[_1 = _val]
-    << "(host, port, object_key));" << eol
-    << "}" << eol
-    ;
-  members =
-    "const char* "
-    << karma::string[_1 = _val] << "::_repository_id = \"IDL:"
-    << karma::string[_1 = _val] << ":1.0\";" << eol
-    ;
-  indent = karma::space << karma::space;
+  // start = 
+  //   karma::eps[_a = phoenix::at_c<0>(_val)]
+  //   << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
+  //   << eol
+  //   << construct_remote_stub[_1 = _a] << eol
+  //   << members[_1 = _a] << eol
+  //   ;
+  // construct_remote_stub =
+  //   "boost::shared_ptr<"
+  //   << karma::string[_1 = _val] << "> "
+  //   << karma::string[_1 = _val]
+  //   << "::_construct_remote_stub" << eol
+  //   << indent << "(std::string const& host, unsigned short port" << eol
+  //   << indent << indent << ", std::string const& object_key)" << eol
+  //   << "{" << eol
+  //   << indent << "return " << karma::string[_1 = _val]
+  //   << "_ptr(new ::morbid::remote_stub::" << karma::string[_1 = _val]
+  //   << "(host, port, object_key));" << eol
+  //   << "}" << eol
+  //   ;
+  // members =
+  //   "const char* "
+  //   << karma::string[_1 = _val] << "::_repository_id = \"IDL:"
+  //   << karma::string[_1 = _val] << ":1.0\";" << eol
+  //   ;
+  // indent = karma::space << karma::space;
 }
 
 } } }

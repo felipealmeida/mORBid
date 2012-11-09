@@ -16,12 +16,16 @@ namespace morbid { namespace idl_compiler {
 
 struct generate_modules_visitor : boost::default_bfs_visitor
 {
-  generate_modules_visitor()
-    : state(new shared_state)
-  {}
+  generate_modules_visitor(output_iterator_type iterator)
+    : state(new shared_state(iterator))
+  {
+  }
 
   struct shared_state
   {
+    shared_state(output_iterator_type iterator)
+      : iterator(iterator) {}
+    output_iterator_type iterator;
     std::vector<vertex_descriptor> opened_modules;
   };
 

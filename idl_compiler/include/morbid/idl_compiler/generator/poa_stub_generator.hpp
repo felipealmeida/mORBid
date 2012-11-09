@@ -23,7 +23,7 @@ struct header_poa_stub_generator : karma::grammar
 {
   header_poa_stub_generator();
 
-  idl_compiler::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
   karma::rule<OutputIterator, std::string()> construct_local_stub_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator> dispatch_function;
@@ -42,7 +42,7 @@ struct cpp_poa_stub_generator : karma::grammar
 {
   cpp_poa_stub_generator();
 
-  idl_compiler::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
   karma::rule<OutputIterator, std::string()> is_a_impl_strcmp;
   karma::rule<OutputIterator, void(unsigned int)> var_indent;
   karma::rule<OutputIterator, idl_parser::op_decl<Iterator>

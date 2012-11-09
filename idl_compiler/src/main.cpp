@@ -212,14 +212,6 @@ int main(int argc, char** argv)
         if(current_module.size() != 2)
           throw std::runtime_error("Error: Not closed all modules");
 
-        typedef boost::property_map<modules_tree_type, boost::vertex_color_t>::type
-          color_map_t;
-        color_map_t color_map;
-        typedef boost::queue<vertex_descriptor> queue_t;
-        queue_t queue;
-        breadth_first_visit(modules_tree, global_module, queue
-                            , morbid::idl_compiler::generate_modules_visitor()
-                            , color_map);
 
         //   interface.repoids.push_back("IDL:omg.org/CORBA/Object:1.0");
         //   interface.repoids.push_back("IDL:" + interface.name + ":1.0");
@@ -282,6 +274,16 @@ int main(int argc, char** argv)
                );
             if(!r) 
               throw std::runtime_error("Failed generating #includes for header");
+
+            typedef boost::property_map<modules_tree_type, boost::vertex_color_t>::type
+              color_map_t;
+            color_map_t color_map;
+            typedef boost::queue<vertex_descriptor> queue_t;
+            queue_t queue;
+            breadth_first_visit(modules_tree, global_module, queue
+                                , morbid::idl_compiler::generate_modules_visitor
+                                (iterator)
+                                , color_map);
 
           //     r = karma::generate(iterator, header_stub_generator, interface);
           //     if(!r) std::cout << "Failed generating header_stub_generator" << std::endl;
