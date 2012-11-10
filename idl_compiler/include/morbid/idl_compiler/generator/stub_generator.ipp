@@ -100,10 +100,10 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << karma::string[_1 = _val] << "_var;" << eol;
   indent = karma::space << karma::space;
 
-  start.name("header_stub_generator");
-  karma::debug(start);
-  common_functions.name("common_functions");
-  karma::debug(common_functions);
+  // start.name("header_stub_generator");
+  // karma::debug(start);
+  // common_functions.name("common_functions");
+  // karma::debug(common_functions);
 }
 
 template <typename OutputIterator, typename Iterator>

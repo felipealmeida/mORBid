@@ -34,13 +34,38 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
     using karma::_r1;
     using karma::_val;
     using phoenix::at_c;
+    namespace types = idl_parser::types;
 
     start = 
       (floating_point | integer | char_ | wchar_ | boolean | octet
        | any | object | value_base | void_ | scoped_name(_r1)
-       | sequence) [_1 = at_c<0>(_val)]
+       | sequence(_r1)) [_1 = at_c<0>(_val)]
       ;
+    floating_point =
+      (
+       karma::eps(at_c<0>(_val) == types::floating_point::float_)
+       << "CORBA::Float"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::floating_point::double_)
+       << "CORBA::Double"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::floating_point::long_double_)
+       << "CORBA::LongDouble"
+      )
+      ;
+    char_ = karma::string[_1 = "CORBA::Char"];
+    wchar_ = karma::string[_1 = "CORBA::WChar"];
+    boolean = karma::string[_1 = "CORBA::Boolean"];
+    octet = karma::string[_1 = "CORBA::Octet"];
+    any = karma::string[_1 = "CORBA::Any"];
+    object = karma::string[_1 = "CORBA::Object"];
+    value_base = karma::string[_1 = "CORBA::ValueBase"];
     void_ = karma::string[_1 = "void"];
+    sequence =
+      karma::lit("::morbid::sequence<")
+      << ">";
   }
 
   generator::scoped_name<OutputIterator, Iterator> scoped_name;
@@ -55,7 +80,7 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
   karma::rule<OutputIterator, idl_parser::types::object()> object;
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_;
-  karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>()> sequence;
+  karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>(lookuped_type_wrapper)> sequence;
   
 };
 

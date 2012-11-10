@@ -95,7 +95,7 @@ int main(int argc, char** argv)
         module_property_type p1(boost::shared_ptr<module_type>(new module_type("")));
         vertex_descriptor global_module = add_vertex
           (p1, modules_tree);
-        module_property_type p2(boost::shared_ptr<module_type>(new module_type("")));
+        module_property_type p2(boost::shared_ptr<module_type>(new module_type("::morbid")));
         vertex_descriptor primitive_types_module = add_vertex
           (p2, modules_tree);
 
@@ -139,6 +139,8 @@ int main(int argc, char** argv)
 
             typedef morbid::idl_compiler::typedef_ typedef_type;
             typedef_type t(typedef_);
+            t.lookup = morbid::idl_compiler::lookup_type_spec
+              (typedef_.alias, current_module, modules_tree);
 
             module_map map = get(module_property_t(), modules_tree);
             boost::get(map, current_module.back())
@@ -276,10 +278,29 @@ int main(int argc, char** argv)
             color_map_t color_map;
             typedef boost::queue<vertex_descriptor> queue_t;
             queue_t queue;
+            morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
             breadth_first_visit(modules_tree, global_module, queue
-                                , morbid::idl_compiler::generate_header_modules_visitor
-                                (iterator)
+                                , header_modules_visitor
                                 , color_map);
+            {
+              typedef typename boost::property_map<modules_tree_type, module_property_t>
+                ::type module_map;
+              module_map map = get(module_property_t(), modules_tree);
+              for(std::size_t l = header_modules_visitor.state->opened_modules.size() - 1
+                    ;l != 0;--l)
+              {
+                morbid::idl_compiler::module const& m
+                  = *boost::get(map, header_modules_visitor.state->opened_modules[l]);
+                
+                *iterator++ = '}';
+                *iterator++ = ' ';
+                *iterator++ = '/';
+                *iterator++ = '/';
+                iterator = std::copy(m.name.begin(), m.name.end(), iterator);
+                karma::generate(iterator, karma::eol);
+              }
+            }
+                  
 
           //     r = karma::generate(iterator, header_stub_generator, interface);
           //     if(!r) std::cout << "Failed generating header_stub_generator" << std::endl;

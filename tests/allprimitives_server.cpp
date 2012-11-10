@@ -53,11 +53,11 @@ struct allprimitives_impl : POA_allprimitives
     assert(l == 2l);
     foo5_ = true;
   }
-  void foo6(const unsigned char* s)
+  void foo6(unsigned char s)
   {
     std::cout << "== foo6" << std::endl;
     assert(!foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    assert(!std::strcmp((const char*)s, "asd"));
+    assert(s == 'a');
     foo6_ = true;
   }
   void foo7(CORBA::Short s)

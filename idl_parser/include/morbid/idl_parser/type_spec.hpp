@@ -238,6 +238,12 @@ BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
                               , (::morbid::idl_parser::types::sequence)(Iterator)
                               , (::morbid::idl_parser::type_spec<Iterator>, type));
 
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::floating_point
+                          , (::morbid::idl_parser::types::floating_point::floating_enum, type));
+
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::integer
+                          , (::morbid::idl_parser::types::integer::integer_enum, type));
+
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::char_
                           , BOOST_PP_EMPTY());
 

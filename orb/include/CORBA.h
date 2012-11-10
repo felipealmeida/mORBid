@@ -47,10 +47,15 @@ typedef String_var ObjectId_var;
 using ::morbid::Boolean;
 using ::morbid::ULong;
 using ::morbid::Long;
+using ::morbid::ULongLong;
+using ::morbid::LongLong;
 using ::morbid::UShort;
 using ::morbid::Short;
 using ::morbid::Double;
 using ::morbid::Float;
+using ::morbid::Char;
+using ::morbid::WChar;
+using ::morbid::Octet;
 
 }
 

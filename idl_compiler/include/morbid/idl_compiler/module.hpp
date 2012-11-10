@@ -10,6 +10,7 @@
 
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/interface.hpp>
+#include <morbid/idl_compiler/lookuped_type.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
 
@@ -18,6 +19,7 @@ namespace morbid { namespace idl_compiler {
 struct typedef_
 {
   typedef_def_type definition;
+  lookuped_type lookup;
 
   typedef_(typedef_def_type definition)
     : definition(definition) {}

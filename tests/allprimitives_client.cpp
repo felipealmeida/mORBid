@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
   allprimitives_->foo3(2.0);
   allprimitives_->foo4(2.0f);
   allprimitives_->foo5(2l);
-  unsigned char asd[4] = {"asd"};
+  unsigned char asd = 'a';
   allprimitives_->foo6(asd);
   allprimitives_->foo7(2);
   allprimitives_->foo8("qwe");

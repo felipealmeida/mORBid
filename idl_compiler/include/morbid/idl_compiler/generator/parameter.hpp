@@ -31,6 +31,7 @@ struct parameter : karma::grammar<OutputIterator
     using karma::_val;
     using karma::_r1; using karma::_r2;
     using phoenix::at_c;
+    namespace types = idl_parser::types;
 
     start = param(at_c<0>(_val), _r1)[_1 = at_c<1>(_val)];
     param = 
@@ -38,6 +39,55 @@ struct parameter : karma::grammar<OutputIterator
        | any | object | value_base | void_ | scoped_name(_r2)
        | sequence) [_1 = at_c<0>(_val)]
       ;
+    floating_point =
+      (
+       karma::eps(at_c<0>(_val) == types::floating_point::float_)
+       << "CORBA::Float"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::floating_point::double_)
+       << "CORBA::Double"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::floating_point::long_double_)
+       << "CORBA::LongDouble"
+      )
+      ;
+    integer =
+      (
+       karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
+       << "CORBA::Short"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
+       << "CORBA::Long"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
+       << "CORBA::LongLong"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
+       << "CORBA::UShort"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
+       << "CORBA::ULong"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
+       << "CORBA::ULongLong"
+      )
+      ;
+    char_ = karma::string[_1 = "CORBA::Char"];
+    wchar_ = karma::string[_1 = "CORBA::WChar"];
+    boolean = karma::string[_1 = "CORBA::Boolean"];
+    octet = karma::string[_1 = "CORBA::Octet"];
+    any = karma::string[_1 = "CORBA::Any"];
+    object = karma::string[_1 = "CORBA::Object"];
+    value_base = karma::string[_1 = "CORBA::ValueBase"];
+    void_ = karma::string[_1 = "void"];
+
     start.name("parameter");
     karma::debug(start);
     param.name("param");

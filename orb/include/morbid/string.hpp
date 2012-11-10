@@ -10,7 +10,10 @@
 namespace morbid {
 
 typedef char* String;
+typedef char* string;
 typedef boost::shared_array<char> String_ptr;
 typedef array_var<char> String_var;
+typedef boost::shared_array<char> string_ptr;
+typedef array_var<char> string_var;
 
 }
