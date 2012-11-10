@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef MORBID_IDL_COMPILER_GENERATE_MODULES_HPP
-#define MORBID_IDL_COMPILER_GENERATE_MODULES_HPP
+#ifndef MORBID_IDL_COMPILER_GENERATE_HEADER_MODULES_HPP
+#define MORBID_IDL_COMPILER_GENERATE_HEADER_MODULES_HPP
 
 #include <morbid/idl_compiler/common_types.hpp>
 
@@ -14,9 +14,9 @@
 
 namespace morbid { namespace idl_compiler {
 
-struct generate_modules_visitor : boost::default_bfs_visitor
+struct generate_header_modules_visitor : boost::default_bfs_visitor
 {
-  generate_modules_visitor(output_iterator_type iterator)
+  generate_header_modules_visitor(output_iterator_type iterator)
     : state(new shared_state(iterator))
   {
   }

@@ -8,6 +8,8 @@
 #ifndef TECORB_IDL_COMPILER_PARAMETER_HPP
 #define TECORB_IDL_COMPILER_PARAMETER_HPP
 
+#include <morbid/idl_compiler/generator/scoped_name.hpp>
+#include <morbid/idl_compiler/lookuped_type.hpp>
 #include <morbid/idl_parser/op_decl.hpp>
 
 #include <boost/spirit/home/karma.hpp>
@@ -19,32 +21,25 @@ namespace karma = boost::spirit::karma;
 namespace phoenix = boost::phoenix;
 
 template <typename OutputIterator, typename Iterator>
-struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl<Iterator>()>
+struct parameter : karma::grammar<OutputIterator
+                                  , idl_parser::param_decl<Iterator>(lookuped_type)>
 {
   parameter()
     : parameter::base_type(start)
   {
     using karma::_1;
     using karma::_val;
+    using karma::_r1; using karma::_r2;
     using phoenix::at_c;
 
-    start = param(at_c<0>(_val))[_1 = at_c<1>(_val)];
-    scoped_name %=
-      (
-       karma::true_ << "::"
-       | karma::eps
-      )
-      << (+karma::string)
-      ;
+    start = param(at_c<0>(_val), _r1)[_1 = at_c<1>(_val)];
     param = 
       (floating_point | integer | char_ | wchar_ | boolean | octet
-       | any | object | value_base | void_ | scoped_name
+       | any | object | value_base | void_ | scoped_name(_r2)
        | sequence) [_1 = at_c<0>(_val)]
       ;
     start.name("parameter");
     karma::debug(start);
-    scoped_name.name("scoped_name");
-    karma::debug(scoped_name);
     param.name("param");
     karma::debug(param);
 
@@ -104,7 +99,7 @@ struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl<Iterato
     //   ;
   }
 
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()> start;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(lookuped_type)> start;
   karma::rule<OutputIterator, idl_parser::types::floating_point()> floating_point;
   karma::rule<OutputIterator, idl_parser::types::integer()> integer;
   karma::rule<OutputIterator, idl_parser::types::char_()> char_;
@@ -115,11 +110,12 @@ struct parameter : karma::grammar<OutputIterator, idl_parser::param_decl<Iterato
   karma::rule<OutputIterator, idl_parser::types::object()> object;
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_;
-  karma::rule<OutputIterator, idl_parser::types::scoped_name()> scoped_name;
+  generator::scoped_name<OutputIterator, Iterator> scoped_name;
   karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>()> sequence;
   karma::rule<OutputIterator, idl_parser::type_spec<Iterator>
               (boost::variant<idl_parser::direction::in
-               , idl_parser::direction::out, idl_parser::direction::inout>)>
+               , idl_parser::direction::out, idl_parser::direction::inout>
+               , lookuped_type)>
   param;
   
 };

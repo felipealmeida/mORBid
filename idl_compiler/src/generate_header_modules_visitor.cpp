@@ -6,17 +6,18 @@
  */
 
 #include <morbid/idl_compiler/generator/stub_generator.hpp>
-#include <morbid/idl_compiler/generate_modules_visitor.hpp>
+#include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
 #include <morbid/idl_compiler/module.hpp>
 
 #include <boost/range.hpp>
 
 namespace morbid { namespace idl_compiler {
 
-void generate_modules_visitor::examine_vertex
+void generate_header_modules_visitor::examine_vertex
   (vertex_descriptor v, modules_tree_type const& modules)
 {
   namespace karma = boost::spirit::karma;
+  namespace phoenix = boost::phoenix;
   typedef typename boost::property_map<modules_tree_type, module_property_t>
     ::const_type module_map;
   module_map map = get(module_property_t(), modules);
@@ -31,7 +32,8 @@ void generate_modules_visitor::examine_vertex
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
         , last = m.interfaces.end(); first != last; ++first)
   {
-    bool r = karma::generate(state->iterator, header_stub_generator, first->definition);
+    bool r = karma::generate(state->iterator, header_stub_generator(phoenix::val(*first))
+                             , first->definition);
     if(!r) throw std::runtime_error("Failed generating header_stub_generator");
   }
 
@@ -55,7 +57,7 @@ void generate_modules_visitor::examine_vertex
   // std::cout << std::endl;
 }
 
-// void generate_modules_visitor::examine_edge
+// void generate_header_modules_visitor::examine_edge
 //   (edge_descriptor e, modules_tree_type const& modules)
 // {
 //   typedef typename boost::property_map<modules_tree_type, module_property_t>
@@ -67,6 +69,36 @@ void generate_modules_visitor::examine_vertex
 //             << tgt.name << std::endl;
 // }
 
+std::ostream& operator<<(std::ostream& os, lookuped_type l)
+{
+  typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
+  os << "[lookuped_type outside_type: ";
+  typedef typename boost::property_map<modules_tree_type, module_property_t>
+    ::const_type module_map;
+  module_map map = get(module_property_t(), *l.modules);
+
+  std::vector<std::string> module_path;
+  module const& m = *boost::get(map, l.outside_type);
+  module_path.push_back(m.name);
+
+  std::pair<in_edge_iterator, in_edge_iterator>
+    edges = in_edges(l.outside_type, *l.modules);
+  if(boost::distance(edges))
+  {
+    assert(boost::distance(edges) == 1);
+    do
+    {
+      vertex_descriptor v = source(*edges.first, *l.modules);
+      module const& m = *boost::get(map, v);
+      module_path.push_back(m.name);
+      edges = in_edges(v, *l.modules);
+    }
+    while(boost::distance(edges));
+  }
+  std::copy(module_path.rbegin(), module_path.rend()
+            , std::ostream_iterator<std::string>(os, "::"));
+  return os << ']';
+}
 
 } }
 

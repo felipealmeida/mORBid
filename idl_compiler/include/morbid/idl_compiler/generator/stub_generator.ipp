@@ -15,6 +15,16 @@
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/phoenix.hpp>
 
+namespace std {
+
+template <typename T, typename U>
+std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
+{
+  return os << "[pair first: " << p.first << " second: " << p.second << ']';
+}
+
+}
+
 namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
@@ -27,11 +37,12 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
   using karma::_1;
   using karma::_val;
   using karma::_a;
+  using karma::_r1;
   using karma::eol;
   using phoenix::at_c;
 
   start = 
-    karma::eps[_a = phoenix::at_c<0>(_val)]
+    karma::eps[_a = at_c<0>(_val)]
     << eol << "class "
     << karma::string[_1 = _a]
     << eol << " : public ::morbid::narrow< "
@@ -41,8 +52,8 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << "public:" << eol
     << common_functions[_1 = _val] << eol
     << indent << "// Start of operations defined in IDL" << eol
-    << (*(operation << eol))
-    [_1 = phoenix::at_c<1>(_val)]
+    << (*(operation(_r1) << eol))
+    [_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
     << public_members << eol
     << "};" << eol << eol
@@ -50,23 +61,29 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
   ;
   operation =
     -(
-      karma::eps(phoenix::at_c<3>(_val))
+      karma::eps(at_c<3>(_val))
       << indent << "virtual "
-      << type_spec[_1 = phoenix::at_c<0>(_val)]
-      << karma::space << karma::stream[_1 = phoenix::at_c<1>(_val)]
+      << type_spec
+      (
+       at_c<1>(_r1)[at_c<0>(_val)]
+      )
+      [_1 = at_c<0>(_val)]
+      << karma::space << karma::stream[_1 = at_c<1>(_val)]
       << "("
-      << -(parameter % ", ")[_1 = at_c<2>(_val)]
+      << -(parameter_select(_r1)
+           % ", ")[_1 = at_c<2>(_val)]
       << ") = 0;"
      )
     ;
+  parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)])[_val];
 
   common_functions =
     indent
-    << karma::string[_1 = phoenix::at_c<0>(_val)] << "() {}" << eol
-    << indent << "~" << karma::string[_1 = phoenix::at_c<0>(_val)] << "();"
+    << karma::string[_1 = at_c<0>(_val)] << "() {}" << eol
+    << indent << "~" << karma::string[_1 = at_c<0>(_val)] << "();"
     << eol
     << indent << "static boost::shared_ptr<"
-    << karma::string[_1 = phoenix::at_c<0>(_val)] << ">"
+    << karma::string[_1 = at_c<0>(_val)] << ">"
     << " _construct_remote_stub" << eol
     << indent << "(std::string const& host, unsigned short port" << eol
     << indent << indent << indent << ", std::string const& object_key);" << eol

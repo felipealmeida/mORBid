@@ -14,11 +14,7 @@
 #include <morbid/idl_compiler/interface.hpp>
 #include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/lookup.hpp>
-#include <morbid/idl_compiler/generate_modules_visitor.hpp>
-// #include <morbid/idl_compiler/generator/stub_generator.hpp>
-// #include <morbid/idl_compiler/generator/local_stub_generator.hpp>
-// #include <morbid/idl_compiler/generator/remote_stub_generator.hpp>
-// #include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
+#include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
 #include <morbid/idl_compiler/common_types.hpp>
 
 #include <boost/program_options.hpp>
@@ -281,7 +277,7 @@ int main(int argc, char** argv)
             typedef boost::queue<vertex_descriptor> queue_t;
             queue_t queue;
             breadth_first_visit(modules_tree, global_module, queue
-                                , morbid::idl_compiler::generate_modules_visitor
+                                , morbid::idl_compiler::generate_header_modules_visitor
                                 (iterator)
                                 , color_map);
 
