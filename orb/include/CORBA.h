@@ -15,6 +15,7 @@
 #include <morbid/poa.hpp>
 #include <morbid/exception.hpp>
 #include <morbid/primitive_types.hpp>
+#include <morbid/in_out_traits.hpp>
 
 namespace CORBA {
 
@@ -56,6 +57,20 @@ using ::morbid::Float;
 using ::morbid::Char;
 using ::morbid::WChar;
 using ::morbid::Octet;
+
+using ::morbid::String_out;
+using ::morbid::Boolean_out;
+using ::morbid::UShort_out;
+using ::morbid::Short_out;
+using ::morbid::ULong_out;
+using ::morbid::Long_out;
+using ::morbid::ULongLong_out;
+using ::morbid::LongLong_out;
+using ::morbid::Double_out;
+using ::morbid::Float_out;
+using ::morbid::Char_out;
+using ::morbid::WChar_out;
+using ::morbid::Octet_out;
 
 }
 

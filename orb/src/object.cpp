@@ -24,7 +24,7 @@ bool Object::_is_a(const char* id)
   using ::morbid::type_tag::value_type_tag;
   using ::morbid::type_tag::in_tag;
   return ::morbid::synchronous_call::call
-    <bool, /*value_type_tag<char*, in_tag>*/in_traits<string>::type>
+    <bool, value_type_tag<in_traits<string>::type, type_tag::in_tag> >
     (morbid::Object::repository_id, "_is_a"
      , host, port, object_key, id);
 }

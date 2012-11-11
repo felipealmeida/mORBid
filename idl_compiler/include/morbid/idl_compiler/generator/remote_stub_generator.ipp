@@ -73,7 +73,7 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
         )
         [_1 = at_c<0>(_val)]
         << (*(eol << indent << indent << indent << ", "
-              << /*synchronous_template_args*/parameter_select(_r1)))[_1 = at_c<2>(_val)]
+              << synchronous_template_args(_r1)))[_1 = at_c<2>(_val)]
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
         << "(_repository_id, \"" << karma::string[_1 = at_c<1>(_val)]
@@ -84,17 +84,15 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
     << indent << "}" << eol
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
-  // in_traits = "::morbid::in_traits< ";
-  // out_traits = "::morbid::out_traits< ";
-  // inout_traits = "::morbid::inout_traits< ";
-  // synchronous_template_args %= parameter_select(_r1);
-    // (in_traits
-    //  | out_traits
-    //  | inout_traits)
-    // << parameter_select(_r1)[_1 = at_c<1>(_val)]
-    // << ", ::morbid::type_tag::"
-    // << karma::string[_1 = at_c<0>(_val)]
-    // << "_tag>";
+  in_tag = karma::string[_1 = "::morbid::type_tag::in_tag"];
+  out_tag = karma::string[_1 = "::morbid::type_tag::out_tag"];
+  inout_tag = karma::string[_1 = "::morbid::type_tag::inout_tag"];
+  synchronous_template_args = 
+    "::morbid::type_tag::value_type_tag< "
+    << parameter_select(_r1)[_1 = _val]
+    << ", " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
+    << ">"
+    ;
   // synchronous_template_args
   //   = "::morbid::type_tag::value_type_tag<"
   //   << parameter_select(_r1)[_1 = at_c<1>(_val)]

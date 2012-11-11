@@ -33,15 +33,12 @@ struct parameter : karma::grammar<OutputIterator
     using phoenix::at_c;
     namespace types = idl_parser::types;
 
-    in_traits = "::morbid::in_traits< ";
-    out_traits = "::morbid::out_traits< ";
-    inout_traits = "::morbid::inout_traits< ";
-    start = 
-      param(at_c<0>(_val), _r1)[_1 = at_c<1>(_val)];
+    in_traits = karma::string[_1 = "::morbid::in_traits< "];
+    out_traits = karma::string[_1 = "::morbid::out_traits< "];
+    inout_traits = karma::string[_1 = "::morbid::inout_traits< "];
+    start =  param(at_c<0>(_val), _r1)[_1 = at_c<1>(_val)];
     param = 
-      (in_traits[_1 = _r1]
-       | out_traits[_1 = _r1]
-       | inout_traits[_1 = _r1])
+      (out_traits | in_traits | inout_traits)[_1 = _r1]
       <<
       (floating_point | integer | char_ | wchar_ | boolean | octet
        | any | object | value_base | void_ | scoped_name(_r1, _r2)
@@ -111,10 +108,11 @@ struct parameter : karma::grammar<OutputIterator
   typedef boost::variant<idl_parser::direction::in, idl_parser::direction::out, idl_parser::direction::inout>
     direction_variant;
 
-  karma::rule<OutputIterator, idl_parser::direction::in> in_traits;
-  karma::rule<OutputIterator, idl_parser::direction::out> out_traits;
-  karma::rule<OutputIterator, idl_parser::direction::inout> inout_traits;
-  karma::rule<OutputIterator, idl_parser::types::scoped_name(direction_variant, lookuped_type_wrapper)> scoped_name;
+  karma::rule<OutputIterator, idl_parser::direction::in()> in_traits;
+  karma::rule<OutputIterator, idl_parser::direction::out()> out_traits;
+  karma::rule<OutputIterator, idl_parser::direction::inout()> inout_traits;
+  karma::rule<OutputIterator, idl_parser::types::scoped_name
+              (direction_variant, lookuped_type_wrapper)> scoped_name;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(lookuped_type)> start;
   karma::rule<OutputIterator, idl_parser::types::floating_point()> floating_point;
   karma::rule<OutputIterator, idl_parser::types::integer()> integer;

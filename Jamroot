@@ -47,6 +47,7 @@ install install : morbid_idl morbid ;
 install demos : demo/simple//simple_server demo/simple//simple_client ;
 
 alias allprimitives : tests//allprimitives ;
+alias out_allprimitives : tests//out_allprimitives ;
 
-alias tests : install allprimitives ;
+alias tests : install allprimitives out_allprimitives ;
 

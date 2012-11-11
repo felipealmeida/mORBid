@@ -39,13 +39,13 @@ struct header_remote_stub_generator : karma::grammar
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>(interface_)
               , karma::locals<std::string> > start;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)> 
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     synchronous_template_args;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()
               , karma::locals<unsigned int> > synchronous_args;
-  karma::rule<OutputIterator, idl_parser::direction::in> in_traits;
-  karma::rule<OutputIterator, idl_parser::direction::out> out_traits;
-  karma::rule<OutputIterator, idl_parser::direction::inout> inout_traits;
+  karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
+  karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
+  karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;
 };
 
 template <typename OutputIterator, typename Iterator>

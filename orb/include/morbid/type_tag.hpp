@@ -8,36 +8,23 @@
 #ifndef TECORB_TYPE_TAG_HPP
 #define TECORB_TYPE_TAG_HPP
 
+#include <morbid/in_out_traits.hpp>
+
 namespace morbid { namespace type_tag {
 
 struct in_tag {};
 struct out_tag {};
 struct inout_tag {};
 
-template <typename T>
-struct in_type_traits
-{
-  typedef T type;
-};
-
-template <>
-struct in_type_traits<char*>
-{
-  typedef const char* type;
-};
-
 template <typename T, typename Tag>
-struct value_type_tag;
-
-template <typename T>
-struct value_type_tag<T, in_tag>
+struct value_type_tag
 {
   typedef T type;
-  typedef in_tag tag;
+  typedef Tag tag;
 
-  value_type_tag(typename in_type_traits<type>::type value) : value(value) {}
+  value_type_tag(T value) : value(value) {}
 
-  typename in_type_traits<type>::type value;
+  T value;
 };
 
 } }
