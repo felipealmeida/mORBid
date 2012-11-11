@@ -101,7 +101,7 @@ R reply_return(std::vector<char>::iterator begin, std::vector<char>::iterator fi
 
 #define TECORB_SYNCHRONOUS_CALL_SERIALIZE(z, n, data)                   \
   iiop::serialize_object(iterator, true                                 \
-                         , BOOST_PP_CAT(a, n).value);                       
+                         , BOOST_PP_CAT(a, n)/*.value*/);                       
 
 template <typename R BOOST_PP_ENUM_TRAILING_PARAMS(N(), typename A)>
 R call(const char* repoid, const char* method

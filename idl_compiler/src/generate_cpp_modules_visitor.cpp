@@ -8,6 +8,7 @@
 #include <morbid/idl_compiler/generator/stub_generator.hpp>
 #include <morbid/idl_compiler/generator/local_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
+#include <morbid/idl_compiler/generator/remote_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
 #include <morbid/idl_compiler/generate_cpp_modules_visitor.hpp>
 #include <morbid/idl_compiler/module.hpp>
@@ -79,20 +80,25 @@ void generate_cpp_modules_visitor::examine_vertex
     }
   }
 
+  morbid::idl_compiler::generator::header_remote_stub_generator
+    <output_iterator_type, parser_iterator_type>
+    header_remote_stub_generator;
   morbid::idl_compiler::generator::cpp_stub_generator
     <output_iterator_type, parser_iterator_type>
     cpp_stub_generator;
-  // morbid::idl_compiler::generator::typedef_generator
-  //   <output_iterator_type, parser_iterator_type>
-  //   typedef_generator;
 
-  // for(std::vector<typedef_>::const_iterator first = m.typedefs.begin()
-  //       , last = m.typedefs.end(); first != last; ++first)
-  // {
-  //   bool r = karma::generate(state->iterator, typedef_generator(phoenix::val(first->lookup))
-  //                            , first->definition);
-  //   if(!r) throw std::runtime_error("Failed generating typedefs");
-  // }
+  open_namespace(state->iterator, ""); // anonymous namespace
+
+  for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
+        , last = m.interfaces.end(); first != last; ++first)
+  {
+    bool r = karma::generate(state->iterator, header_remote_stub_generator(phoenix::val(*first))
+                             , first->definition);
+    if(!r) throw std::runtime_error("Failed generating header_remote_stub_generator");
+  }
+
+  *state->iterator++ = '}';
+  karma::generate(state->iterator, karma::eol);
 
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
         , last = m.interfaces.end(); first != last; ++first)

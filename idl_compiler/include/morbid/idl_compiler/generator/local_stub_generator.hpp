@@ -35,10 +35,11 @@ struct header_local_stub_generator : karma::grammar
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>(bool)> common_functions;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(interface_)> operation;
+              , idl_parser::op_decl<Iterator>(interface_), karma::locals<unsigned int> > operation;
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>(interface_, bool)
               , karma::locals<std::string> > start;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(unsigned int)> args;
 };
 
 template <typename OutputIterator, typename Iterator>

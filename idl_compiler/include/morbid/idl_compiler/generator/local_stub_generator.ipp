@@ -47,6 +47,7 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     << "private:" << eol
     << common_members(_r2)[_1 = _a]
     << "};" << eol << eol
+    << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol << eol
     << "}" << eol
     ;
   operation =
@@ -57,9 +58,18 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     )[_1 = at_c<0>(_val)]
     << karma::space << karma::string[_1 = at_c<1>(_val)]
     << "("
-    << -(parameter_select(_r1) % ", ")[_1 = at_c<2>(_val)]
-    << ");" << eol
+    << -((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
+    << ")" << eol
+    << indent << "{" << eol
+    << karma::eps[_a = 0]
+    << (
+        indent << indent << "return servant->" << karma::string[_1 = at_c<1>(_val)]
+        << "(" << -(args(++_a) % ", ")[_1 = at_c<2>(_val)]
+        << ");" << eol
+       )
+    << indent << "}" << eol
     ;
+  args = "arg" << karma::lit(_r1);
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   poa_class_name =
     -(karma::eps(_r1) << "POA_")
@@ -92,8 +102,11 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     ;
   indent = karma::space << karma::space;
   ior_function =
-    indent
-    << "::morbid::String_ptr ior() const;" << eol
+    indent << "::morbid::String_ptr ior() const" << eol
+    << indent << "{" << eol
+    << indent << indent << "return ::morbid::poa::create_ior_string" << eol
+    << indent << indent << indent << "(host, port, poa_name, servant);" << eol
+    << indent << "}" << eol
     ;
 }
 
