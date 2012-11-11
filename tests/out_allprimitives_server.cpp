@@ -57,7 +57,7 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo6" << std::endl;
     assert(!foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    s == 'a';
+    s = 'a';
     foo6_ = true;
   }
   void foo7(CORBA::Short_out s)

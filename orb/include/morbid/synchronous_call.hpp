@@ -48,6 +48,33 @@ inline ostream& operator<<(ostream& os, vector<char>::iterator it)
 
 namespace morbid { namespace synchronous_call {
 
+template <typename Tag>
+struct serialize_if_input;
+
+template <>
+struct serialize_if_input<type_tag::in_tag>
+{
+  template <typename OutputIterator, typename A>
+  static void serialize(OutputIterator& iterator, bool b, A a)
+  {
+    iiop::serialize_object(iterator, b, a.value);
+  }
+};
+
+template <>
+struct serialize_if_input<type_tag::out_tag>
+{
+  template <typename OutputIterator, typename A>
+  static void serialize(OutputIterator& iterator, bool, A const&)
+  {
+  }
+};
+
+template <>
+struct serialize_if_input<type_tag::inout_tag> : serialize_if_input<type_tag::in_tag>
+{
+};
+
 inline
 void reply_return(std::vector<char>::iterator begin, std::vector<char>::iterator first
                , std::vector<char>::iterator last, bool little_endian
@@ -100,8 +127,8 @@ R reply_return(std::vector<char>::iterator begin, std::vector<char>::iterator fi
 #define N() BOOST_PP_ITERATION()
 
 #define TECORB_SYNCHRONOUS_CALL_SERIALIZE(z, n, data)                   \
-  iiop::serialize_object(iterator, true                                 \
-                         , BOOST_PP_CAT(a, n).value);                       
+  serialize_if_input<typename BOOST_PP_CAT(A, n) ::tag>                  \
+  ::serialize(iterator, true, BOOST_PP_CAT(a, n));                       
 
 template <typename R BOOST_PP_ENUM_TRAILING_PARAMS(N(), typename A)>
 R call(const char* repoid, const char* method
