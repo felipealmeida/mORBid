@@ -10,6 +10,8 @@
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
+#include <morbid/idl_compiler/generator/type_spec.hpp>
+#include <morbid/idl_compiler/interface.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 
@@ -19,20 +21,24 @@ namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
 struct header_poa_stub_generator : karma::grammar
-<OutputIterator, idl_parser::interface_def<Iterator>(), karma::locals<std::string> >
+<OutputIterator, idl_parser::interface_def<Iterator>(interface_, bool), karma::locals<std::string> >
 {
   header_poa_stub_generator();
 
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
+    parameter_select;
   karma::rule<OutputIterator, std::string()> construct_local_stub_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator> dispatch_function;
+  karma::rule<OutputIterator, std::string(bool)> class_name;
   karma::rule<OutputIterator
-              , idl_parser::interface_def<Iterator>()> common_functions;
+              , idl_parser::interface_def<Iterator>(interface_, bool)> common_functions;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>()> operation;
+              , idl_parser::op_decl<Iterator>(interface_)> operation;
   karma::rule<OutputIterator
-              , idl_parser::interface_def<Iterator>()
+              , idl_parser::interface_def<Iterator>(interface_, bool)
               , karma::locals<std::string> > start;
 };
 

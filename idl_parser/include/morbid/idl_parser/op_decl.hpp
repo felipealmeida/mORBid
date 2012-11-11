@@ -128,4 +128,8 @@ BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
                               (bool, user_defined)
                               );
 
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::direction::in, BOOST_PP_EMPTY());
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::direction::out, BOOST_PP_EMPTY());
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::direction::inout, BOOST_PP_EMPTY());
+
 #endif

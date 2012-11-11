@@ -6,6 +6,8 @@
  */
 
 #include <morbid/idl_compiler/generator/stub_generator.hpp>
+#include <morbid/idl_compiler/generator/local_stub_generator.hpp>
+#include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
 #include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
 #include <morbid/idl_compiler/module.hpp>
@@ -80,6 +82,9 @@ void generate_header_modules_visitor::examine_vertex
   morbid::idl_compiler::generator::header_stub_generator
     <output_iterator_type, parser_iterator_type>
     header_stub_generator;
+  morbid::idl_compiler::generator::header_local_stub_generator
+    <output_iterator_type, parser_iterator_type>
+    header_local_stub_generator;
   morbid::idl_compiler::generator::typedef_generator
     <output_iterator_type, parser_iterator_type>
     typedef_generator;
@@ -100,37 +105,68 @@ void generate_header_modules_visitor::examine_vertex
     if(!r) throw std::runtime_error("Failed generating header_stub_generator");
   }
 
-  // std::pair<in_edge_iterator, in_edge_iterator>
-  //   edges = in_edges(v, modules);
-  // if(boost::distance(edges))
+  // for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
+  //       , last = m.interfaces.end(); first != last; ++first)
   // {
-  //   assert(boost::distance(edges) == 1);
-  //   do
-  //   {
-  //     vertex_descriptor v = source(*edges.first, modules);
-  //     module const& m = *boost::get(map, v);
-  //     module_path.push_back(m.name);
-  //     edges = in_edges(v, modules);
-  //   }
-  //   while(boost::distance(edges));
+  //   bool r = karma::generate(state->iterator, header_local_stub_generator(phoenix::val(*first))
+  //                            , first->definition);
+  //   if(!r) throw std::runtime_error("Failed generating header_local_stub_generator");
   // }
-
-  // std::copy(module_path.rbegin(), module_path.rend()
-  //           , std::ostream_iterator<std::string>(std::cout, "::"));
-  // std::cout << std::endl;
 }
 
-// void generate_header_modules_visitor::examine_edge
-//   (edge_descriptor e, modules_tree_type const& modules)
-// {
-//   typedef typename boost::property_map<modules_tree_type, module_property_t>
-//     ::const_type module_map;
-//   module_map map = get(module_property_t(), modules);
-//   module const& src = *boost::get(map, source(e, modules));
-//   module const& tgt = *boost::get(map, target(e, modules));
-//   std::cout << "Edge " << src.name << " x "
-//             << tgt.name << std::endl;
-// }
+void generate_header_poa_modules_visitor::examine_vertex
+  (vertex_descriptor v, modules_tree_type const& modules)
+{
+  namespace karma = boost::spirit::karma;
+  namespace phoenix = boost::phoenix;
+  typedef typename boost::property_map<modules_tree_type, module_property_t>
+    ::const_type module_map;
+  module_map map = get(module_property_t(), modules);
+  module const& m = *boost::get(map, v);
+  std::cout << "Module " << m.name << std::endl;
+  typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
+
+  std::vector<std::string> modules_names;
+  {
+    vertex_descriptor vx = v;
+    module const* mx = &*boost::get(map, vx);
+    std::pair<in_edge_iterator, in_edge_iterator> edges;
+    while(mx->name != "")
+    {
+      modules_names.push_back(mx->name);
+
+      edges = in_edges(vx, modules);
+      vx = source(*edges.first, modules);
+      mx = &*boost::get(map, vx);
+    }
+  }
+
+  bool prepend_poa = modules_names.empty();
+  
+  for(std::vector<std::string>::const_reverse_iterator
+        first = modules_names.rbegin()
+        , last = modules_names.rend()
+        ;first != last; ++first)
+  {
+    std::string name = *first;
+    if(boost::next(first) == last)
+      name = "POA_" + name;
+    open_namespace(state->iterator, name);
+  }
+
+  morbid::idl_compiler::generator::header_poa_stub_generator
+    <output_iterator_type, parser_iterator_type>
+    header_poa_stub_generator;
+  for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
+        , last = m.interfaces.end(); first != last; ++first)
+  {
+    bool r = karma::generate(state->iterator, header_poa_stub_generator(phoenix::val(*first)
+                                                                        , prepend_poa)
+                             , first->definition);
+    if(!r) throw std::runtime_error("Failed generating header_poa_stub_generator");
+  }
+  
+}
 
 std::ostream& operator<<(std::ostream& os, lookuped_type l)
 {

@@ -163,7 +163,16 @@ int main(int argc, char** argv)
             std::cout << "interface " << interface << std::endl;
             typedef morbid::idl_compiler::interface_ interface_type;
             typedef morbid::idl_compiler::op_decl_type op_decl_type;
+            typedef morbid::idl_compiler::param_decl param_decl;
             interface_type i(interface);
+
+            op_decl_type is_a_op_decl = {morbid::idl_parser::types::boolean(), "_is_a"};
+            morbid::idl_parser::types::scoped_name string_scoped_name = {false};
+            string_scoped_name.identifiers.push_back("string");
+            param_decl param = {morbid::idl_parser::direction::in(), string_scoped_name};
+            is_a_op_decl.params.push_back(param);
+            is_a_op_decl.user_defined = false;
+            i.definition.op_decls.push_back(is_a_op_decl);
 
             for(std::vector<op_decl_type>::const_iterator
                   first = i.definition.op_decls.begin()
@@ -265,6 +274,7 @@ int main(int argc, char** argv)
                << karma::lit("#include <morbid/poa.hpp>") << karma::eol
                << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
                << karma::lit("#include <morbid/reply.hpp>") << karma::eol
+               << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol
                << karma::lit("#include <CORBA.h>") << karma::eol << karma::eol
                << karma::lit("#include <boost/integer.hpp>") << karma::eol
                << karma::eol
@@ -275,14 +285,15 @@ int main(int argc, char** argv)
 
             typedef boost::property_map<modules_tree_type, boost::vertex_color_t>::type
               color_map_t;
-            color_map_t color_map;
             typedef boost::queue<vertex_descriptor> queue_t;
-            queue_t queue;
-            morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
-            breadth_first_visit(modules_tree, global_module, queue
-                                , header_modules_visitor
-                                , color_map);
             {
+              color_map_t color_map;
+              queue_t queue;
+              morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
+              breadth_first_visit(modules_tree, global_module, queue
+                                  , header_modules_visitor
+                                  , color_map);
+
               typedef typename boost::property_map<modules_tree_type, module_property_t>
                 ::type module_map;
               module_map map = get(module_property_t(), modules_tree);
@@ -299,6 +310,32 @@ int main(int argc, char** argv)
                 iterator = std::copy(m.name.begin(), m.name.end(), iterator);
                 karma::generate(iterator, karma::eol);
               }
+            }
+
+            {
+              color_map_t color_map;
+              queue_t queue;
+              morbid::idl_compiler::generate_header_poa_modules_visitor header_poa_modules_visitor (iterator);
+              breadth_first_visit(modules_tree, global_module, queue
+                                  , header_poa_modules_visitor
+                                  , color_map);
+
+              // typedef typename boost::property_map<modules_tree_type, module_property_t>
+              //   ::type module_map;
+              // module_map map = get(module_property_t(), modules_tree);
+              // for(std::size_t l = header_poa_modules_visitor.state->opened_modules.size() - 1
+              //       ;l != 0;--l)
+              // {
+              //   morbid::idl_compiler::module const& m
+              //     = *boost::get(map, header_poa_modules_visitor.state->opened_modules[l]);
+                
+              //   *iterator++ = '}';
+              //   *iterator++ = ' ';
+              //   *iterator++ = '/';
+              //   *iterator++ = '/';
+              //   iterator = std::copy(m.name.begin(), m.name.end(), iterator);
+              //   karma::generate(iterator, karma::eol);
+              // }
             }
                   
 

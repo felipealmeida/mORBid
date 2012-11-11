@@ -84,7 +84,9 @@ struct scoped_name : karma::grammar<OutputIterator, idl_parser::types::scoped_na
       // I don't care for globally_qualified attribute
       // because the lookuped type _r1 is already qualified
       (karma::string % "::")[_1 = at_c<0>(_r1)]
-      << "::" << (karma::string % "::")[_1 = at_c<1>(_val)]
+      << "::" << (karma::string % "::")
+      [_1 = at_c<1>(_val)]
+      << "_ptr"
       ;
   }
 

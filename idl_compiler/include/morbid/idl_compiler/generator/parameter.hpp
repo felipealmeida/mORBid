@@ -33,11 +33,20 @@ struct parameter : karma::grammar<OutputIterator
     using phoenix::at_c;
     namespace types = idl_parser::types;
 
-    start = param(at_c<0>(_val), _r1)[_1 = at_c<1>(_val)];
+    in_traits = "::morbid::in_traits< ";
+    out_traits = "::morbid::out_traits< ";
+    inout_traits = "::morbid::inout_traits< ";
+    start = 
+      param(at_c<0>(_val), _r1)[_1 = at_c<1>(_val)];
     param = 
+      (in_traits[_1 = _r1]
+       | out_traits[_1 = _r1]
+       | inout_traits[_1 = _r1])
+      <<
       (floating_point | integer | char_ | wchar_ | boolean | octet
-       | any | object | value_base | void_ | scoped_name(_r2)
+       | any | object | value_base | void_ | scoped_name(_r1, _r2)
        | sequence) [_1 = at_c<0>(_val)]
+      << ">::type"
       ;
     floating_point =
       (
@@ -87,68 +96,25 @@ struct parameter : karma::grammar<OutputIterator
     object = karma::string[_1 = "CORBA::Object"];
     value_base = karma::string[_1 = "CORBA::ValueBase"];
     void_ = karma::string[_1 = "void"];
+    scoped_name =
+      (karma::string % "::")[_1 = at_c<0>(_r2)]
+      << "::" << (karma::string % "::")
+      [_1 = at_c<1>(_val)]
+      ;
 
     start.name("parameter");
     karma::debug(start);
     param.name("param");
     karma::debug(param);
-
-    //    (
-    //     karma::eps(at_c<1>(_val) == "string")
-    //     << -(
-    //          karma::eps(at_c<0>(_val) == "in") << "const "
-    //         )
-    //     << "char*"
-    //    )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "wstring")
-    //      << -(
-    //           karma::eps(at_c<0>(_val) == "in") << "const "
-    //          )
-    //      << "wchar_t*"
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "boolean") << "CORBA::Boolean"
-    //      << -(karma::eps(at_c<0>(_val) != "in")
-    //           << "&")
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "octet")
-    //      << -(
-    //           karma::eps(at_c<0>(_val) == "in") << "const "
-    //          )
-    //      << "unsigned char*"
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "wchar") << "wchar_t"
-    //      << -(karma::eps(at_c<0>(_val) != "in")
-    //           << "&")
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "any")
-    //      << -(karma::eps(at_c<0>(_val) == "in") << "const ")
-    //       << "CORBA::Any_ptr"
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "long")
-    //      << "CORBA::Long"
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "short")
-    //      << "CORBA::Short"
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "double")
-    //      << "CORBA::Double"
-    //     )
-    //   | (
-    //      karma::eps(at_c<1>(_val) == "float")
-    //      << "CORBA::Float"
-    //     )
-    //   | karma::string[_1 = at_c<1>(_val)]
-    //   ;
   }
 
+  typedef boost::variant<idl_parser::direction::in, idl_parser::direction::out, idl_parser::direction::inout>
+    direction_variant;
+
+  karma::rule<OutputIterator, idl_parser::direction::in> in_traits;
+  karma::rule<OutputIterator, idl_parser::direction::out> out_traits;
+  karma::rule<OutputIterator, idl_parser::direction::inout> inout_traits;
+  karma::rule<OutputIterator, idl_parser::types::scoped_name(direction_variant, lookuped_type_wrapper)> scoped_name;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(lookuped_type)> start;
   karma::rule<OutputIterator, idl_parser::types::floating_point()> floating_point;
   karma::rule<OutputIterator, idl_parser::types::integer()> integer;
@@ -160,7 +126,6 @@ struct parameter : karma::grammar<OutputIterator
   karma::rule<OutputIterator, idl_parser::types::object()> object;
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_;
-  generator::scoped_name<OutputIterator, Iterator> scoped_name;
   karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>()> sequence;
   karma::rule<OutputIterator, idl_parser::type_spec<Iterator>
               (boost::variant<idl_parser::direction::in

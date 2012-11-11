@@ -75,7 +75,7 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
       << ") = 0;"
      )
     ;
-  parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)])[_val];
+  parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
 
   common_functions =
     indent

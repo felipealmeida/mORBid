@@ -35,6 +35,25 @@ struct generate_header_modules_visitor : boost::default_bfs_visitor
   boost::shared_ptr<shared_state> state;
 };
 
+struct generate_header_poa_modules_visitor : boost::default_bfs_visitor
+{
+  generate_header_poa_modules_visitor(output_iterator_type& iterator)
+    : state(new shared_state(iterator))
+  {
+  }
+
+  struct shared_state
+  {
+    shared_state(output_iterator_type& iterator)
+      : iterator(iterator) {}
+    output_iterator_type& iterator;
+  };
+
+  void examine_vertex(vertex_descriptor v, modules_tree_type const& g);
+
+  boost::shared_ptr<shared_state> state;
+};
+
 } }
 
 #endif
