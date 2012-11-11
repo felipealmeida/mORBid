@@ -47,7 +47,7 @@ struct header_stub_generator : karma::grammar
 
 template <typename OutputIterator, typename Iterator>
 struct cpp_stub_generator : karma::grammar
-<OutputIterator, idl_parser::interface_def<Iterator>(), karma::locals<std::string> >
+<OutputIterator, idl_parser::interface_def<Iterator>(interface_)>
 {
   cpp_stub_generator();
 
@@ -56,8 +56,7 @@ struct cpp_stub_generator : karma::grammar
   karma::rule<OutputIterator, std::string()> members;
   karma::rule<OutputIterator, std::string()> construct_remote_stub;
   karma::rule<OutputIterator
-              , idl_parser::interface_def<Iterator>()
-              , karma::locals<std::string> > start;
+              , idl_parser::interface_def<Iterator>(interface_)> start;
 };
 
 } } }

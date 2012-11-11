@@ -49,6 +49,18 @@ inline char parse_argument(const char* first, const char*& rq_current
     throw std::runtime_error("Format error");
 }
 
+inline unsigned char parse_argument(const char* first, const char*& rq_current
+                                    , const char* rq_last, bool little_endian
+                                    , argument_tag<unsigned char>)
+{
+  if(rq_current != rq_last)
+  {
+    return *rq_current++;
+  }
+  else
+    throw std::runtime_error("Format error");
+}
+
 inline Double parse_argument(const char* first, const char*& rq_current
                              , const char* rq_last, bool little_endian
                              , argument_tag< ::morbid::Double>)

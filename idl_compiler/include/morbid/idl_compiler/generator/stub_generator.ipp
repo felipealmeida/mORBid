@@ -115,14 +115,15 @@ cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
   using karma::_val;
   using karma::_1;
   using karma::eol;
+  using phoenix::at_c;
   
-  // start = 
-  //   karma::eps[_a = phoenix::at_c<0>(_val)]
-  //   << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
-  //   << eol
-  //   << construct_remote_stub[_1 = _a] << eol
-  //   << members[_1 = _a] << eol
-  //   ;
+  start = 
+    karma::string[_1 = at_c<0>(_val)]
+    << "::~" << karma::string[_1 = at_c<0>(_val)] << "() {}" << eol
+    << eol
+    // << construct_remote_stub[_1 = at_c<0>(_val)] << eol
+    // << members[_1 = _a] << eol
+    ;
   // construct_remote_stub =
   //   "boost::shared_ptr<"
   //   << karma::string[_1 = _val] << "> "
@@ -141,7 +142,7 @@ cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
   //   << karma::string[_1 = _val] << "::_repository_id = \"IDL:"
   //   << karma::string[_1 = _val] << ":1.0\";" << eol
   //   ;
-  // indent = karma::space << karma::space;
+  indent = karma::space << karma::space;
 }
 
 } } }

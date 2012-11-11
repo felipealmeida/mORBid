@@ -27,27 +27,27 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
   using karma::_1;
   using karma::_val;
   using karma::_a;
-  using karma::_r1;
+  using karma::_r1; using karma::_r2;
   using karma::eol;
   using phoenix::at_c;
 
   start = 
-    "namespace morbid { namespace local_stub {"
+    "namespace local_stub {"
     << eol[_a = at_c<0>(_val)]
     << eol << "class "
     << karma::string[_1 = _a] << eol
     << " : public ::" << karma::string[_1 = _a] << eol
     << "{" << eol
     << "public:" << eol
-    << common_functions[_1 = _val]
+    << common_functions(_r2)[_1 = _val]
     << indent << "// Start of operations defined in IDL" << eol
     << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
-    // << ior_function
+    << ior_function
     << "private:" << eol
-    // << common_members[_1 = _a]
+    << common_members(_r2)[_1 = _a]
     << "};" << eol << eol
-    << "} }" << eol
+    << "}" << eol
     ;
   operation =
     indent
@@ -61,6 +61,10 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     << ");" << eol
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
+  poa_class_name =
+    -(karma::eps(_r1) << "POA_")
+    << karma::string[_1 = _val]
+    ;
 
   common_functions =
     indent
@@ -70,7 +74,7 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
         karma::string[_1 = at_c<0>(_val)]
         << "(std::string const& host, unsigned short port" << eol
         << indent << indent << ", ::morbid::String_ptr poa_name" << eol
-        << indent << indent << ", POA_" << karma::string[_1 = at_c<0>(_val)]
+        << indent << indent << ", " << poa_class_name(_r1)[_1 = at_c<0>(_val)]
         << "* servant)" << eol
         << indent << " : host(host), port(port), poa_name(poa_name), servant(servant)" << eol
         << indent << "{}" << eol
@@ -78,19 +82,19 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     << indent << "~" << karma::string[_1 = at_c<0>(_val)] << "();" << eol
     ;
 
-  // common_members =
-  //   indent
-  //   << "// Members" << eol
-  //   << indent << "std::string host;" << eol
-  //   << indent << "unsigned short port;" << eol
-  //   << indent << "::morbid::String_ptr poa_name;" << eol
-  //   << indent << "::POA_" << karma::string[_1 = _val] << "* servant;" << eol
-  //   ;
+  common_members =
+    indent
+    << "// Members" << eol
+    << indent << "std::string host;" << eol
+    << indent << "unsigned short port;" << eol
+    << indent << "::morbid::String_ptr poa_name;" << eol
+    << indent << poa_class_name(_r1)[_1 = _val] << "* servant;" << eol
+    ;
   indent = karma::space << karma::space;
-  // ior_function =
-  //   indent
-  //   << "::morbid::String_ptr ior() const;" << eol
-  //   ;
+  ior_function =
+    indent
+    << "::morbid::String_ptr ior() const;" << eol
+    ;
 }
 
 template <typename OutputIterator, typename Iterator>

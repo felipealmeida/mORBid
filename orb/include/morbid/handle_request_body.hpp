@@ -50,6 +50,12 @@ struct wrapped_type<char>
 };
 
 template <>
+struct wrapped_type<unsigned char>
+{
+  typedef unsigned char type;
+};
+
+template <>
 struct wrapped_type<double>
 {
   typedef double type;
@@ -119,6 +125,11 @@ inline bool unwrap(bool v)
 }
 
 inline char unwrap(char v)
+{
+  return v;
+}
+
+inline unsigned char unwrap(unsigned char v)
 {
   return v;
 }

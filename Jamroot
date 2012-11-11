@@ -25,6 +25,7 @@ exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/remote_stub_generator.cpp
  idl_compiler/src/poa_stub_generator.cpp
  idl_compiler/src/generate_header_modules_visitor.cpp
+ idl_compiler/src/generate_cpp_modules_visitor.cpp
  idl_parser /boost//filesystem /boost//program_options
   : <toolset>gcc:<cxxflags>-Wno-sign-compare
     <include>idl_compiler/include
