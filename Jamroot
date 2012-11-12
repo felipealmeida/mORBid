@@ -50,6 +50,8 @@ alias allprimitives : tests//allprimitives ;
 alias out_allprimitives : tests//out_allprimitives ;
 alias inout_allprimitives : tests//inout_allprimitives ;
 alias return_allprimitives : tests//return_allprimitives ;
+alias modules_allprimitives : tests//modules_allprimitives ;
 
-alias tests : install allprimitives out_allprimitives inout_allprimitives return_allprimitives ;
+alias tests : install allprimitives out_allprimitives inout_allprimitives
+ return_allprimitives modules_allprimitives ;
 
