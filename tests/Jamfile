@@ -75,6 +75,21 @@ exe inout_allprimitives_server
 
 make inout_allprimitives.output : inout_allprimitives_client inout_allprimitives_server : @run-server-client ;
 
+make return_allprimitives.h : return_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
+make return_allprimitives.cpp : return_allprimitives.h : @donothing ;
+
+exe return_allprimitives_client
+ : return_allprimitives_client.cpp /morbid//morbid return_allprimitives.cpp
+ : <implicit-dependency>return_allprimitives.h
+ ;
+exe return_allprimitives_server
+ : return_allprimitives_server.cpp /morbid//morbid return_allprimitives.cpp
+ : <implicit-dependency>return_allprimitives.h
+ ;
+
+make return_allprimitives.output : return_allprimitives_client return_allprimitives_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
 alias inout_allprimitives : inout_allprimitives.output ;
+alias return_allprimitives : return_allprimitives.output ;

@@ -5,68 +5,68 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "out_allprimitives.h"
+#include "return_allprimitives.h"
 
 #include <fstream>
 
-struct out_allprimitives_impl : POA_out_allprimitives
+struct return_allprimitives_impl : POA_return_allprimitives
 {
-  out_allprimitives_impl(CORBA::ORB_var orb)
+  return_allprimitives_impl(CORBA::ORB_var orb)
     : foo1_(false), foo2_(false), foo3_(false)
     , foo4_(false), foo5_(false), foo6_(false)
     , foo7_(false), foo8_(false), foo9_(false)
     , foo10_(false), foo11_(false)
     , orb(orb) {}
 
-  void foo1(CORBA::Boolean_out b)
+  CORBA::Boolean foo1()
   {
     std::cout << "== foo1" << std::endl;
     assert(!foo1_);
-    b = true;
     foo1_ = true;
+    return true;
   }
-  void foo2(CORBA::Char_out c)
+  CORBA::Char foo2()
   {
     std::cout << "== foo2" << std::endl;
     assert(!foo2_ && foo1_);
-    c = 'c';
     foo2_ = true;
+    return 'c';
   }
-  void foo3(CORBA::Double_out d)
+  CORBA::Double foo3()
   {
     std::cout << "== foo3" << std::endl;
     assert(!foo3_ && foo2_ && foo1_);
-    d = 2.0;
     foo3_ = true;
+    return 2.0;
   }
-  void foo4(CORBA::Float_out f)
+  CORBA::Float foo4()
   {
     std::cout << "== foo4" << std::endl;
     assert(!foo4_ && foo3_ && foo2_ && foo1_);
-    f = 2.0f;
     foo4_ = true;
+    return 2.0f;
   }
-  void foo5(CORBA::Long_out l)
+  CORBA::Long foo5()
   {
     std::cout << "== foo5" << std::endl;
     assert(!foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    l = 2l;
     foo5_ = true;
+    return 2l;
   }
-  void foo6(CORBA::Octet_out s)
+  CORBA::Octet foo6()
   {
     std::cout << "== foo6" << std::endl;
     assert(!foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    s = 'c';
     foo6_ = true;
+    return 'c';
   }
-  void foo7(CORBA::Short_out s)
+  CORBA::Short foo7()
   {
     std::cout << "== foo7" << std::endl;
     assert(!foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    s = 2;
     foo7_ = true;
     orb->shutdown(true);
+    return 2;
   }
   // void foo8(String_out str)
   // {
@@ -112,9 +112,9 @@ int main(int argc, char* argv[])
   PortableServer::POA_var poa = PortableServer::POA::_narrow (poa_obj);
   PortableServer::POAManager_var poa_manager = poa->the_POAManager();
   
-  out_allprimitives_impl out_allprimitives(orb);
+  return_allprimitives_impl return_allprimitives(orb);
 
-  PortableServer::ObjectId_var oid = poa->activate_object (&out_allprimitives);
+  PortableServer::ObjectId_var oid = poa->activate_object (&return_allprimitives);
 
   CORBA::Object_var ref = poa->id_to_reference (oid.in());
   CORBA::String_var str = orb->object_to_string (ref.in());
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
   poa_manager->activate();
   orb->run();
 
-  assert(out_allprimitives.foo7_ && out_allprimitives.foo6_ && out_allprimitives.foo5_
-         && out_allprimitives.foo4_ && out_allprimitives.foo3_ && out_allprimitives.foo2_
-         && out_allprimitives.foo1_);
+  assert(return_allprimitives.foo7_ && return_allprimitives.foo6_ && return_allprimitives.foo5_
+         && return_allprimitives.foo4_ && return_allprimitives.foo3_ && return_allprimitives.foo2_
+         && return_allprimitives.foo1_);
 }

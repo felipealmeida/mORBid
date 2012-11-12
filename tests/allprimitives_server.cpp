@@ -129,4 +129,8 @@ int main(int argc, char* argv[])
 
   poa_manager->activate();
   orb->run();
+
+  assert(allprimitives.foo7_ && allprimitives.foo6_ && allprimitives.foo5_
+         && allprimitives.foo4_ && allprimitives.foo3_ && allprimitives.foo2_
+         && allprimitives.foo1_);
 }

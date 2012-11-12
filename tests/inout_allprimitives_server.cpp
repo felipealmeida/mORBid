@@ -138,4 +138,8 @@ int main(int argc, char* argv[])
 
   poa_manager->activate();
   orb->run();
+
+  assert(inout_allprimitives.foo7_ && inout_allprimitives.foo6_ && inout_allprimitives.foo5_
+         && inout_allprimitives.foo4_ && inout_allprimitives.foo3_ && inout_allprimitives.foo2_
+         && inout_allprimitives.foo1_);
 }
