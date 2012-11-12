@@ -51,6 +51,8 @@ struct cpp_poa_stub_generator : karma::grammar
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
+    type_spec_select;
   karma::rule<OutputIterator, std::string(bool)> construct_local_stub_function;
   karma::rule<OutputIterator, std::string()> is_a_impl_strcmp;
   karma::rule<OutputIterator, void(unsigned int)> var_indent;
@@ -61,9 +63,16 @@ struct cpp_poa_stub_generator : karma::grammar
               (idl_parser::interface_def<Iterator>, interface_, bool)
               , karma::locals<unsigned int> > non_user_defined_operations;
   karma::rule<OutputIterator, std::string(bool)> class_name;
-  karma::rule<OutputIterator, idl_parser::op_decl<Iterator>(unsigned int, std::string, bool)> dispatching_if;
+  karma::rule<OutputIterator, idl_parser::op_decl<Iterator>
+              (unsigned int, std::string, bool, interface_)> dispatching_if;
   karma::rule<OutputIterator> indent;
-  karma::rule<OutputIterator, idl_parser::interface_def<Iterator>(bool)> dispatch_function;
+  karma::rule<OutputIterator, idl_parser::interface_def<Iterator>(bool, interface_)>
+    dispatch_function;
+  karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
+  karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
+  karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
+    synchronous_template_args;
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>(interface_, bool)> start;
 };

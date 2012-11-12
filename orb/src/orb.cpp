@@ -22,7 +22,7 @@ ORB::ORB()
 {
   const char rootpoa[] = {"RootPOA"};
   String_ptr p(new char[sizeof(rootpoa)-1]);
-  std::memcpy(p.get(), rootpoa, sizeof(rootpoa)-1);
+  std::memcpy(p/*.get()*/, rootpoa, sizeof(rootpoa)-1);
   root_poa.reset(new poa::POA(p, io_service));
 }
 

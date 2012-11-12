@@ -70,7 +70,7 @@ struct Object : morbid::Object
                     << ":" << karma::ushort_(port)
                     << "/" << karma::lit(object_key));
     String_ptr r( new char[string.size()+1] );
-    std::strcpy(r.get(), string.c_str());
+    std::strcpy(r/*.get()*/, string.c_str());
     return r;
   }
 

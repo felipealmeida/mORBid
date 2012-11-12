@@ -17,14 +17,42 @@ struct out_tag {};
 struct inout_tag {};
 
 template <typename T, typename Tag>
-struct value_type_tag
+struct value_type_tag;
+
+template <typename T>
+struct value_type_tag<T, in_tag>
 {
-  typedef T type;
-  typedef Tag tag;
+  typedef T original_type;
+  typedef typename in_traits<T>::type type;
+  typedef in_tag tag;
 
-  value_type_tag(T value) : value(value) {}
+  value_type_tag(type value) : value(value) {}
 
-  T value;
+  type value;
+};
+
+template <typename T>
+struct value_type_tag<T, out_tag>
+{
+  typedef T original_type;
+  typedef typename out_traits<T>::type type;
+  typedef out_tag tag;
+
+  value_type_tag(type value) : value(value) {}
+
+  type value;
+};
+
+template <typename T>
+struct value_type_tag<T, inout_tag>
+{
+  typedef T original_type;
+  typedef typename inout_traits<T>::type type;
+  typedef inout_tag tag;
+
+  value_type_tag(type value) : value(value) {}
+
+  type value;
 };
 
 } }

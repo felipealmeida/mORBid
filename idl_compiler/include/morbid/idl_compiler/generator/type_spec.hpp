@@ -55,6 +55,32 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
        << "CORBA::LongDouble"
       )
       ;
+    integer =
+      (
+       karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
+       << "CORBA::Short"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
+       << "CORBA::Long"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
+       << "CORBA::LongLong"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
+       << "CORBA::UShort"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
+       << "CORBA::ULong"
+      )
+      | (
+       karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
+       << "CORBA::ULongLong"
+      )
+      ;
     char_ = karma::string[_1 = "CORBA::Char"];
     wchar_ = karma::string[_1 = "CORBA::WChar"];
     boolean = karma::string[_1 = "CORBA::Boolean"];

@@ -84,21 +84,17 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
     << indent << "}" << eol
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
+  type_spec_select = type_spec(at_c<1>(_r1)[at_c<1>(_val)])[_1 = at_c<1>(_val)];
   in_tag = karma::string[_1 = "::morbid::type_tag::in_tag"];
   out_tag = karma::string[_1 = "::morbid::type_tag::out_tag"];
   inout_tag = karma::string[_1 = "::morbid::type_tag::inout_tag"];
   synchronous_template_args = 
     "::morbid::type_tag::value_type_tag< "
-    << parameter_select(_r1)[_1 = _val]
+    << type_spec_select(_r1)[_1 = _val]
+    // << parameter_select(_r1)[_1 = _val]
     << ", " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
     << ">"
     ;
-  // synchronous_template_args
-  //   = "::morbid::type_tag::value_type_tag<"
-  //   << parameter_select(_r1)[_1 = at_c<1>(_val)]
-  //   << ", ::morbid::type_tag::"
-  //   << karma::string[_1 = at_c<0>(_val)]
-  //   << "_tag>";
   synchronous_args = karma::eps[_a = 0u] << "arg" << karma::lit(++_a);
   
   common_functions =

@@ -28,6 +28,8 @@ struct header_remote_stub_generator : karma::grammar
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
+    type_spec_select;
   karma::rule<OutputIterator> ior_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator, std::string()> common_members;

@@ -116,9 +116,8 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
   using karma::_a;
   using karma::_val;
   using karma::_1;
-  using karma::_r1;
-  using karma::_r2;
-  using karma::_r3;
+  using karma::_r1; using karma::_r2; using karma::_r3;
+  using karma::_r4;
   using karma::eol;
   using phoenix::at_c;
 
@@ -126,7 +125,7 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
     class_name(_r2)[_1 = at_c<0>(_val)] << "::~"
     << class_name(_r2)[_1 = at_c<0>(_val)] << "() {}" << eol
     << eol
-    << dispatch_function(_r2)[_1 = _val] << eol
+    << dispatch_function(_r2, _r1)[_1 = _val] << eol
     << (*(non_user_defined_operations(_val, _r1, _r2) << eol))[_1 = at_c<1>(_val)]
     << construct_local_stub_function(_r2)[_1 = at_c<0>(_val)]
     ;
@@ -137,7 +136,7 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
     << ", bool little_endian, ::morbid::reply& reply)" << eol
     << "{" << eol
     << indent
-    << (dispatching_if(1, at_c<0>(_val), _r1) % (indent << "else "))[_1 = at_c<1>(_val)] << eol
+    << (dispatching_if(1, at_c<0>(_val), _r1, _r2) % (indent << "else "))[_1 = at_c<1>(_val)] << eol
     << "}" << eol
     ;
   dispatching_if =
@@ -149,10 +148,21 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
     << var_indent(_r1+1) << "std::cout << \"" << class_name(_r3)[_1 = _r2]
     << "::" << karma::string[_1 = at_c<1>(_val)] << "\" << std::endl;" << eol
     << var_indent(_r1+1)
-    << "::morbid::handle_request_body(this, &" << class_name(_r3)[_1 = _r2]
+    << "::morbid::handle_request_body< ::boost::mpl::vector< "
+    << -(synchronous_template_args(_r4) % ", ")[_1 = at_c<2>(_val)]
+    << " > >(this, &" << class_name(_r3)[_1 = _r2]
     << "::" << karma::string[_1 = at_c<1>(_val)]
     << ", first, rq_first, rq_last, little_endian, reply);" << eol
     << var_indent(_r1) << "}" << eol
+    ;
+  in_tag = karma::string[_1 = "::morbid::type_tag::in_tag"];
+  out_tag = karma::string[_1 = "::morbid::type_tag::out_tag"];
+  inout_tag = karma::string[_1 = "::morbid::type_tag::inout_tag"];
+  synchronous_template_args = 
+    "::morbid::type_tag::value_type_tag< "
+    << type_spec_select(_r1)[_1 = _val]
+    << ", " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
+    << ">"
     ;
   indent = karma::space << karma::space;
   class_name =
@@ -177,6 +187,7 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
      )
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
+  type_spec_select = type_spec(at_c<1>(_r1)[at_c<1>(_val)])[_1 = at_c<1>(_val)];
   non_user_defined_implementation %= 
     karma::omit[karma::eps(at_c<1>(_val) == "_is_a")] << is_a_impl(_r1, _r2)
     ;

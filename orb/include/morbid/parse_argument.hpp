@@ -25,9 +25,9 @@ struct argument_tag
 {
 };
 
-inline bool parse_argument(const char* first, const char*& rq_current
-                           , const char* rq_last, bool little_endian
-                           , argument_tag<bool>)
+inline Boolean parse_argument(const char* first, const char*& rq_current
+                              , const char* rq_last, bool little_endian
+                              , argument_tag<Boolean>)
 {
   if(rq_current != rq_last)
   {
@@ -37,9 +37,9 @@ inline bool parse_argument(const char* first, const char*& rq_current
     throw std::runtime_error("Format error");
 }
 
-inline char parse_argument(const char* first, const char*& rq_current
+inline Char parse_argument(const char* first, const char*& rq_current
                            , const char* rq_last, bool little_endian
-                           , argument_tag<char>)
+                           , argument_tag<Char>)
 {
   if(rq_current != rq_last)
   {
@@ -49,9 +49,9 @@ inline char parse_argument(const char* first, const char*& rq_current
     throw std::runtime_error("Format error");
 }
 
-inline unsigned char parse_argument(const char* first, const char*& rq_current
-                                    , const char* rq_last, bool little_endian
-                                    , argument_tag<unsigned char>)
+inline Octet parse_argument(const char* first, const char*& rq_current
+                            , const char* rq_last, bool little_endian
+                            , argument_tag<Octet>)
 {
   if(rq_current != rq_last)
   {
@@ -111,6 +111,29 @@ inline Float parse_argument(const char* first, const char*& rq_current
     throw std::runtime_error("Error parsing");
 }
 
+inline ::morbid::ULong parse_argument(const char* first, const char*& rq_current
+                                      , const char* rq_last, bool little_endian
+                                      , argument_tag< ::morbid::ULong>)
+{
+  int const size = sizeof(::morbid::ULong);
+  if(std::distance(rq_current, rq_last) >= size)
+  {
+    ::morbid::ULong r;
+    if(little_endian && true /* am I little endian? */)
+    {
+      std::memcpy(&r, rq_current, sizeof(::morbid::ULong));
+    }
+    else // endianness doesnt match
+    {
+      std::reverse_copy(rq_current, rq_current + sizeof(::morbid::ULong), &r);
+    }
+    rq_current += sizeof(::morbid::ULong);
+    return r;
+  }
+  else
+    throw std::runtime_error("Error parsing");
+}
+
 inline ::morbid::Long parse_argument(const char* first, const char*& rq_current
                                      , const char* rq_last, bool little_endian
                                      , argument_tag< ::morbid::Long>)
@@ -157,16 +180,16 @@ inline ::morbid::Short parse_argument(const char* first, const char*& rq_current
     throw std::runtime_error("Error parsing");
 }
 
-inline wchar_t parse_argument(const char* first, const char*& rq_current
-                           , const char* rq_last, bool little_endian
-                           , argument_tag<wchar_t>)
+inline WChar parse_argument(const char* first, const char*& rq_current
+                            , const char* rq_last, bool little_endian
+                            , argument_tag<WChar>)
 {
   throw std::runtime_error("NOT_IMPLEMENTED");
 }
 
-inline std::vector<wchar_t> parse_argument(const char* first, const char*& rq_current
-                           , const char* rq_last, bool little_endian
-                           , argument_tag<const wchar_t*>)
+inline std::vector<WChar> parse_argument(const char* first, const char*& rq_current
+                                         , const char* rq_last, bool little_endian
+                                         , argument_tag<std::vector<WChar> >)
 {
   throw std::runtime_error("NOT_IMPLEMENTED");
 }
@@ -181,7 +204,7 @@ inline morbid::Any_ptr parse_argument(const char* first, const char*& rq_current
 inline
 std::vector<char> parse_argument(const char* first, const char*& rq_current
                                  , const char* rq_last, bool little_endian
-                                 , argument_tag<const char*>)
+                                 , argument_tag<std::vector<char> >)
 {
   {
     std::cout << "start of argument reading" << std::endl;
@@ -243,14 +266,14 @@ std::vector<char> parse_argument(const char* first, const char*& rq_current
   throw std::runtime_error("Error parsing argument");
 }
 
-inline std::vector<unsigned char>
+inline std::vector<Octet>
 parse_argument(const char* first, const char*& rq_current
                , const char* rq_last, bool little_endian
-               , argument_tag<const unsigned char*>)
+               , argument_tag<std::vector<Octet> >)
 {
   std::vector<char> v = parse_argument(first, rq_current
                                        , rq_last, little_endian
-                                       , argument_tag<const char*>());
+                                       , argument_tag<std::vector<char> >());
   std::vector<unsigned char> r(v.begin(), v.end());
   return r;
 }

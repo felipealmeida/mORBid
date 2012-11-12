@@ -5,15 +5,35 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#ifndef MORBID_STRING_HPP
+#define MORBID_STRING_HPP
+
 #include <morbid/var.hpp>
 
 namespace morbid {
 
 typedef char* String;
 typedef char* string;
-typedef boost::shared_array<char> String_ptr;
-typedef array_var<char> String_var;
-typedef boost::shared_array<char> string_ptr;
-typedef array_var<char> string_var;
+typedef char* String_ptr;
+typedef char* string_ptr;
 
+struct String_var
+{
+  String_var(const char* s)
+    : str(s) {}
+  String_var(char* s)
+    : str(s)
+  {
+    delete[] s;
+  }
+
+  const char* in() const { return str.c_str(); }
+
+private:
+  std::string str;
+};
+
+typedef String_var string_var;
 }
+
+#endif
