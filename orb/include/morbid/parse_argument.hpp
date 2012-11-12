@@ -10,6 +10,7 @@
 
 #include <morbid/iiop/grammar/sequence.hpp>
 #include <morbid/iiop/grammar/align.hpp>
+#include <morbid/iiop/grammar/types/primitives.hpp>
 #include <morbid/any.hpp>
 #include <morbid/primitive_types.hpp>
 
@@ -29,9 +30,12 @@ inline Boolean parse_argument(const char* first, const char*& rq_current
                               , const char* rq_last, bool little_endian
                               , argument_tag<Boolean>)
 {
-  if(rq_current != rq_last)
+  typedef iiop::grammar::boolean<const char*> boolean_grammar;
+  boolean_grammar boolean;
+  bool r = 0;
+  if(boost::spirit::qi::parse(rq_current, rq_last, boolean, r))
   {
-    return *rq_current++;
+    return r;
   }
   else
     throw std::runtime_error("Format error");

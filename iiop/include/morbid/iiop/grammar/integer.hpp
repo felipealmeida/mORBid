@@ -51,6 +51,23 @@ struct dword : qi::grammar<Iterator, boost::uint_t<32u>::least(bool)>
   qi::rule<Iterator, boost::uint_t<32u>::least(bool)> start;
 };
 
+template <typename Iterator>
+struct qword : qi::grammar<Iterator, boost::uint_t<64u>::least(bool)>
+{
+  qword()
+    : qword::base_type(start)
+  {
+    using qi::_r1;
+    start %= (qi::eps(_r1) >> qi::little_qword)
+      | qi::big_qword
+      ;
+    start.name("dword");
+    qi::debug(start);
+  }
+
+  qi::rule<Iterator, boost::uint_t<64u>::least(bool)> start;
+};
+
 } } }
 
 #endif

@@ -26,7 +26,7 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
 {
   namespace phoenix = boost::phoenix;
   using karma::_1;
-  using karma::_val; using karma::_r1;
+  using karma::_val; using karma::_r1; using karma::_r2;
   using karma::_a;
   using karma::eol;
   using phoenix::at_c;
@@ -62,6 +62,7 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
     << -((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
     << ")" << eol
     << indent << "{" << eol
+    << karma::eps[_a = 0]
     << (
         indent << indent << "std::cout << \"Called " << karma::string[_1 = phoenix::at_c<1>(_val)]
         << " was called\" << std::endl;" << eol
@@ -72,30 +73,38 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
          at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
         )
         [_1 = at_c<0>(_val)]
-        << (*(eol << indent << indent << indent << ", "
-              << synchronous_template_args(_r1)))[_1 = at_c<2>(_val)]
+        // << (*(eol << indent << indent << indent << ", "
+        //       << synchronous_template_args(_r1)))[_1 = at_c<2>(_val)]
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
         << "(_repository_id, \"" << karma::string[_1 = at_c<1>(_val)]
         << "\", host, port, object_key"
-        << (*(", " << synchronous_args))[_1 = at_c<2>(_val)]
-        << ");" << eol
+        << eol << indent << indent << indent << indent << ", "
+        << "boost::fusion::vector"
+        << eol << indent << indent << indent << indent << '<'
+        << eol << indent << indent << indent << indent << indent
+        << -(synchronous_template_args(_r1) % (eol << indent << indent << indent << indent << ", "))[_1 = at_c<2>(_val)]
+        << eol << indent << indent << indent << indent << '>'
+        << "("
+        << -(synchronous_args(_r1, ++_a) % (eol << indent << indent << indent << indent << ", "))[_1 = at_c<2>(_val)]
+        << "));" << eol
        )
     << indent << "}" << eol
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
-  type_spec_select = type_spec(at_c<1>(_r1)[at_c<1>(_val)])[_1 = at_c<1>(_val)];
+  type_spec_select %= type_spec(at_c<1>(_r1)[_val]);
   in_tag = karma::string[_1 = "::morbid::type_tag::in_tag"];
   out_tag = karma::string[_1 = "::morbid::type_tag::out_tag"];
   inout_tag = karma::string[_1 = "::morbid::type_tag::inout_tag"];
   synchronous_template_args = 
-    "::morbid::type_tag::value_type_tag< "
-    << type_spec_select(_r1)[_1 = _val]
-    // << parameter_select(_r1)[_1 = _val]
+    karma::string[_1 = "::morbid::type_tag::value_type_tag< "]
+    << type_spec_select(_r1)[_1 = at_c<1>(_val)]
     << ", " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
     << ">"
     ;
-  synchronous_args = karma::eps[_a = 0u] << "arg" << karma::lit(++_a);
+  synchronous_args %=
+    synchronous_template_args(_r1)
+    << "(arg" << karma::lit(_r2) << ")";
   
   common_functions =
     indent

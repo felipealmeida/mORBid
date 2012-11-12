@@ -28,7 +28,7 @@ struct header_remote_stub_generator : karma::grammar
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
+  karma::rule<OutputIterator, idl_parser::type_spec<Iterator>(interface_)>
     type_spec_select;
   karma::rule<OutputIterator> ior_function;
   karma::rule<OutputIterator> indent;
@@ -43,8 +43,7 @@ struct header_remote_stub_generator : karma::grammar
               , karma::locals<std::string> > start;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     synchronous_template_args;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()
-              , karma::locals<unsigned int> > synchronous_args;
+  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_, unsigned int)> synchronous_args;
   karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
   karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;

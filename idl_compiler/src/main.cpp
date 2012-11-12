@@ -325,6 +325,7 @@ int main(int argc, char** argv)
                << "// Generated implementation. DO NOT EDIT" << karma::eol << karma::eol
                << "#include \"" << karma::lit(header_path.filename().native()) << "\"" << karma::eol
                << "#include <morbid/synchronous_call.hpp>" << karma::eol
+               << "#include <boost/fusion/include/vector.hpp>" << karma::eol
                << karma::eol
                );
             if(!r) 

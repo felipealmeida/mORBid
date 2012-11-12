@@ -104,7 +104,7 @@ struct in_traits<Octet>
 template <>
 struct out_traits<String>
 {
-  typedef char* type;
+  typedef String_out type;
 };
 
 template <>
@@ -179,7 +179,48 @@ struct out_traits<Octet>
   typedef Octet& type;
 };
 
-typedef out_traits<String>::type String_out;
+template <>
+struct inout_traits<String>
+{
+  typedef String_out type;
+};
+
+template <>
+struct inout_traits<Boolean> : out_traits<Boolean> {};
+
+template <>
+struct inout_traits<UShort> : out_traits<UShort> {};
+
+template <>
+struct inout_traits<Short> : out_traits<Short> {};
+
+template <>
+struct inout_traits<ULong> : out_traits<ULong> {};
+
+template <>
+struct inout_traits<Long> : out_traits<Long> {};
+
+template <>
+struct inout_traits<ULongLong> : out_traits<ULongLong> {};
+
+template <>
+struct inout_traits<LongLong> : out_traits<LongLong> {};
+
+template <>
+struct inout_traits<Double> : out_traits<Double> {};
+
+template <>
+struct inout_traits<Float> : out_traits<Float> {};
+
+template <>
+struct inout_traits<Char> : out_traits<Char> {};
+
+template <>
+struct inout_traits<WChar> : out_traits<WChar> {};
+
+template <>
+struct inout_traits<Octet> : out_traits<Octet> {};
+
 typedef out_traits<Boolean>::type Boolean_out;
 typedef out_traits<UShort>::type UShort_out;
 typedef out_traits<Short>::type Short_out;

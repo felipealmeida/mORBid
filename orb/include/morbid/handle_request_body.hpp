@@ -181,6 +181,7 @@ struct init_arg<type_tag::in_tag>
   static R call(const char* first, const char*& rq_current
                 , const char* rq_last, bool little_endian)
   {
+    std::cout << "init arg parsing in param " << typeid(R).name() << std::endl;
     return parse_argument(first, rq_current, rq_last, little_endian
                           , argument_tag<R>());
   }
@@ -193,6 +194,7 @@ struct init_arg<type_tag::out_tag>
   static R call(const char* first, const char*& rq_current
                 , const char* rq_last, bool little_endian)
   {
+    std::cout << "init arg default constructing out param " << typeid(R).name() << std::endl;
     return R();
   }
 };
@@ -211,6 +213,7 @@ struct serialize_out_arg<type_tag::in_tag>
   template <typename OutputIterator, typename A>
   static void call(OutputIterator& iterator, bool b, A a)
   {
+    std::cout << "NOT serialize out param " << typeid(A).name() << std::endl;
   }
 };
 
@@ -220,7 +223,8 @@ struct serialize_out_arg<type_tag::out_tag>
   template <typename OutputIterator, typename A>
   static void call(OutputIterator& iterator, bool b, A a)
   {
-    iiop::serialize_object(iterator, b, a.value);
+    std::cout << "serialize out param " << typeid(A).name() << std::endl;
+    iiop::serialize_object(iterator, b, a);
   }
 };
 
@@ -294,7 +298,8 @@ struct make_request_and_call_function<void, N()>
 
     (self->*f)(BOOST_PP_REPEAT(N(), TECORB_HANDLE_REQUEST_unwrap, ~));
 
-    
+    std::back_insert_iterator<std::vector<char> > iterator(r.reply_body);
+    BOOST_PP_REPEAT(N(), MORBID_MAKE_REQUEST_ARGUMENT_SERIALIZE_OUTPUT, ~)
   }
 };
 

@@ -9,6 +9,8 @@
 #include <morbid/synchronous_call.hpp>
 #include <morbid/in_out_traits.hpp>
 
+#include <boost/fusion/include/make_vector.hpp>
+
 #include <iostream>
 
 namespace morbid {
@@ -23,10 +25,10 @@ bool Object::_is_a(const char* id)
 {
   using ::morbid::type_tag::value_type_tag;
   using ::morbid::type_tag::in_tag;
-  return ::morbid::synchronous_call::call
-    <bool, value_type_tag<string, type_tag::in_tag> >
+  return ::morbid::synchronous_call::call<bool>
     (morbid::Object::repository_id, "_is_a"
-     , host, port, object_key, id);
+     , host, port, object_key
+     , boost::fusion::vector<value_type_tag<string, type_tag::in_tag> >(id));
 }
 
 } }

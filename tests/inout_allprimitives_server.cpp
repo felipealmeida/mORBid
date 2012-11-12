@@ -5,13 +5,13 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "out_allprimitives.h"
+#include "inout_allprimitives.h"
 
 #include <fstream>
 
-struct out_allprimitives_impl : POA_out_allprimitives
+struct inout_allprimitives_impl : POA_inout_allprimitives
 {
-  out_allprimitives_impl(CORBA::ORB_var orb)
+  inout_allprimitives_impl(CORBA::ORB_var orb)
     : foo1_(false), foo2_(false), foo3_(false)
     , foo4_(false), foo5_(false), foo6_(false)
     , foo7_(false), foo8_(false), foo9_(false)
@@ -22,6 +22,7 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo1" << std::endl;
     assert(!foo1_);
+    assert(b == false);
     b = true;
     foo1_ = true;
   }
@@ -29,6 +30,7 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo2" << std::endl;
     assert(!foo2_ && foo1_);
+    assert(c == 'a');
     c = 'c';
     foo2_ = true;
   }
@@ -36,6 +38,7 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo3" << std::endl;
     assert(!foo3_ && foo2_ && foo1_);
+    assert(d == 1.0);
     d = 2.0;
     foo3_ = true;
   }
@@ -43,6 +46,7 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo4" << std::endl;
     assert(!foo4_ && foo3_ && foo2_ && foo1_);
+    assert(f == 1.0f);
     f = 2.0f;
     foo4_ = true;
   }
@@ -50,6 +54,7 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo5" << std::endl;
     assert(!foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+    assert(l == 1l);
     l = 2l;
     foo5_ = true;
   }
@@ -57,6 +62,7 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo6" << std::endl;
     assert(!foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+    assert(s == 'a');
     s = 'c';
     foo6_ = true;
   }
@@ -64,16 +70,18 @@ struct out_allprimitives_impl : POA_out_allprimitives
   {
     std::cout << "== foo7" << std::endl;
     assert(!foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+    assert(s == 1);
     s = 2;
     foo7_ = true;
     orb->shutdown(true);
   }
-  // void foo8(String_out str)
+  // void foo8(CORBA::String_out str)
   // {
   //   std::cout << "== foo8" << std::endl;
   //   assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
   //   assert(!std::strcmp(str, "qwe"));
   //   foo8_ = true;
+  //   str = "abc";
   //   orb->shutdown(true);
   // }
   // void foo9(wchar_t wc)
@@ -112,9 +120,9 @@ int main(int argc, char* argv[])
   PortableServer::POA_var poa = PortableServer::POA::_narrow (poa_obj);
   PortableServer::POAManager_var poa_manager = poa->the_POAManager();
   
-  out_allprimitives_impl out_allprimitives(orb);
+  inout_allprimitives_impl inout_allprimitives(orb);
 
-  PortableServer::ObjectId_var oid = poa->activate_object (&out_allprimitives);
+  PortableServer::ObjectId_var oid = poa->activate_object (&inout_allprimitives);
 
   CORBA::Object_var ref = poa->id_to_reference (oid.in());
   CORBA::String_var str = orb->object_to_string (ref.in());

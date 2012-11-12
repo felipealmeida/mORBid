@@ -14,9 +14,6 @@ path-constant install : ../install ;
 make allprimitives.h : allprimitives.idl : @compileidl : <dependency>/morbid//install ;
 make allprimitives.cpp : allprimitives.h : @donothing ;
 
-make out_allprimitives.h : out_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
-make out_allprimitives.cpp : out_allprimitives.h : @donothing ;
-
 actions donothing
 {
 }
@@ -50,6 +47,9 @@ actions run-server-client
   fi
 }
 
+make out_allprimitives.h : out_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
+make out_allprimitives.cpp : out_allprimitives.h : @donothing ;
+
 exe out_allprimitives_client
  : out_allprimitives_client.cpp /morbid//morbid out_allprimitives.cpp
  : <implicit-dependency>out_allprimitives.h
@@ -61,5 +61,20 @@ exe out_allprimitives_server
 
 make out_allprimitives.output : out_allprimitives_client out_allprimitives_server : @run-server-client ;
 
+make inout_allprimitives.h : inout_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
+make inout_allprimitives.cpp : inout_allprimitives.h : @donothing ;
+
+exe inout_allprimitives_client
+ : inout_allprimitives_client.cpp /morbid//morbid inout_allprimitives.cpp
+ : <implicit-dependency>inout_allprimitives.h
+ ;
+exe inout_allprimitives_server
+ : inout_allprimitives_server.cpp /morbid//morbid inout_allprimitives.cpp
+ : <implicit-dependency>inout_allprimitives.h
+ ;
+
+make inout_allprimitives.output : inout_allprimitives_client inout_allprimitives_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
+alias inout_allprimitives : inout_allprimitives.output ;
