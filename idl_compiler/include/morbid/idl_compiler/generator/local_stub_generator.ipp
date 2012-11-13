@@ -27,7 +27,7 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
   using karma::_1;
   using karma::_val;
   using karma::_a;
-  using karma::_r1; using karma::_r2;
+  using karma::_r1; using karma::_r2; using karma::_r3;
   using karma::eol;
   using phoenix::at_c;
 
@@ -36,7 +36,9 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     << eol[_a = at_c<0>(_val)]
     << eol << "class "
     << karma::string[_1 = _a] << eol
-    << " : public ::" << karma::string[_1 = _a] << eol
+    << " : public ::" << -((karma::string % "::")[_1 = _r2] << "::")
+    << karma::string[_1 = _a]
+    << eol
     << "{" << eol
     << "public:" << eol
     << common_functions(_r2)[_1 = _val]
@@ -72,8 +74,9 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
   args = "arg" << karma::lit(_r1);
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   poa_class_name =
-    -(karma::eps(_r1) << "POA_")
-    << karma::string[_1 = _val]
+    karma::lit("::") << "POA_"
+                     << -((karma::string % "::") << "::")[_1 = _r1]
+                     << karma::string[_1 = _val]
     ;
 
   common_functions =

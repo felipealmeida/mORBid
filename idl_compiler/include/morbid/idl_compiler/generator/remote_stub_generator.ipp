@@ -16,6 +16,16 @@
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/phoenix.hpp>
 
+namespace std {
+
+template <typename T, typename U>
+std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
+{
+  return os << "[pair first: " << p.first << " second: " << p.second << ']';
+}
+
+}
+
 namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
@@ -36,7 +46,7 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
     << eol[_a = at_c<0>(_val)]
     << eol << "class "
     << karma::string[_1 = _a] << eol
-    << " : public ::" << karma::string[_1 = _a] << eol
+    << " : public " << (karma::string % "::")[_1 = _r2] << eol
     << "{" << eol
     << "public:" << eol
     << common_functions[_1 = _val]
@@ -136,6 +146,9 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
     << indent << indent << indent << "(host, port, object_key);" << eol
     << indent << '}' << eol
     ;
+
+  start.name("header_remote_stub_generator");
+  karma::debug(start);
 }
 
 template <typename OutputIterator, typename Iterator>

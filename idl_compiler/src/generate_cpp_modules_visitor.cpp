@@ -87,18 +87,34 @@ void generate_cpp_modules_visitor::examine_vertex
     <output_iterator_type, parser_iterator_type>
     cpp_stub_generator;
 
-  open_namespace(state->iterator, ""); // anonymous namespace
-
-  for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
-        , last = m.interfaces.end(); first != last; ++first)
+  if (!m.interfaces.empty())
   {
-    bool r = karma::generate(state->iterator, header_remote_stub_generator(phoenix::val(*first))
-                             , first->definition);
-    if(!r) throw std::runtime_error("Failed generating header_remote_stub_generator");
-  }
+    std::vector<std::string> modules_name;
+    for(std::vector<vertex_descriptor>::const_iterator
+          first = state->opened_modules.begin()
+          , last = state->opened_modules.end()
+          ;first != last; ++first)
+    {
+      module const* mx = &*boost::get(map, *first);
+      modules_name.push_back(mx->name);
+    }
+    
+    open_namespace(state->iterator, ""); // anonymous namespace
 
-  *state->iterator++ = '}';
-  karma::generate(state->iterator, karma::eol);
+    for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
+          , last = m.interfaces.end(); first != last; ++first)
+    {
+      std::vector<std::string> base_name(modules_name);
+      base_name.push_back(first->definition.name);
+      bool r = karma::generate(state->iterator, header_remote_stub_generator
+                               (phoenix::val(*first), phoenix::ref(base_name))
+                               , first->definition);
+      if(!r) throw std::runtime_error("Failed generating header_remote_stub_generator");
+    }
+
+    *state->iterator++ = '}';
+    karma::generate(state->iterator, karma::eol);
+  }
 
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
         , last = m.interfaces.end(); first != last; ++first)
@@ -122,6 +138,9 @@ void generate_cpp_poa_modules_visitor::examine_vertex
   std::cout << "Module " << m.name << std::endl;
   typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
 
+  if(!m.interfaces.empty())
+  {
+
   std::vector<std::string> modules_names;
   {
     vertex_descriptor vx = v;
@@ -139,16 +158,17 @@ void generate_cpp_poa_modules_visitor::examine_vertex
 
   bool prepend_poa = modules_names.empty();
   
-  for(std::vector<std::string>::const_reverse_iterator
-        first = modules_names.rbegin()
-        , last = modules_names.rend()
-        ;first != last; ++first)
+  if(!prepend_poa)
   {
-    std::string name = *first;
-    if(boost::next(first) == last)
-      name = "POA_" + name;
+    std::string name = "POA_" + modules_names.back();
     open_namespace(state->iterator, name);
   }
+
+  for(std::vector<std::string>::const_reverse_iterator
+        first = prepend_poa ? modules_names.rbegin() : boost::next(modules_names.rbegin())
+        , last = modules_names.rend()
+        ;first != last; ++first)
+    open_namespace(state->iterator, *first);
 
   morbid::idl_compiler::generator::cpp_poa_stub_generator
     <output_iterator_type, parser_iterator_type>
@@ -157,18 +177,24 @@ void generate_cpp_poa_modules_visitor::examine_vertex
     <output_iterator_type, parser_iterator_type>
     header_local_stub_generator;
 
-  open_namespace(state->iterator, ""); // anonymous namespace
-
-  for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
-        , last = m.interfaces.end(); first != last; ++first)
+  if(!m.interfaces.empty())
   {
-    bool r = karma::generate(state->iterator, header_local_stub_generator(phoenix::val(*first), prepend_poa)
-                             , first->definition);
-    if(!r) throw std::runtime_error("Failed generating header_local_stub_generator");
-  }
+    open_namespace(state->iterator, ""); // anonymous namespace
 
-  *state->iterator++ = '}';
-  karma::generate(state->iterator, karma::eol);
+    for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
+          , last = m.interfaces.end(); first != last; ++first)
+    {
+      std::vector<std::string> base_name(modules_names.rbegin(), modules_names.rend());
+      bool r = karma::generate(state->iterator, header_local_stub_generator
+                               (phoenix::val(*first)
+                                , phoenix::val(base_name))
+                               , first->definition);
+      if(!r) throw std::runtime_error("Failed generating header_local_stub_generator");
+    }
+
+    *state->iterator++ = '}';
+    karma::generate(state->iterator, karma::eol);
+  }
 
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
         , last = m.interfaces.end(); first != last; ++first)
@@ -178,7 +204,20 @@ void generate_cpp_poa_modules_visitor::examine_vertex
                              , first->definition);
     if(!r) throw std::runtime_error("Failed generating header_poa_stub_generator");
   }
-  
+
+  for(std::vector<std::string>::const_reverse_iterator
+        first = modules_names.rbegin()
+        , last = modules_names.rend()
+        ;first != last; ++first)
+  {
+    *state->iterator++ = '}';
+    *state->iterator++ = ' ';
+    *state->iterator++ = '/';
+    *state->iterator++ = '/';
+    state->iterator = std::copy(first->begin(), first->end(), state->iterator);
+    karma::generate(state->iterator, karma::eol);
+  }
+  }
 }
 
 } }
