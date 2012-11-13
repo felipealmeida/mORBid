@@ -240,9 +240,8 @@ int main(int argc, char** argv)
 
         boost::filesystem::ofstream header(header_path);
         boost::filesystem::ofstream cpp(impl_path);
-        typedef boost::property_map<modules_tree_type, boost::vertex_color_t>::type
-          color_map_t;
-        typedef boost::queue<vertex_descriptor> queue_t;
+        typedef std::map<vertex_descriptor, boost::default_color_type> color_map_container_t;
+        typedef boost::associative_property_map<color_map_container_t> color_map_t;
         if(header.is_open() && cpp.is_open())
         {
           namespace karma = boost::spirit::karma;
@@ -261,17 +260,16 @@ int main(int argc, char** argv)
                << karma::lit("#include <CORBA.h>") << karma::eol << karma::eol
                << karma::lit("#include <boost/integer.hpp>") << karma::eol
                << karma::eol
-               // << "class POA_" << interface.name << ";" << karma::eol << karma::eol
                );
             if(!r) 
               throw std::runtime_error("Failed generating #includes for header");
             {
-              color_map_t color_map;
-              queue_t queue;
+              color_map_container_t color_map_container;
+              color_map_t color_map(color_map_container);
               morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module, queue
-                                  , header_modules_visitor
-                                  , color_map);
+              breadth_first_visit(modules_tree, global_module
+                                  , boost::visitor(header_modules_visitor)
+                                  .color_map(color_map));
 
               typedef typename boost::property_map<modules_tree_type, module_property_t>
                 ::type module_map;
@@ -292,32 +290,17 @@ int main(int argc, char** argv)
             }
 
             {
-              color_map_t color_map;
-              queue_t queue;
+              color_map_container_t color_map_container;
+              color_map_t color_map(color_map_container);
               morbid::idl_compiler::generate_header_poa_modules_visitor header_poa_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module, queue
-                                  , header_poa_modules_visitor
-                                  , color_map);
+              breadth_first_visit(modules_tree, global_module
+                                  , boost::visitor(header_poa_modules_visitor)
+                                  .color_map(color_map));
             }
           }                  
 
           {
             output_iterator_type iterator(cpp);
-          //     morbid::idl_compiler::generator::cpp_stub_generator
-          //       <output_iterator_type, iterator_type>
-          //       cpp_stub_generator;
-          //     morbid::idl_compiler::generator::cpp_local_stub_generator
-          //       <output_iterator_type, iterator_type>
-          //       cpp_local_stub_generator;
-          //     morbid::idl_compiler::generator::header_remote_stub_generator
-          //       <output_iterator_type, iterator_type>
-          //       header_remote_stub_generator;
-          //     morbid::idl_compiler::generator::cpp_remote_stub_generator
-          //       <output_iterator_type, iterator_type>
-          //       cpp_remote_stub_generator;
-          //     morbid::idl_compiler::generator::cpp_poa_stub_generator
-          //       <output_iterator_type, iterator_type>
-          //       cpp_poa_stub_generator;
 
             bool r = karma::generate
               (iterator
@@ -332,12 +315,12 @@ int main(int argc, char** argv)
               throw std::runtime_error("Failed generating #includes for cpp");
 
             {
-              color_map_t color_map;
-              queue_t queue;
+              color_map_container_t color_map_container;
+              color_map_t color_map(color_map_container);
               morbid::idl_compiler::generate_cpp_modules_visitor cpp_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module, queue
-                                  , cpp_modules_visitor
-                                  , color_map);
+              breadth_first_visit(modules_tree, global_module
+                                  , boost::visitor(cpp_modules_visitor)
+                                  .color_map(color_map));
               typedef typename boost::property_map<modules_tree_type, module_property_t>
                 ::type module_map;
               module_map map = get(module_property_t(), modules_tree);
@@ -357,25 +340,13 @@ int main(int argc, char** argv)
             }
 
             {
-              color_map_t color_map;
-              queue_t queue;
+              color_map_container_t color_map_container;
+              color_map_t color_map(color_map_container);
               morbid::idl_compiler::generate_cpp_poa_modules_visitor cpp_poa_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module, queue
-                                  , cpp_poa_modules_visitor
-                                  , color_map);
+              breadth_first_visit(modules_tree, global_module
+                                  , boost::visitor(cpp_poa_modules_visitor)
+                                  .color_map(color_map));
             }
-          //     bool r;
-          //     r = karma::generate(iterator, header_remote_stub_generator, interface);
-          //     if(!r) std::cout << "Failed generating header_remote_stub_generator for cpp" << std::endl;
-          //     r = karma::generate(iterator, cpp_remote_stub_generator, interface);
-          //     if(!r) std::cout << "Failed generating cpp_remote_stub_generator for cpp" << std::endl;
-          //     r = karma::generate(iterator, cpp_stub_generator, interface);
-          //     if(!r) std::cout << "Failed generating cpp_stub_generator for cpp" << std::endl;
-          //     r = karma::generate(iterator, cpp_local_stub_generator, interface);
-          //     if(!r) std::cout << "Failed generating cpp_local_stub_generator for cpp" << std::endl;
-          //     assert(interface.repoids.size() == 2);
-          //     r = karma::generate(iterator, cpp_poa_stub_generator, interface);
-          //     if(!r) std::cout << "Failed generating cpp_poa_stub_generator for cpp" << std::endl;
           }
         }
         else

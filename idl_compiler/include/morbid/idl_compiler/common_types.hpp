@@ -46,7 +46,7 @@ struct module_property_t
 struct module;
 
 typedef boost::property<module_property_t, boost::shared_ptr<module>
-  , boost::property<boost::vertex_color_t, boost::default_color_type> >
+                        /*, boost::property<boost::vertex_color_t, boost::default_color_type>*/ >
   module_property_type;
 typedef boost::adjacency_list<boost::setS, boost::listS, boost::bidirectionalS
                               , module_property_type>

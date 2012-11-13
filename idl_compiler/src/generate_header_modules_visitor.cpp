@@ -31,13 +31,14 @@ void open_namespace(OutputIterator& iterator, std::string name)
 void generate_header_modules_visitor::examine_vertex
   (vertex_descriptor v, modules_tree_type const& modules)
 {
+  std::cout << "generate_header_modules_visitor::examine_vertex" << std::endl;
   namespace karma = boost::spirit::karma;
   namespace phoenix = boost::phoenix;
   typedef typename boost::property_map<modules_tree_type, module_property_t>
     ::const_type module_map;
   module_map map = get(module_property_t(), modules);
   module const& m = *boost::get(map, v);
-  std::cout << "Module " << m.name << std::endl;
+  std::cout << "Module v: " << v << " name: " << m.name << std::endl;
   typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
 
   if(state->opened_modules.size() < 2)
@@ -104,27 +105,23 @@ void generate_header_modules_visitor::examine_vertex
                              , first->definition);
     if(!r) throw std::runtime_error("Failed generating header_stub_generator");
   }
-
-  // for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
-  //       , last = m.interfaces.end(); first != last; ++first)
-  // {
-  //   bool r = karma::generate(state->iterator, header_local_stub_generator(phoenix::val(*first))
-  //                            , first->definition);
-  //   if(!r) throw std::runtime_error("Failed generating header_local_stub_generator");
-  // }
 }
 
 void generate_header_poa_modules_visitor::examine_vertex
   (vertex_descriptor v, modules_tree_type const& modules)
 {
+  std::cout << "generate_header_poa_modules_visitor::examine_vertex" << std::endl;
   namespace karma = boost::spirit::karma;
   namespace phoenix = boost::phoenix;
   typedef typename boost::property_map<modules_tree_type, module_property_t>
     ::const_type module_map;
   module_map map = get(module_property_t(), modules);
   module const& m = *boost::get(map, v);
-  std::cout << "Module " << m.name << std::endl;
+  std::cout << "Module v: " << v << " name: " << m.name << std::endl;
   typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
+
+  if(!m.interfaces.empty())
+  {
 
   std::vector<std::string> modules_names;
   {
@@ -142,17 +139,18 @@ void generate_header_poa_modules_visitor::examine_vertex
   }
 
   bool prepend_poa = modules_names.empty();
-  
-  for(std::vector<std::string>::const_reverse_iterator
-        first = modules_names.rbegin()
-        , last = modules_names.rend()
-        ;first != last; ++first)
+
+  if(!prepend_poa)
   {
-    std::string name = *first;
-    if(boost::next(first) == last)
-      name = "POA_" + name;
+    std::string name = "POA_" + modules_names.back();
     open_namespace(state->iterator, name);
   }
+
+  for(std::vector<std::string>::const_reverse_iterator
+        first = prepend_poa ? modules_names.rbegin() : boost::next(modules_names.rbegin())
+        , last = modules_names.rend()
+        ;first != last; ++first)
+    open_namespace(state->iterator, *first);
 
   morbid::idl_compiler::generator::header_poa_stub_generator
     <output_iterator_type, parser_iterator_type>
@@ -165,7 +163,21 @@ void generate_header_poa_modules_visitor::examine_vertex
                              , first->definition);
     if(!r) throw std::runtime_error("Failed generating header_poa_stub_generator");
   }
-  
+
+  for(std::vector<std::string>::const_reverse_iterator
+        first = modules_names.rbegin()
+        , last = modules_names.rend()
+        ;first != last; ++first)
+  {
+    *state->iterator++ = '}';
+    *state->iterator++ = ' ';
+    *state->iterator++ = '/';
+    *state->iterator++ = '/';
+    state->iterator = std::copy(first->begin(), first->end(), state->iterator);
+    karma::generate(state->iterator, karma::eol);
+  }
+
+  }
 }
 
 std::ostream& operator<<(std::ostream& os, lookuped_type l)
