@@ -30,8 +30,8 @@ struct lookuped_type_wrapper
 
   std::vector<std::string> get_outside_type() const
   {
-    typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
-    typedef typename boost::property_map<modules_tree_type, module_property_t>
+    typedef modules_tree_type::in_edge_iterator in_edge_iterator;
+    typedef boost::property_map<modules_tree_type, module_property_t>
       ::const_type module_map;
     module_map map = get(module_property_t(), *l.modules);
 
@@ -56,6 +56,11 @@ struct lookuped_type_wrapper
     std::reverse(module_path.begin(), module_path.end());
     return module_path;
   }
+  typedef lookuped_type::kind_variant kind_variant;
+  kind_variant kind() const
+  {
+    return l.kind;
+  }
 
   lookuped_type l;
 };
@@ -64,7 +69,11 @@ struct lookuped_type_wrapper
 
 BOOST_FUSION_ADAPT_ADT( ::morbid::idl_compiler::generator::lookuped_type_wrapper
                         , (std::vector<std::string>, std::vector<std::string>
-                           , obj.get_outside_type(), std::abort()));
+                           , obj.get_outside_type(), ::std::abort())
+                        (::morbid::idl_compiler::generator::lookuped_type_wrapper::kind_variant
+                         , ::morbid::idl_compiler::generator::lookuped_type_wrapper::kind_variant
+                         , obj.kind(), ::std::abort())
+                        );
 
 namespace morbid { namespace idl_compiler { namespace generator {
 
@@ -86,12 +95,28 @@ struct scoped_name : karma::grammar<OutputIterator, idl_parser::types::scoped_na
       (karma::string % "::")[_1 = at_c<0>(_r1)]
       << "::" << (karma::string % "::")
       [_1 = at_c<1>(_val)]
-      << "_ptr"
+      // << //((
+      // -(is_interface_kind// /* << karma::string[_1 = "_ptr"]*/)
+      //     | is_struct_kind
+      //     | is_primitive_kind
+      //     | is_typedef_kind
+      //     )
+      // variant_rule
+      //   [_1 = at_c<1>(_r1)]
       ;
+    is_interface_kind = karma::eps;
   }
 
   karma::rule<OutputIterator, idl_parser::types::scoped_name
               (lookuped_type_wrapper)> start;
+  karma::rule<OutputIterator, idl_compiler::is_interface_kind()>
+    is_interface_kind;
+  karma::rule<OutputIterator, idl_compiler::is_struct_kind()>
+    is_struct_kind;
+  karma::rule<OutputIterator, idl_compiler::is_primitive_kind()>
+    is_primitive_kind;
+  karma::rule<OutputIterator, idl_compiler::is_typedef_kind()>
+    is_typedef_kind;
 };
 
 } } }

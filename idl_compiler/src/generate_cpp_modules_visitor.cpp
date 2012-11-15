@@ -34,12 +34,12 @@ void generate_cpp_modules_visitor::examine_vertex
 {
   namespace karma = boost::spirit::karma;
   namespace phoenix = boost::phoenix;
-  typedef typename boost::property_map<modules_tree_type, module_property_t>
+  typedef boost::property_map<modules_tree_type, module_property_t>
     ::const_type module_map;
   module_map map = get(module_property_t(), modules);
   module const& m = *boost::get(map, v);
   std::cout << "Module " << m.name << std::endl;
-  typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
+  typedef modules_tree_type::in_edge_iterator in_edge_iterator;
 
   if(state->opened_modules.size() < 2)
   {
@@ -131,12 +131,12 @@ void generate_cpp_poa_modules_visitor::examine_vertex
 {
   namespace karma = boost::spirit::karma;
   namespace phoenix = boost::phoenix;
-  typedef typename boost::property_map<modules_tree_type, module_property_t>
+  typedef boost::property_map<modules_tree_type, module_property_t>
     ::const_type module_map;
   module_map map = get(module_property_t(), modules);
   module const& m = *boost::get(map, v);
   std::cout << "Module " << m.name << std::endl;
-  typedef typename modules_tree_type::in_edge_iterator in_edge_iterator;
+  typedef modules_tree_type::in_edge_iterator in_edge_iterator;
 
   if(!m.interfaces.empty())
   {

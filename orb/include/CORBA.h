@@ -24,6 +24,8 @@ using ::morbid::Any_var;
 using ::morbid::Any_ptr;
 
 using ::morbid::MARSHALL;
+using ::morbid::INVALID_PARAM;
+using ::morbid::SystemException;
 
 using ::morbid::ORB;
 using ::morbid::ORB_ptr;

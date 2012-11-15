@@ -45,6 +45,21 @@ struct dword : karma::grammar<OutputIterator, boost::uint_t<32u>::least(bool)>
   karma::rule<OutputIterator, boost::uint_t<32u>::least(bool)> start;
 };
 
+template <typename OutputIterator>
+struct qword : karma::grammar<OutputIterator, boost::uint_t<64u>::least(bool)>
+{
+  qword() : qword::base_type(start)
+  {
+    using karma::_r1;
+    start %= (karma::eps(_r1) << karma::little_qword)
+      | karma::big_qword;
+    start.name("qword");
+    karma::debug(start);
+  }
+
+  karma::rule<OutputIterator, boost::uint_t<64u>::least(bool)> start;
+};
+
 } } }
 
 #endif

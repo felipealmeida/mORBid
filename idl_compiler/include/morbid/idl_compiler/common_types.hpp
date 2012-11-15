@@ -34,6 +34,7 @@ typedef morbid::idl_parser::op_decl<parser_iterator_type> op_decl_type;
 typedef morbid::idl_parser::typedef_def<parser_iterator_type> typedef_def_type;
 typedef morbid::idl_parser::exception_def<parser_iterator_type> exception_def_type;
 typedef morbid::idl_parser::struct_def<parser_iterator_type> struct_def_type;
+typedef morbid::idl_parser::struct_member<parser_iterator_type> struct_member_type;
 typedef morbid::idl_parser::type_spec<parser_iterator_type> type_spec;
 typedef morbid::idl_parser::param_decl<parser_iterator_type> param_decl;
 typedef std::ostream_iterator<char> output_iterator_type;

@@ -77,7 +77,7 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
         indent << indent << "std::cout << \"Called " << karma::string[_1 = phoenix::at_c<1>(_val)]
         << " was called\" << std::endl;" << eol
         << indent << indent << "return ::morbid::synchronous_call::call" << eol
-        << indent << indent << indent << "<"
+        << indent << indent << indent << "< "
         << type_spec
         (
          at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]

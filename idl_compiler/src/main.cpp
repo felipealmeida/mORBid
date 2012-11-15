@@ -158,6 +158,28 @@ int main(int argc, char** argv)
                                                   , skipper))
           {
             std::cout << "struct " << struct_ << std::endl;
+
+            typedef morbid::idl_compiler::struct_ struct_type;
+            typedef morbid::idl_compiler::struct_member_type struct_member_type;
+            struct_type s(struct_);
+
+            for(std::vector<struct_member_type>::const_iterator
+                  first = s.definition.members.begin()
+                  , last = s.definition.members.end()
+                  ;first != last; ++first)
+            {
+              if(s.lookups.find(first->type) == s.lookups.end())
+              {
+                s.lookups.insert(std::make_pair
+                                 (first->type
+                                  , morbid::idl_compiler::lookup_type_spec
+                                  (first->type, current_module, modules_tree)));
+              }
+            }
+
+            module_map map = get(module_property_t(), modules_tree);
+            boost::get(map, current_module.back())
+              ->structs.push_back(s);
           }
           else if(boost::spirit::qi::phrase_parse(iterator, last, interface_grammar >> qi::omit[';'], skipper, interface))
           {
@@ -259,6 +281,12 @@ int main(int argc, char** argv)
                << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol
                << karma::lit("#include <CORBA.h>") << karma::eol << karma::eol
                << karma::lit("#include <boost/integer.hpp>") << karma::eol
+               << karma::lit("#include <boost/fusion/include/vector.hpp>") << karma::eol
+               << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
+               << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
+               << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol
+               << karma::lit("#include <boost/fusion/include/vector40.hpp>") << karma::eol
+               << karma::lit("#include <boost/fusion/include/vector50.hpp>") << karma::eol
                << karma::eol
                );
             if(!r) 

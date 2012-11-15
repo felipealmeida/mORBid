@@ -29,12 +29,12 @@ struct lookup_type_spec_functional
   template <typename T>
   lookuped_type operator()(T) const
   {
-    return lookuped_type(current_module[0], modules); // primitive
+    return lookuped_type(current_module[0], modules, is_primitive_kind()); // primitive
   }
   lookuped_type operator()(idl_parser::types::scoped_name const& s) const
   {
     if(s.identifiers.size() == 1 && s.identifiers[0] == "string")
-      return lookuped_type(current_module[0], modules);
+      return lookuped_type(current_module[0], modules, is_interface_kind());
 
     std::cout << "looking up " << s << std::endl;
     if(s.globally_qualified) // bottom top
@@ -63,8 +63,7 @@ struct lookup_type_spec_functional
           if(interface_iterator != interfaces.end())
           {
             std::cout << "Is a interface" << std::endl;
-
-            break;
+            return lookuped_type(*first, modules, is_interface_kind());
           }
           else
           {
@@ -77,7 +76,20 @@ struct lookup_type_spec_functional
           if(typedef_iterator != typedefs.end())
           {
             std::cout << "Is a typedef " << typedef_iterator->definition.name << std::endl;
-            return lookuped_type(*first, modules);
+            return lookuped_type(*first, modules, is_typedef_kind());
+          }
+          else
+          {
+            std::cout << "No typedef from this module" << std::endl;
+          }
+
+          std::vector<idl_compiler::struct_>const&structs = boost::get(map, current_module.back())->structs;
+          std::vector<idl_compiler::struct_>::const_iterator struct_iterator
+            = std::find_if(structs.begin(), structs.end(), find_struct_by_name(s.identifiers[0]));
+          if(struct_iterator != structs.end())
+          {
+            std::cout << "Is a struct " << struct_iterator->definition.name << std::endl;
+            return lookuped_type(*first, modules, is_struct_kind());
           }
           else
           {
@@ -93,7 +105,7 @@ struct lookup_type_spec_functional
   }
   lookuped_type operator()(idl_parser::types::sequence<parser_iterator_type> const& s) const
   {
-    return lookuped_type(current_module[0], modules); // primitive
+    return lookuped_type(current_module[0], modules, is_primitive_kind()); // primitive
   }
 };
 

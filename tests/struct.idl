@@ -1,0 +1,27 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
+struct some_struct
+{
+  boolean a1, b1, c1;
+  char a2, b2;
+  double a3;
+  float a4;
+  long a5;
+  octet a6;
+  short a7;
+  // string a8;
+};
+
+interface struct_interface
+{
+  void foo1(in some_struct x);
+  void foo2(out some_struct x);
+  void foo3(inout some_struct x);
+  some_struct foo4();
+};
+

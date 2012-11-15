@@ -105,8 +105,25 @@ exe modules_allprimitives_server
 
 make modules_allprimitives.output : modules_allprimitives_client modules_allprimitives_server : @run-server-client ;
 
+make struct.h : struct.idl : @compileidl : <dependency>/morbid//install ;
+make struct.cpp : struct.h
+ : @donothing : <dependency>/morbid//install ;
+
+exe struct_client
+ : struct_client.cpp /morbid//morbid struct.cpp
+ : <implicit-dependency>struct.h
+ ;
+exe struct_server
+ : struct_server.cpp /morbid//morbid struct.cpp
+ : <implicit-dependency>struct.h
+   <implicit-dependency>struct.cpp
+ ;
+
+make struct.output : struct_client struct_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
 alias inout_allprimitives : inout_allprimitives.output ;
 alias return_allprimitives : return_allprimitives.output ;
 alias modules_allprimitives : modules_allprimitives.output ;
+alias struct : struct.output ;

@@ -8,18 +8,23 @@
 #ifndef TECORB_PARSE_ARGUMENT_HPP
 #define TECORB_PARSE_ARGUMENT_HPP
 
+#include <morbid/type_tag.hpp>
 #include <morbid/iiop/grammar/sequence.hpp>
 #include <morbid/iiop/grammar/align.hpp>
 #include <morbid/iiop/grammar/types/primitives.hpp>
 #include <morbid/any.hpp>
 #include <morbid/primitive_types.hpp>
+#include <morbid/exception.hpp>
 
 #include <boost/mpl/assert.hpp>
+#include <boost/spirit/home/qi.hpp>
 
 #include <limits>
 #include <iomanip>
 
 namespace morbid {
+
+namespace qi = boost::spirit::qi;
 
 template <typename T>
 struct argument_tag
@@ -189,6 +194,22 @@ inline WChar parse_argument(const char* first, const char*& rq_current
                             , argument_tag<WChar>)
 {
   throw std::runtime_error("NOT_IMPLEMENTED");
+}
+
+template <typename T>
+inline T parse_argument(const char* first, const char*& rq_current
+                        , const char* rq_last, bool little_endian
+                        , argument_tag<T>
+                        , typename boost::enable_if
+                        <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                        , void*>::type = 0)
+{
+  typename T::template _morbid_parser<const char*> parser;
+  T obj;
+  if(qi::parse(rq_current, rq_last, parser, obj))
+    return obj;
+  else
+    throw MARSHALL();
 }
 
 inline std::vector<WChar> parse_argument(const char* first, const char*& rq_current

@@ -15,7 +15,7 @@
 #include <morbid/parse_argument.hpp>
 #include <morbid/primitive_types.hpp>
 #include <morbid/type_tag.hpp>
-#include <morbid/iiop/serialize_object.hpp>
+#include <morbid/serialize_object.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -30,8 +30,16 @@
 
 namespace morbid { namespace request_body_detail {
 
-template <typename T>
+template <typename T, typename Enable = void>
 struct wrapped_type;
+
+template <typename T>
+struct wrapped_type<T, typename boost::enable_if
+                    <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                     , void>::type>
+{
+  typedef T type;
+};                    
 
 template <>
 struct wrapped_type<String>
@@ -110,6 +118,22 @@ struct wrapped_type<morbid::Any_ptr>
 // {
 //   typedef morbid::Any_ptr type;
 // };
+
+template <typename T>
+inline T const& unwrap(T const& o, typename boost::enable_if
+                       <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                       , void*>::type = 0)
+{
+  return o;
+}
+
+template <typename T>
+inline T& unwrap(T& o, typename boost::enable_if
+                 <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                 , void*>::type = 0)
+{
+  return o;
+}
 
 inline const char* unwrap(std::vector<char>const& v)
 {
@@ -224,7 +248,7 @@ struct serialize_out_arg<type_tag::out_tag>
   static void call(OutputIterator& iterator, bool b, A a)
   {
     std::cout << "serialize out param " << typeid(A).name() << std::endl;
-    iiop::serialize_object(iterator, b, a);
+    serialization::serialize_object(iterator, a);
   }
 };
 
@@ -318,7 +342,7 @@ struct make_request_and_call_function<R, N()>
 
     std::back_insert_iterator<std::vector<char> > iterator(r.reply_body);
     BOOST_PP_REPEAT(N(), MORBID_MAKE_REQUEST_ARGUMENT_SERIALIZE_OUTPUT, ~)
-    iiop::serialize_object(iterator, true, result);
+    serialization::serialize_object(iterator, result);
   }
 };
 

@@ -8,14 +8,28 @@
 #ifndef TECORB_EXCEPTION_HPP
 #define TECORB_EXCEPTION_HPP
 
+#include <stdexcept>
+
 namespace morbid {
 
-struct MARSHALL
+struct SystemException : virtual std::exception
 {
+  const char* what() const throw() { return "SystemException"; };
 };
 
-struct INVALID_PARAM
+struct UserException : virtual std::exception
 {
+  const char* what() const throw() { return "SystemException"; };
+};
+
+struct MARSHALL : SystemException
+{
+  const char* what() const throw() { return "MARSHALL"; };
+};
+
+struct INVALID_PARAM : SystemException
+{
+  const char* what() const throw() { return "INVALID_PARAM"; };
 };
 
 }

@@ -14,6 +14,9 @@
 
 namespace morbid {
 
+struct struct_tag {};
+struct interface_tag {};
+
 template <typename T, typename Enable = void>
 struct in_traits;
 
@@ -22,6 +25,30 @@ struct out_traits;
 
 template <typename T, typename Enable = void>
 struct inout_traits;
+
+template <typename T>
+struct in_traits<T, typename boost::enable_if
+                 <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                 , void>::type>
+{
+  typedef T type;
+};
+
+template <typename T>
+struct out_traits<T, typename boost::enable_if
+                  <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                  , void>::type>
+{
+  typedef T& type;
+};
+
+template <typename T>
+struct inout_traits<T, typename boost::enable_if
+                    <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                    , void>::type>
+{
+  typedef T& type;
+};
 
 template <>
 struct in_traits<String>

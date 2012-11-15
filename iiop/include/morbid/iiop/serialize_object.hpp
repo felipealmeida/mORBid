@@ -9,16 +9,18 @@
 #define TECORB_IIOP_SERIALIZE_OBJECT_HPP
 
 #include <morbid/iiop/generator/string.hpp>
+#include <morbid/iiop/generator/floating_point.hpp>
 
 #include <boost/integer.hpp>
 
 namespace morbid { namespace iiop {
 
+namespace karma = boost::spirit::karma;
+
 template <typename OutputIterator>
 void serialize_object(OutputIterator& iterator, bool little_endian
                       , const char* string)
 {
-  namespace karma = boost::spirit::karma;
   generator::string<OutputIterator> string_grammar;
   std::string attr(string);
   if(!karma::generate(iterator, string_grammar(little_endian), attr))
@@ -114,6 +116,17 @@ void serialize_object(OutputIterator& iterator, bool little_endian, boost::int_t
     iterator = std::copy(first, last, iterator);
   else
     iterator = std::reverse_copy(first, last, iterator);
+}
+
+template <typename Generator, typename OutputIterator, typename T>
+void serialize_object(OutputIterator& iterator, bool little_endian, T object
+                      , typename boost::enable_if
+                      <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                      , void*>::type = 0)
+{
+  typename T::template _morbid_generator<OutputIterator> generator;
+  if(!karma::generate(iterator, generator, object))
+    throw MARSHALL();
 }
 
 } }

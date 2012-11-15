@@ -45,6 +45,29 @@ struct exception
 
 struct struct_
 {
+  struct_def_type definition;
+  struct_(struct_def_type definition)
+    : definition(definition) {}
+  typedef std::map<type_spec, lookuped_type> lookups_type;
+  lookups_type lookups;
+};
+
+inline std::ostream& operator<<(std::ostream& os, struct_ const& s)
+{
+  return os << "[struct_ definition: " << s.definition << "]";
+}
+
+struct find_struct_by_name
+{
+  find_struct_by_name(std::string const& name)
+    : name(name) {}
+
+  bool operator()(struct_ const& i) const
+  {
+    return i.definition.name == name;
+  }
+
+  std::string name;
 };
 
 struct module
@@ -61,5 +84,9 @@ struct module
 };
 
 } }
+
+BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::struct_
+                           , ( ::morbid::idl_compiler::struct_def_type, definition)
+                           (::morbid::idl_compiler::struct_::lookups_type, lookups));
 
 #endif

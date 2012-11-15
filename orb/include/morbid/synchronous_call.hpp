@@ -13,7 +13,8 @@
 #include <morbid/detail/max_args.hpp>
 #include <morbid/type_tag.hpp>
 #include <morbid/parse_argument.hpp>
-#include <morbid/iiop/serialize_object.hpp>
+#include <morbid/serialize_object.hpp>
+#include <morbid/struct_fusion.hpp>
 #include <morbid/iiop/generator/request_header.hpp>
 #include <morbid/iiop/generator/message_header.hpp>
 #include <morbid/iiop/message_header.hpp>
@@ -64,7 +65,7 @@ struct serialize_if_input
   template <typename T, typename Tag>
   void operator()(type_tag::value_type_tag<T, Tag> a) const
   {
-    iiop::serialize_object(iterator, true, a.value);
+    serialization::serialize_object(iterator, a.value);
   }
   template <typename T>
   void operator()(type_tag::value_type_tag<T, type_tag::out_tag>) const
@@ -207,6 +208,21 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
       ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
                          , expr >> qi::as<morbid::LongLong>()[iiop::grammar::qword<Iterator>()(little_endian)]);
+  }
+
+  template <typename R, typename Iterator, typename IsVoid, typename T, typename OutputSeq, typename ParserExpr>
+  inline static R create_grammar(Iterator vbegin, Iterator vfirst
+                                 , Iterator vlast, bool little_endian
+                                 , IsVoid is_void, argument_tag<T>
+                                 , OutputSeq seq, ParserExpr const& expr
+                                 , typename boost::enable_if
+                                 <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                                 , void*>::type = 0)
+  {
+    typename T::template _morbid_parser<Iterator> parser;
+    return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
+      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
+                         , expr >> parser);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
