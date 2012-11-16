@@ -1,4 +1,4 @@
 mORBid
 ======
 
-Mdern implementation of a C++ OMG ORB
+Modern C++ implementation of a C++ OMG ORB
