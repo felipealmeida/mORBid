@@ -87,17 +87,18 @@ void generate_cpp_modules_visitor::examine_vertex
     <output_iterator_type, parser_iterator_type>
     cpp_stub_generator;
 
+  std::vector<std::string> modules_name;
+  for(std::vector<vertex_descriptor>::const_iterator
+        first = state->opened_modules.begin()
+        , last = state->opened_modules.end()
+        ;first != last; ++first)
+  {
+    module const* mx = &*boost::get(map, *first);
+    modules_name.push_back(mx->name);
+  }
+
   if (!m.interfaces.empty())
   {
-    std::vector<std::string> modules_name;
-    for(std::vector<vertex_descriptor>::const_iterator
-          first = state->opened_modules.begin()
-          , last = state->opened_modules.end()
-          ;first != last; ++first)
-    {
-      module const* mx = &*boost::get(map, *first);
-      modules_name.push_back(mx->name);
-    }
     
     open_namespace(state->iterator, ""); // anonymous namespace
 
@@ -119,7 +120,9 @@ void generate_cpp_modules_visitor::examine_vertex
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
         , last = m.interfaces.end(); first != last; ++first)
   {
-    bool r = karma::generate(state->iterator, cpp_stub_generator(phoenix::val(*first))
+    std::vector<std::string> base_name(boost::next(modules_name.begin()), modules_name.end());
+    base_name.push_back(first->definition.name);
+    bool r = karma::generate(state->iterator, cpp_stub_generator(phoenix::val(*first), phoenix::ref(base_name))
                              , first->definition);
     if(!r) throw std::runtime_error("Failed generating header_stub_generator");
   }

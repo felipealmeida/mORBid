@@ -184,6 +184,7 @@ int main(int argc, char** argv)
           else if(boost::spirit::qi::phrase_parse(iterator, last, interface_grammar >> qi::omit[';'], skipper, interface))
           {
             std::cout << "interface " << interface << std::endl;
+            typedef morbid::idl_compiler::module module;
             typedef morbid::idl_compiler::interface_ interface_type;
             typedef morbid::idl_compiler::op_decl_type op_decl_type;
             typedef morbid::idl_compiler::param_decl param_decl;
@@ -197,8 +198,26 @@ int main(int argc, char** argv)
             is_a_op_decl.user_defined = false;
             i.definition.op_decls.push_back(is_a_op_decl);
 
+            module_map map = get(module_property_t(), modules_tree);
+            std::vector<std::string> modules_names;
+            for(std::vector<vertex_descriptor>::const_iterator
+                  first = boost::next(current_module.begin(), 2)
+                  , last = current_module.end()
+                  ;first != last; ++first)
+            {
+              module const* mx = &*boost::get(map, *first);
+              modules_names.push_back(mx->name);
+            }
+
+            modules_names.push_back(interface.name);
             i.definition.repoids.push_back("IDL:omg.org/CORBA/Object:1.0");
-            i.definition.repoids.push_back("IDL:" + interface.name + ":1.0");
+            std::string repoid;
+            namespace karma = boost::spirit::karma;
+            if(!karma::generate(std::back_insert_iterator<std::string>(repoid)
+                                , "IDL:" << (karma::string % '/') << ":1.0"
+                                , modules_names))
+              throw std::runtime_error("Failed constructing RepoID");
+            i.definition.repoids.push_back(repoid);
             assert(i.definition.repoids.size() == 2);
 
             for(std::vector<op_decl_type>::const_iterator
@@ -231,7 +250,6 @@ int main(int argc, char** argv)
               }
             }
 
-            module_map map = get(module_property_t(), modules_tree);
             boost::get(map, current_module.back())
               ->interfaces.push_back(i);
           }

@@ -113,7 +113,7 @@ cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
   namespace phoenix = boost::phoenix;
   using karma::_a;
   using karma::_val;
-  using karma::_1;
+  using karma::_1; using karma::_r2; using karma::_r1;
   using karma::eol;
   using phoenix::at_c;
   
@@ -122,7 +122,7 @@ cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
     << "::~" << karma::string[_1 = at_c<0>(_val)] << "() {}" << eol
     << eol
     << construct_remote_stub[_1 = at_c<0>(_val)] << eol
-    << members[_1 = at_c<0>(_val)] << eol
+    << members(_r2)[_1 = at_c<0>(_val)] << eol
     ;
   construct_remote_stub =
     "boost::shared_ptr<"
@@ -140,7 +140,7 @@ cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
   members =
     "const char* "
     << karma::string[_1 = _val] << "::_repository_id = \"IDL:"
-    << karma::string[_1 = _val] << ":1.0\";" << eol
+    << (karma::string % '/')[_1 = _r1] << ":1.0\";" << eol
     ;
   indent = karma::space << karma::space;
 }

@@ -113,62 +113,6 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     ;
 }
 
-template <typename OutputIterator, typename Iterator>
-cpp_local_stub_generator<OutputIterator, Iterator>::cpp_local_stub_generator()
-  : cpp_local_stub_generator::base_type(start)
-{
-  namespace phoenix = boost::phoenix;
-  using karma::_a;
-  using karma::_val;
-  using karma::_1;
-  using karma::_2;
-  using karma::eol;
-  using karma::_r1;
-  using phoenix::at_c;
-
-  // start = 
-  //   "namespace morbid { namespace local_stub {"
-  //   << eol << eol
-  //   << karma::eps[_a = at_c<0>(_val)]
-  //   << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
-  //   << eol
-  //   << "// Start of operations defined in IDL" << eol
-  //   << (*(operation(_a) << eol))
-  //   [_1 = at_c<1>(_val)]
-  //   << "// End of operations defined in IDL" << eol
-  //   << ior_function[_1 = _a] << eol
-  //   << "} }" << eol << eol
-  //   ;
-  // ior_function =
-  //   "::morbid::String_ptr "
-  //   << karma::string[_1 = _val] << "::ior() const" << eol
-  //   << "{" << eol
-  //   << indent << "return ::morbid::poa::create_ior_string" << eol
-  //   << indent << indent << "(host, port, poa_name, servant);" << eol
-  //   << "}" << eol
-  //   ;
-  // operation =
-  //   karma::eps[_a = 0]
-  //   << karma::string[_1 = at_c<0>(_val)]
-  //   << karma::space << karma::string[_1 = _r1]
-  //   << "::" << karma::string[_1 = at_c<1>(_val)]
-  //   << "("
-  //   << -((parameter << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
-  //   << ")" << eol
-  //   << "{" << eol
-  //   << karma::eps[_a = 0]
-  //   << (
-  //       indent << "return servant->" << karma::string[_1 = at_c<1>(_val)]
-  //       << "(" << -(args(++_a) % ", ")[_1 = at_c<2>(_val)]
-  //       << ");" << eol
-  //      )
-  //   << "}" << eol
-  //   ;
-  // indent = karma::space << karma::space;
-  // args = "arg" << karma::lit(_r1)
-  //   ;
-}
-
 } } }
 
 #endif

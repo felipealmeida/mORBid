@@ -49,24 +49,6 @@ struct header_local_stub_generator : karma::grammar
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(unsigned int)> args;
 };
 
-template <typename OutputIterator, typename Iterator>
-struct cpp_local_stub_generator : karma::grammar
-<OutputIterator, idl_parser::interface_def<Iterator>(), karma::locals<std::string> >
-{
-  cpp_local_stub_generator();
-
-  idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(unsigned int)> args;
-  karma::rule<OutputIterator, std::string()> ior_function;
-  karma::rule<OutputIterator> indent;
-  karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(std::string)
-              , karma::locals<unsigned int> > operation;
-  karma::rule<OutputIterator
-              , idl_parser::interface_def<Iterator>()
-              , karma::locals<std::string> > start;
-};
-
 } } }
 
 #endif
