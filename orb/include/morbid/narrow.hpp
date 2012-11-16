@@ -53,7 +53,7 @@ struct narrow<T, V, BOOST_PP_ITERATION()>
       return q;
     else
     {
-      if(p->_is_a(T::repository_id))
+      if(p->_is_a(T::_repository_id))
         return boost::shared_ptr<T>
           (T::_construct_remote_stub(p->_host(), p->_port()
                                      , p->_objectkey()));

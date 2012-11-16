@@ -8,7 +8,7 @@
 #ifndef TECORB_IOR_GRAMMAR_IOR_HPP
 #define TECORB_IOR_GRAMMAR_IOR_HPP
 
-#include <morbid/ior/iiop_profile.hpp>
+#include <morbid/iiop/profile_body.hpp>
 
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>
@@ -20,7 +20,7 @@ namespace phoenix = boost::phoenix;
 
 template <typename Iterator>
 struct corbaloc : qi::grammar
-<Iterator, iiop_profile()
+<Iterator, iiop::profile_body()
  , qi::locals<std::vector<char>, unsigned short, std::vector<char> > >
 {
   corbaloc()
@@ -39,11 +39,11 @@ struct corbaloc : qi::grammar
           >> -(":" >> qi::ushort_[_b = _1])
          ) % ","
       >> "/" >> (+qi::char_)[_c = _1]
-      [_val = phoenix::construct<iiop_profile>(_a, _b, _c)]
+      [_val = phoenix::construct<iiop::profile_body>(_a, _b, _c)]
       ;
   }
 
-  qi::rule<Iterator, iiop_profile()
+  qi::rule<Iterator, iiop::profile_body()
            , qi::locals<std::vector<char>, unsigned short, std::vector<char> > > start;
 };
 

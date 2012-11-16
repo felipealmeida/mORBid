@@ -15,9 +15,9 @@ alias idl_parser : /boost//headers : :
  : <include>idl_parser/include
  ;
 
-alias ior : /boost//headers : : : <include>ior/include ;
-
 alias iiop : /boost//headers : : : <include>iiop/include ;
+
+alias ior : iiop /boost//headers : : : <include>ior/include ;
 
 exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/stub_generator.cpp

@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GRAMMAR_SEQUENCE_HPP
-#define TECORB_IIOP_GRAMMAR_SEQUENCE_HPP
+#ifndef TECORB_IIOP_GRAMMAR_STRING_HPP
+#define TECORB_IIOP_GRAMMAR_STRING_HPP
 
 #include <morbid/iiop/grammar/integer.hpp>
 
@@ -16,23 +16,22 @@
 namespace morbid { namespace iiop { namespace grammar {
 
 template <typename Iterator, typename T>
-struct sequence : qi::grammar
+struct string : qi::grammar
 <Iterator, std::vector<T>(bool), qi::locals<boost::uint_t<32u>::least> >
 {
-  sequence()
-    : sequence::base_type(start)
+  string()
+    : string::base_type(start)
   {
     using qi::_r1; using qi::_a;
     using qi::_1;
     
-    start =
-      qi::omit
-      [
-       dword(_r1)[_a = _1]
-      ]
-      >> qi::repeat(_a)[qi::char_]
+    start %=
+      qi::omit [ dword(_r1)[_a = _1] ]
+      >> qi::eps(_a > 0u)
+      >> qi::repeat(_a - 1)[qi::char_]
+      >> qi::omit[qi::char_('\0')]
      ;
-    start.name("sequence");
+    start.name("string");
     qi::debug(start);
     // dword.name("dword");
     // qi::debug(dword);

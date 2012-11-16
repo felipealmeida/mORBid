@@ -30,14 +30,14 @@ struct message_header : qi::grammar<Iterator, iiop::message_header()
 
     start %=
       qi::lit("GIOP")
-      >> qi::char_
-      >> qi::char_
-      >> qi::char_[_a = _1]
-      >> qi::char_
+      >> qi::char_  /* major */
+      >> qi::char_  /* minor */
+      >> qi::char_[_a = _1] /* if little endian */
+      >> qi::char_  /* flags */
       >> (
           (qi::eps((_a & 1) == 1) >> qi::little_dword) // little endian
           | qi::big_dword // big-endian
-         )
+         ) /* message size */
       ;
   }
 

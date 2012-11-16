@@ -27,7 +27,7 @@ exe morbid_server
  : server.cpp /morbid//morbid hello.cpp
  : <implicit-dependency>hello.h
    <implicit-dependency>hello.cpp
-   <test-orb>mico
+   <test-orb>morbid
  ;
 
 actions donothing

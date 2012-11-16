@@ -26,7 +26,7 @@ struct Object
   virtual std::string const& _objectkey() const { std::abort(); }
   virtual unsigned short _port() const { std::abort(); }
 
-  static const char* repository_id;
+  static const char* _repository_id;
 };
 
 typedef boost::shared_ptr<Object> Object_ptr;

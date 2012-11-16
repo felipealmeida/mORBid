@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
   }
 
   CORBA::Object_var obj = orb->string_to_object (ior.c_str());
+
   HelloWorld_var hello = HelloWorld::_narrow (obj);
 
   hello->hello();

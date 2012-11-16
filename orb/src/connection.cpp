@@ -185,8 +185,7 @@ bool connection::handle_request(std::vector<char>::const_iterator first
     std::copy(request_header.operation.begin(), request_header.operation.end()
               , std::ostream_iterator<char>(std::cout));
     std::cout << "|" << std::endl;
-    if(boost::distance(request_header.operation) != 0
-       && *boost::prior(request_header.operation.end()) == 0)
+    if(boost::distance(request_header.operation) != 0)
     {
       if(boost::shared_ptr<POA> poa = poa_.lock())
       {
@@ -211,7 +210,7 @@ bool connection::handle_request(std::vector<char>::const_iterator first
             try
             {
               reply r = {request_header.request_id};
-              impl->_dispatch(&*request_header.operation.begin(), &*first_first, &*first
+              impl->_dispatch(request_header.operation.c_str(), &*first_first, &*first
                               , &*first + std::distance(first, last)
                               , little_endian, r);
 

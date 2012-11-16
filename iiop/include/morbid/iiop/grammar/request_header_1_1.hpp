@@ -13,6 +13,7 @@
 #include <morbid/iiop/grammar/integer.hpp>
 #include <morbid/iiop/grammar/align.hpp>
 #include <morbid/iiop/grammar/sequence.hpp>
+#include <morbid/iiop/grammar/string.hpp>
 
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>
@@ -41,15 +42,16 @@ struct request_header_1_1 : qi::grammar
       service_context_list_grammar(_r2)
       >> align(_r1, 4) >> dword(_r2)
       >> qi::char_
-      >> align(_r1, 4) >> octet_sequence(_r2)
-      >> align(_r1, 4) >> octet_sequence(_r2)
-      >> align(_r1, 4) >> octet_sequence(_r2)
+      >> align(_r1, 4) >> octet_sequence(_r2) /* object_key */
+      >> align(_r1, 4) >> string(_r2) /* operation */
+      >> align(_r1, 4) >> octet_sequence(_r2) /* requesting principal */
       ;
     start.name("request_header_1_1");
     qi::debug(start);
   }
 
   grammar::sequence<Iterator, char> octet_sequence;
+  grammar::string<Iterator, char> string;
   grammar::dword<Iterator> dword;
   service_context_list<Iterator> service_context_list_grammar;
   qi::rule<Iterator, iiop::request_header(Iterator, bool)

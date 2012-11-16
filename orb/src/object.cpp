@@ -15,7 +15,7 @@
 
 namespace morbid {
 
-const char* Object::repository_id = "IDL:omg.org/CORBA/Object:1.0";
+const char* Object::_repository_id = "IDL:omg.org/CORBA/Object:1.0";
 
 namespace remote_stub {
 
@@ -23,10 +23,11 @@ Object::~Object() {}
 
 bool Object::_is_a(const char* id)
 {
+  std::cout << "Object::_is_a " << id << std::endl;
   using ::morbid::type_tag::value_type_tag;
   using ::morbid::type_tag::in_tag;
   return ::morbid::synchronous_call::call<bool>
-    (morbid::Object::repository_id, "_is_a"
+    (morbid::Object::_repository_id, "_is_a"
      , host, port, object_key
      , boost::fusion::vector<value_type_tag<string, type_tag::in_tag> >(id));
 }
