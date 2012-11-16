@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_ANY_HPP
-#define TECORB_ANY_HPP
+#ifndef MORBID_ANY_HPP
+#define MORBID_ANY_HPP
 
 #include <morbid/var.hpp>
 

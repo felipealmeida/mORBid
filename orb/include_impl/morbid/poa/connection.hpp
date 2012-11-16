@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_POA_CONNECTION_HPP
-#define TECORB_POA_CONNECTION_HPP
+#ifndef MORBID_POA_CONNECTION_HPP
+#define MORBID_POA_CONNECTION_HPP
 
 #include <morbid/poa.hpp>
 

@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_COMPILER_SCOPED_NAME_HPP
-#define TECORB_IDL_COMPILER_SCOPED_NAME_HPP
+#ifndef MORBID_IDL_COMPILER_SCOPED_NAME_HPP
+#define MORBID_IDL_COMPILER_SCOPED_NAME_HPP
 
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/lookuped_type.hpp>

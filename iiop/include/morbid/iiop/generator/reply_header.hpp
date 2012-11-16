@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GENERATOR_REPLY_HEADER_HPP
-#define TECORB_IIOP_GENERATOR_REPLY_HEADER_HPP
+#ifndef MORBID_IIOP_GENERATOR_REPLY_HEADER_HPP
+#define MORBID_IIOP_GENERATOR_REPLY_HEADER_HPP
 
 #include <morbid/iiop/generator/integer.hpp>
 

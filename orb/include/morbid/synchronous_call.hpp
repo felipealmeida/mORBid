@@ -7,8 +7,8 @@
 
 // #if !defined(BOOST_PP_IS_ITERATING) || !BOOST_PP_IS_ITERATING
 
-#ifndef TECORB_SYNCHRONOUS_CALL_HPP
-#define TECORB_SYNCHRONOUS_CALL_HPP
+#ifndef MORBID_SYNCHRONOUS_CALL_HPP
+#define MORBID_SYNCHRONOUS_CALL_HPP
 
 #include <morbid/detail/max_args.hpp>
 #include <morbid/type_tag.hpp>

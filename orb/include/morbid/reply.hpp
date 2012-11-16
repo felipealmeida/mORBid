@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_REPLY_HPP
-#define TECORB_REPLY_HPP
+#ifndef MORBID_REPLY_HPP
+#define MORBID_REPLY_HPP
 
 namespace morbid {
 

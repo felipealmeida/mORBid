@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GRAMMAR_MESSAGE_HEADER_HPP
-#define TECORB_IIOP_GRAMMAR_MESSAGE_HEADER_HPP
+#ifndef MORBID_IIOP_GRAMMAR_MESSAGE_HEADER_HPP
+#define MORBID_IIOP_GRAMMAR_MESSAGE_HEADER_HPP
 
 #include <morbid/iiop/message_header.hpp>
 

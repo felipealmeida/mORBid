@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_EXCEPTION_HPP
-#define TECORB_EXCEPTION_HPP
+#ifndef MORBID_EXCEPTION_HPP
+#define MORBID_EXCEPTION_HPP
 
 #include <stdexcept>
 

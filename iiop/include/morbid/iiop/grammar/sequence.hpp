@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GRAMMAR_SEQUENCE_HPP
-#define TECORB_IIOP_GRAMMAR_SEQUENCE_HPP
+#ifndef MORBID_IIOP_GRAMMAR_SEQUENCE_HPP
+#define MORBID_IIOP_GRAMMAR_SEQUENCE_HPP
 
 #include <morbid/iiop/grammar/integer.hpp>
 

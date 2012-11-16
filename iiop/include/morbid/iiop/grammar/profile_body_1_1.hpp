@@ -11,6 +11,7 @@
 #include <morbid/iiop/profile_body.hpp>
 #include <morbid/iiop/grammar/align.hpp>
 #include <morbid/iiop/grammar/string.hpp>
+#include <morbid/iiop/grammar/sequence.hpp>
 
 namespace morbid { namespace iiop { namespace grammar {
 

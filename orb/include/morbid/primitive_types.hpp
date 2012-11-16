@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_PRIMITIVE_TYPES_H
-#define TECORB_PRIMITIVE_TYPES_H
+#ifndef MORBID_PRIMITIVE_TYPES_H
+#define MORBID_PRIMITIVE_TYPES_H
 
 #include <boost/integer.hpp>
 

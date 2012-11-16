@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GRAMMAR_TYPES_PRIMITIVES_HPP
-#define TECORB_IIOP_GRAMMAR_TYPES_PRIMITIVES_HPP
+#ifndef MORBID_IIOP_GRAMMAR_TYPES_PRIMITIVES_HPP
+#define MORBID_IIOP_GRAMMAR_TYPES_PRIMITIVES_HPP
 
 #include <morbid/iiop/grammar/floating_point.hpp>
 

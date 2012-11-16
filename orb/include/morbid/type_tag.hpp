@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_TYPE_TAG_HPP
-#define TECORB_TYPE_TAG_HPP
+#ifndef MORBID_TYPE_TAG_HPP
+#define MORBID_TYPE_TAG_HPP
 
 #include <morbid/in_out_traits.hpp>
 

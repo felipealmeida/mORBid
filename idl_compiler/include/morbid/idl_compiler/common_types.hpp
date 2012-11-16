@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_COMPILER_COMMON_TYPES
-#define TECORB_IDL_COMPILER_COMMON_TYPES
+#ifndef MORBID_IDL_COMPILER_COMMON_TYPES
+#define MORBID_IDL_COMPILER_COMMON_TYPES
 
 #include <morbid/idl_parser/type_spec.hpp>
 #include <morbid/idl_parser/interface_def.hpp>

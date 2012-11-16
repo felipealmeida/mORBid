@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IOR_GRAMMAR_IOR_HPP
-#define TECORB_IOR_GRAMMAR_IOR_HPP
+#ifndef MORBID_IOR_GRAMMAR_CORBALOC_HPP
+#define MORBID_IOR_GRAMMAR_CORBALOC_HPP
 
 #include <morbid/iiop/profile_body.hpp>
 

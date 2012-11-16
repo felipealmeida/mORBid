@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_PARSE_ARGUMENT_HPP
-#define TECORB_PARSE_ARGUMENT_HPP
+#ifndef MORBID_PARSE_ARGUMENT_HPP
+#define MORBID_PARSE_ARGUMENT_HPP
 
 #include <morbid/type_tag.hpp>
 #include <morbid/iiop/grammar/sequence.hpp>

@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_SERIALIZE_OBJECT_HPP
-#define TECORB_IIOP_SERIALIZE_OBJECT_HPP
+#ifndef MORBID_IIOP_SERIALIZE_OBJECT_HPP
+#define MORBID_IIOP_SERIALIZE_OBJECT_HPP
 
 #include <morbid/iiop/generator/string.hpp>
 #include <morbid/iiop/generator/floating_point.hpp>

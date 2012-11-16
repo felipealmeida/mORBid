@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GRAMMAR_REPLY_HEADER_1_1_HPP
-#define TECORB_IIOP_GRAMMAR_REPLY_HEADER_1_1_HPP
+#ifndef MORBID_IIOP_GRAMMAR_REPLY_HEADER_1_1_HPP
+#define MORBID_IIOP_GRAMMAR_REPLY_HEADER_1_1_HPP
 
 #include <morbid/iiop/reply_header.hpp>
 #include <morbid/iiop/grammar/service_context_list.hpp>

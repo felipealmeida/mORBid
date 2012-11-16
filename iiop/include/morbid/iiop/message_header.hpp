@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_MESSAGE_HEADER_HPP
-#define TECORB_IIOP_MESSAGE_HEADER_HPP
+#ifndef MORBID_IIOP_MESSAGE_HEADER_HPP
+#define MORBID_IIOP_MESSAGE_HEADER_HPP
 
 #include <boost/fusion/include/adapt_struct.hpp>
 

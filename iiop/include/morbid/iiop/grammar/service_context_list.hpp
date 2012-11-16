@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GRAMMAR_SERVICE_CONTEXT_LIST_HPP
-#define TECORB_IIOP_GRAMMAR_SERVICE_CONTEXT_LIST_HPP
+#ifndef MORBID_IIOP_GRAMMAR_SERVICE_CONTEXT_LIST_HPP
+#define MORBID_IIOP_GRAMMAR_SERVICE_CONTEXT_LIST_HPP
 
 #include <morbid/iiop/service_context_list.hpp>
 #include <morbid/iiop/grammar/integer.hpp>

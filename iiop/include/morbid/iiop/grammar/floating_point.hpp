@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IIOP_GRAMMAR_FLOATING_POINT_HPP
-#define TECORB_IIOP_GRAMMAR_FLOATING_POINT_HPP
+#ifndef MORBID_IIOP_GRAMMAR_FLOATING_POINT_HPP
+#define MORBID_IIOP_GRAMMAR_FLOATING_POINT_HPP
 
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>

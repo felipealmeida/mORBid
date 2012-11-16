@@ -7,8 +7,8 @@
 
 #if !defined(BOOST_PP_IS_ITERATING) || !BOOST_PP_IS_ITERATING
 
-#ifndef TECORB_NARROW_HPP
-#define TECORB_NARROW_HPP
+#ifndef MORBID_NARROW_HPP
+#define MORBID_NARROW_HPP
 
 #include <morbid/object.hpp>
 #include <morbid/detail/max_args.hpp>
@@ -28,7 +28,7 @@ template <typename T, typename Bases, int size
           = boost::mpl::size<Bases>::type::value>
 struct narrow;
 
-#define BOOST_PP_ITERATION_PARAMS_1 (3, (0, TECORB_MAX_ARGS \
+#define BOOST_PP_ITERATION_PARAMS_1 (3, (0, MORBID_MAX_ARGS \
                                          , "morbid/narrow.hpp"))
 #include BOOST_PP_ITERATE()
 
@@ -38,13 +38,13 @@ struct narrow;
 
 #else
 
-#define TECORB_NARROW_base(z, n, data) \
+#define MORBID_NARROW_base(z, n, data) \
   BOOST_PP_COMMA_IF(n) boost::mpl::at_c<V, n>::type 
 
 template <typename T, typename V>
 struct narrow<T, V, BOOST_PP_ITERATION()>
 #if BOOST_PP_ITERATION()
-  : BOOST_PP_REPEAT(BOOST_PP_ITERATION(), TECORB_NARROW_base, ~)
+  : BOOST_PP_REPEAT(BOOST_PP_ITERATION(), MORBID_NARROW_base, ~)
 #endif
 {
   static boost::shared_ptr<T> _narrow(boost::shared_ptr<Object> p)
@@ -62,6 +62,6 @@ struct narrow<T, V, BOOST_PP_ITERATION()>
   }
 };
 
-#undef TECORB_NARROW_base
+#undef MORBID_NARROW_base
 
 #endif

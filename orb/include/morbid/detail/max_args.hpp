@@ -5,6 +5,6 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_MAX_ARGS
-#define TECORB_MAX_ARGS 10
+#ifndef MORBID_MAX_ARGS
+#define MORBID_MAX_ARGS 10
 #endif

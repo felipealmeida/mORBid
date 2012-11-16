@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IN_OUT_TRAITS_HPP
-#define TECORB_IN_OUT_TRAITS_HPP
+#ifndef MORBID_IN_OUT_TRAITS_HPP
+#define MORBID_IN_OUT_TRAITS_HPP
 
 #include <morbid/primitive_types.hpp>
 #include <morbid/string.hpp>

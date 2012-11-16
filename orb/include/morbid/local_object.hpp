@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_LOCAL_OBJECT_HPP
-#define TECORB_LOCAL_OBJECT_HPP
+#ifndef MORBID_LOCAL_OBJECT_HPP
+#define MORBID_LOCAL_OBJECT_HPP
 
 #include <morbid/narrow.hpp>
 #include <morbid/object.hpp>

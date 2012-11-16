@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_PARSER_TYPE_SPEC_HPP
-#define TECORB_IDL_PARSER_TYPE_SPEC_HPP
+#ifndef MORBID_IDL_PARSER_TYPE_SPEC_HPP
+#define MORBID_IDL_PARSER_TYPE_SPEC_HPP
 
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/variant.hpp>

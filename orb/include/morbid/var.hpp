@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_VAR_HPP
-#define TECORB_VAR_HPP
+#ifndef MORBID_VAR_HPP
+#define MORBID_VAR_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>

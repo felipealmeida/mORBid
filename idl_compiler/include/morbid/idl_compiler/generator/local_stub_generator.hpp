@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_COMPILER_LOCAL_STUB_GENERATOR_HPP
-#define TECORB_IDL_COMPILER_LOCAL_STUB_GENERATOR_HPP
+#ifndef MORBID_IDL_COMPILER_LOCAL_STUB_GENERATOR_HPP
+#define MORBID_IDL_COMPILER_LOCAL_STUB_GENERATOR_HPP
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>

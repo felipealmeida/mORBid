@@ -7,8 +7,8 @@
 
 #if !defined(BOOST_PP_IS_ITERATING) || !BOOST_PP_IS_ITERATING
 
-#ifndef TECORB_HANDLE_REQUEST_BODY_HPP
-#define TECORB_HANDLE_REQUEST_BODY_HPP
+#ifndef MORBID_HANDLE_REQUEST_BODY_HPP
+#define MORBID_HANDLE_REQUEST_BODY_HPP
 
 #include <morbid/any.hpp>
 #include <morbid/detail/max_args.hpp>
@@ -260,7 +260,7 @@ struct serialize_out_arg<type_tag::inout_tag> : serialize_out_arg<type_tag::out_
 template <typename R, int>
 struct make_request_and_call_function;
 
-#define BOOST_PP_ITERATION_PARAMS_1 (3, (0, TECORB_MAX_ARGS \
+#define BOOST_PP_ITERATION_PARAMS_1 (3, (0, MORBID_MAX_ARGS \
                                          , "morbid/handle_request_body.hpp"))
 #include BOOST_PP_ITERATE()
 
@@ -306,7 +306,7 @@ void handle_request_body(T* self, F f, const char* first
   serialize_out_arg<MORBID_MAKE_REQUEST_tag(I)>                         \
   ::call(iterator, true, MORBID_MAKE_REQUEST_arg_name(I));
 
-#define TECORB_HANDLE_REQUEST_unwrap(z, n, data) \
+#define MORBID_HANDLE_REQUEST_unwrap(z, n, data) \
   BOOST_PP_COMMA_IF(n) unwrap( BOOST_PP_CAT(a, n) )
 
 template <>
@@ -320,7 +320,7 @@ struct make_request_and_call_function<void, N()>
     namespace mpl = boost::mpl;
     BOOST_PP_REPEAT(N(), MORBID_MAKE_REQUEST_ARGUMENT_INIT, ~)
 
-    (self->*f)(BOOST_PP_REPEAT(N(), TECORB_HANDLE_REQUEST_unwrap, ~));
+    (self->*f)(BOOST_PP_REPEAT(N(), MORBID_HANDLE_REQUEST_unwrap, ~));
 
     std::back_insert_iterator<std::vector<char> > iterator(r.reply_body);
     BOOST_PP_REPEAT(N(), MORBID_MAKE_REQUEST_ARGUMENT_SERIALIZE_OUTPUT, ~)
@@ -338,7 +338,7 @@ struct make_request_and_call_function<R, N()>
     namespace mpl = boost::mpl;
     BOOST_PP_REPEAT(N(), MORBID_MAKE_REQUEST_ARGUMENT_INIT, ~)
 
-    R result = (self->*f)(BOOST_PP_REPEAT(N(), TECORB_HANDLE_REQUEST_unwrap, ~));
+    R result = (self->*f)(BOOST_PP_REPEAT(N(), MORBID_HANDLE_REQUEST_unwrap, ~));
 
     std::back_insert_iterator<std::vector<char> > iterator(r.reply_body);
     BOOST_PP_REPEAT(N(), MORBID_MAKE_REQUEST_ARGUMENT_SERIALIZE_OUTPUT, ~)
@@ -351,7 +351,7 @@ struct make_request_and_call_function<R, N()>
 #undef MORBID_MAKE_REQUEST_arg_type
 #undef MORBID_MAKE_REQUEST_arg_name
 #undef MORBID_MAKE_REQUEST_ARGUMENT_INIT
-#undef TECORB_HANDLE_REQUEST_unwrap
+#undef MORBID_HANDLE_REQUEST_unwrap
 
 // template <typename T, typename F BOOST_PP_ENUM_TRAILING_PARAMS(N(), typename A)>
 // typename boost::function_types::result_type<F>::type
@@ -361,10 +361,10 @@ struct make_request_and_call_function<R, N()>
 //                        BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N(), A, a))
 // {
 //   std::cout << "Finished, call" << std::endl;
-//   return (self->*f)(BOOST_PP_REPEAT(N(), TECORB_HANDLE_REQUEST_unwrap, ~));
+//   return (self->*f)(BOOST_PP_REPEAT(N(), MORBID_HANDLE_REQUEST_unwrap, ~));
 // }
 
-// #undef TECORB_HANDLE_REQUEST_unwrap
+// #undef MORBID_HANDLE_REQUEST_unwrap
 
 // template <typename T, typename F BOOST_PP_ENUM_TRAILING_PARAMS(N(), typename A)>
 // typename boost::function_types::result_type<F>::type

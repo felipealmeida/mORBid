@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_ORB_INIT_HPP
-#define TECORB_ORB_INIT_HPP
+#ifndef MORBID_ORB_INIT_HPP
+#define MORBID_ORB_INIT_HPP
 
 #include <morbid/var.hpp>
 #include <morbid/poa.hpp>

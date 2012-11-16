@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_PARSER_GRAMMAR_MODULE_OPEN_HPP
-#define TECORB_IDL_PARSER_GRAMMAR_MODULE_OPEN_HPP
+#ifndef MORBID_IDL_PARSER_GRAMMAR_MODULE_OPEN_HPP
+#define MORBID_IDL_PARSER_GRAMMAR_MODULE_OPEN_HPP
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
