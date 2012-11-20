@@ -24,6 +24,7 @@ struct serialize_object_aux
   template <typename OutputIterator>
   static void call(OutputIterator& iterator, T a)
   {
+    std::cout << "serialize primitive object " << typeid(a).name() << std::endl;
     iiop::serialize_object(iterator, true, a);
   }
 };
@@ -47,13 +48,25 @@ struct serialize_object_aux<reference_wrapper<T> >
   template <typename OutputIterator>
   static void call(OutputIterator& iterator, reference_wrapper<T> r)
   {
-    // iiop::serialize_reference(iterator, r.ptr.);
+    iiop::serialize_reference(iterator, r.get_ptr()->_structured_ior());
+  }
+};
+
+template <typename T>
+struct serialize_object_aux<boost::shared_ptr<T> >
+{
+  template <typename OutputIterator>
+  static void call(OutputIterator& iterator, boost::shared_ptr<T> r)
+  {
+    std::cout << "serializing " << typeid(r).name() << std::endl;
+    iiop::serialize_reference(iterator, r->_structured_ior());
   }
 };
 
 template <typename OutputIterator, typename T>
 void serialize_object(OutputIterator& iterator, T a)
 {
+  std::cout << "serialize_object " << typeid(a).name() << std::endl;
   serialize_object_aux<T>::call(iterator, a);
 }
 

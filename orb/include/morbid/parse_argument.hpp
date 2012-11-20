@@ -16,6 +16,8 @@
 #include <morbid/primitive_types.hpp>
 #include <morbid/exception.hpp>
 #include <morbid/reference_wrapper.hpp>
+#include <morbid/ior/grammar/ior.hpp>
+#include <morbid/iiop/grammar/profile_body_1_1.hpp>
 
 #include <boost/mpl/assert.hpp>
 #include <boost/spirit/home/qi.hpp>
@@ -221,12 +223,58 @@ inline reference_wrapper<T> parse_argument(const char* first, const char*& rq_cu
                                            <boost::is_same<typename T::_morbid_type_kind, interface_tag>
                                            , void*>::type = 0)
 {
-  // typename T::template _morbid_parser<const char*> parser;
-  // T obj;
-  // if(qi::parse(rq_current, rq_last, parser, obj))
-  //   return obj;
-  // else
-  throw MARSHALL();
+  std::cout << "Parsing IOR dist" << std::distance(rq_current, rq_last) << std::endl;
+  ior::grammar::ior<const char*> ior_grammar;
+  ior::ior ior_;
+  using boost::phoenix::val;
+  if(boost::spirit::qi::parse(rq_current, rq_last, ior_grammar(val(first)), ior_))
+  {
+    std::cout << "Parsed IOR successfully" << std::endl;
+    iiop::grammar::profile_body_1_1<std::vector<char>::const_iterator> profile_body_grammar;
+    bool found = false;
+    morbid::iiop::profile_body profile_body;
+    for(std::vector<ior::tagged_profile>::const_iterator
+          first = ior_.profiles.begin()
+          , last = ior_.profiles.end()
+          ;first != last; ++first)
+    {
+      if(first->tag == 0 /*TAG_INTERNET_IOP*/)
+      {
+        if(boost::spirit::qi::parse(first->profile_data.begin()
+                                    , first->profile_data.end()
+                                    , profile_body_grammar(val(first->profile_data.begin())
+                                                           , little_endian)
+                                    , profile_body))
+        {
+          std::cout << "Parsed IIOP profile body information host: " << profile_body.host
+                    << " port: " << profile_body.port 
+                    << " object_key:  " << boost::make_iterator_range(profile_body.object_key.begin()
+                                                                      , profile_body.object_key.end()) << std::endl;
+          found = true;
+          break;
+        }
+        else
+        {
+          std::cout << "Couldn't parse IIOP tagged profile" << std::endl;
+        }
+      }
+    }
+    if(found)
+    {
+      structured_ior ior = {ior_.type_id};
+      ior.structured_profiles.push_back(profile_body);
+      Object_ptr p(new ::morbid::remote_stub::Object(ior));
+      typename T::_ptr_type ptr = T::_narrow(p);
+      reference_wrapper<T> w;
+      w.ptr = ptr;
+      w.ior = ior;
+      return w;
+    }
+    else
+      throw morbid::MARSHALL();
+  }
+  else
+    throw MARSHALL();
 }
 
 inline std::vector<WChar> parse_argument(const char* first, const char*& rq_current

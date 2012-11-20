@@ -8,6 +8,8 @@
 #include "reference.h"
 #include <CORBA.h>
 
+#include <boost/thread.hpp>
+
 #include <fstream>
 
 struct some_interface_impl : POA_some_interface
@@ -21,11 +23,21 @@ struct some_interface_impl : POA_some_interface
   {
     std::cout << "some_interface_impl::foo()" << std::endl;
     foo_++;
+    if(foo_ == 4)
+    {
+      std::cout << "foo called 4 times. shutdown orb" << std::endl;
+      orb->shutdown(true);
+    }
   }
 
   int foo_;
   CORBA::ORB_var orb;
 };
+
+void run_orb(CORBA::ORB_var orb)
+{
+  orb->run();
+}
 
 int main(int argc, char* argv[])
 {
@@ -50,11 +62,21 @@ int main(int argc, char* argv[])
 
   CORBA::Object_var obj = orb->string_to_object (ior.c_str());
   some_other_interface_var some_other_interface_ = some_other_interface::_narrow (obj);
+
+  poa_manager->activate();
+
+  boost::thread orb_thread(boost::bind(&run_orb, orb));
   
   some_other_interface_->foo1(some_interface_ref);
   some_other_interface_->foo2(some_interface_ref);
   some_other_interface_->foo3(some_interface_ref);
   some_interface_ref = some_other_interface_->foo4();
+
+  std::cout << "All functions called" << std::endl;
+
+  orb_thread.join();
+
+  assert(some_interface.foo_ == 4);
 
   std::cout << "Finished" << std::endl;
 }

@@ -71,6 +71,7 @@ struct serialize_if_input
   template <typename T, typename Tag>
   void operator()(type_tag::value_type_tag<T, Tag> a) const
   {
+    std::cout << "serializing " << typeid(T).name() << std::endl;
     serialization::serialize_object(iterator, a.value);
   }
   template <typename T>
@@ -249,10 +250,10 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  <boost::is_same<typename T::_morbid_type_kind, interface_tag>
                                  , void*>::type = 0)
   {
-    grammar::reference_from_ior<Iterator, T> parser;
+    std::cout << "create grammar for interface" << std::endl;
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
       ::template call<R>
-      (vbegin, vfirst, vlast, little_endian, is_void, seq, expr >> parser(boost::phoenix::val(vbegin)));
+      (vbegin, vfirst, vlast, little_endian, is_void, seq, expr >> grammar::ref_ior(grammar::ref_type<T>(), little_endian));
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>

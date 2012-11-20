@@ -24,6 +24,7 @@ struct some_other_interface_impl : POA_some_other_interface
     assert(!foo1_ && !foo2_ && !foo3_ && !foo4_ && CORBA::is_nil(p));
     foo1_ = true;
     p = s;
+    p->foo();
   }
 
   void foo2(some_interface_ptr& s)
@@ -32,6 +33,7 @@ struct some_other_interface_impl : POA_some_other_interface
     assert(foo1_ && !foo2_ && !foo3_ && !foo4_);
     foo2_ = true;
     s = p;
+    p->foo();
   }
 
   void foo3(some_interface_ptr& s)
@@ -40,6 +42,7 @@ struct some_other_interface_impl : POA_some_other_interface
     assert(foo1_ && foo2_ && !foo3_ && !foo4_);
     foo3_ = true;
     s = p;
+    p->foo();
   }
 
   some_interface_ptr foo4()
@@ -47,6 +50,7 @@ struct some_other_interface_impl : POA_some_other_interface
     std::cout << "struct_interface_impl::foo4 called" << std::endl;
     assert(foo1_ && foo2_ && foo3_ && !foo4_);
     foo4_ = true;
+    p->foo();
     orb->shutdown(true);
     return p;
   }

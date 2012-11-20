@@ -359,45 +359,6 @@ struct make_request_and_call_function<R, N()>
 #undef MORBID_MAKE_REQUEST_tag
 #undef MORBID_MAKE_REQUEST_arg_type
 #undef MORBID_MAKE_REQUEST_arg_name
-#undef MORBID_MAKE_REQUEST_ARGUMENT_INIT
-#undef MORBID_HANDLE_REQUEST_unwrap
-
-// template <typename T, typename F BOOST_PP_ENUM_TRAILING_PARAMS(N(), typename A)>
-// typename boost::function_types::result_type<F>::type
-// handle_parameter (T* self, F f, const char* first, const char* rq_current
-//                        , const char* rq_last, boost::mpl::true_
-//                        , bool little_endian
-//                        BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N(), A, a))
-// {
-//   std::cout << "Finished, call" << std::endl;
-//   return (self->*f)(BOOST_PP_REPEAT(N(), MORBID_HANDLE_REQUEST_unwrap, ~));
-// }
-
-// #undef MORBID_HANDLE_REQUEST_unwrap
-
-// template <typename T, typename F BOOST_PP_ENUM_TRAILING_PARAMS(N(), typename A)>
-// typename boost::function_types::result_type<F>::type
-// handle_parameter (T* self, F f, const char* first, const char* rq_current
-//                   , const char* rq_last, boost::mpl::false_
-//                   , bool little_endian
-//                   BOOST_PP_ENUM_TRAILING_BINARY_PARAMS(N(), A, a))
-// {
-//   std::cout << "Not finished, should read parameter and continue" << std::endl;
-//   typedef typename boost::function_types::parameter_types<F>::type parameter_types;
-//   typedef typename boost::mpl::deref
-//     <typename boost::mpl::next
-//      <typename boost::mpl::begin<parameter_types>::type>::type>::type
-//     parameter_type;
-
-//   std::cout << "parameter type: " << typeid(parameter_type).name() << std::endl;
-
-//   typename wrapped_type<parameter_type>::type
-//     r = parse_argument(first, rq_current, rq_last, little_endian
-//                        , argument_tag<parameter_type>());
-//   typedef boost::mpl::bool_<boost::mpl::size<parameter_types>::value == N()+2> stop_type;
-//   return handle_parameter(self, f, first, rq_current, rq_last, stop_type(), little_endian
-//                           BOOST_PP_ENUM_TRAILING_PARAMS(N(), a), r);
-// }
 
 #undef N
 #endif
