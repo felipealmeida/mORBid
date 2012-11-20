@@ -1,0 +1,20 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
+interface some_interface
+{
+  void foo();
+};
+
+interface some_other_interface
+{
+  void foo1(in some_interface x);
+  void foo2(out some_interface x);
+  void foo3(inout some_interface x);
+  some_interface foo4();
+};
+

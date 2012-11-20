@@ -9,6 +9,8 @@
 #include <morbid/ior/grammar/corbaloc.hpp>
 #include <morbid/ior/grammar/ior.hpp>
 #include <morbid/iiop/grammar/profile_body_1_1.hpp>
+#include <morbid/ior/generator/structured_ior.hpp>
+#include <morbid/iiop/generator/align.hpp>
 
 #include <boost/algorithm/hex.hpp>
 
@@ -49,7 +51,38 @@ Object_ptr ORB::resolve_initial_references(const char* id)
 
 String_ptr ORB::object_to_string(Object_ptr p)
 {
-  return p->ior();
+  std::cout << "Object to string" << std::endl;
+  structured_ior sior = p->_structured_ior();
+  
+  typedef std::back_insert_iterator<std::vector<char> > iterator_type;
+  ior::generator::structured_ior_generator<iterator_type
+                                           , structured_ior>
+    structured_ior_generator;
+  std::vector<char> ior;
+  namespace karma = boost::spirit::karma;
+  iterator_type iterator(ior);
+  if(karma::generate(iterator, structured_ior_generator(true /*little endian*/), sior))
+  {
+    std::cout << "Success" << std::endl;
+    const char IOR_str[] = "IOR:";
+    std::vector<char> final_string;
+    final_string.insert(final_string.end(), IOR_str, &IOR_str[sizeof(IOR_str)-1]);
+
+    boost::algorithm::hex(ior.begin(), ior.end(), std::back_inserter(final_string));
+
+    std::cout << "Size: " << final_string.size() << std::endl;
+
+    char* string = new char[final_string.size()+1];
+    string[final_string.size()] = 0;
+    std::copy(final_string.begin(), final_string.end(), string);
+    std::cout << "final string: " << '|' << string << '|' << std::endl;
+    return string;
+  }
+  else
+  {
+    std::cout << "Failed generating string for object reference" << std::endl;
+    throw std::runtime_error("Failed generating string for object reference");
+  }
 }
 
 Object_ptr ORB::string_to_object(const char* ref)
@@ -63,10 +96,14 @@ Object_ptr ORB::string_to_object(const char* ref)
     std::cout << "parsed successfully corbaloc" << std::endl;
     std::cout << "host: " << profile_body.host
               << " port: " << profile_body.port
-              << " objectkey: " << profile_body.object_key << std::endl;
+              << " objectkey: " << boost::make_iterator_range(profile_body.object_key.begin()
+                                                              , profile_body.object_key.end()) << std::endl;
+    structured_ior ior;
+    ior.type_id.insert(ior.type_id.end(), Object::_repository_id
+                       , Object::_repository_id + std::strlen(Object::_repository_id));
+    ior.structured_profiles.push_back(profile_body);
     return Object_ptr
-      (new ::morbid::remote_stub::Object(profile_body.host, profile_body.port
-                                         , profile_body.object_key));
+      (new ::morbid::remote_stub::Object(ior));
   }
   else if(boost::spirit::qi::parse(first, last, "IOR:"))
   {
@@ -99,11 +136,17 @@ Object_ptr ORB::string_to_object(const char* ref)
             found = true;
             break;
           }
+          else
+          {
+            std::cout << "Couldn't parse IIOP tagged profile" << std::endl;
+          }
       }
       if(found)
-        return Object_ptr
-          (new ::morbid::remote_stub::Object(profile_body.host, profile_body.port
-                                             , profile_body.object_key));
+      {
+        structured_ior ior = {ior_.type_id};
+        ior.structured_profiles.push_back(profile_body);
+        return Object_ptr(new ::morbid::remote_stub::Object(ior));
+      }
       else
         throw morbid::INVALID_PARAM();
     }

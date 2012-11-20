@@ -6,6 +6,7 @@
  */
 
 #include "modules_allprimitives.h"
+#include <CORBA.h>
 
 #include <fstream>
 

@@ -5,92 +5,53 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "struct.h"
+#include "reference.h"
 #include <CORBA.h>
 
 #include <fstream>
 
-struct struct_interface_impl : POA_struct_interface
+struct some_other_interface_impl : POA_some_other_interface
 {
-  struct_interface_impl(CORBA::ORB_var orb)
-    : foo1_(false), foo2_(false), foo3_(false)
+  some_other_interface_impl(CORBA::ORB_var orb)
+    : p(some_interface::_nil()), foo1_(false), foo2_(false), foo3_(false)
     , foo4_(false)
     , orb(orb)
   {}
 
-  void foo1(some_struct s)
+  void foo1(some_interface_ptr s)
   {
     std::cout << "struct_interface_impl::foo1 called" << std::endl;
-    assert(!foo1_ && !foo2_ && !foo3_ && !foo4_);
-    assert(s.a1);
-    assert(!s.b1);
-    assert(s.c1);
-    assert(s.a2 == 'a');
-    assert(s.b2 == 'b');
-    assert(s.a3 == 2.0);
-    assert(s.a4 == 2.0f);
-    assert(s.a5 == 2);
-    assert(s.a6 == 'c');
-    assert(s.a7 == 2);
+    assert(!foo1_ && !foo2_ && !foo3_ && !foo4_ && CORBA::is_nil(p));
     foo1_ = true;
+    p = s;
   }
 
-  void foo2(some_struct& s)
+  void foo2(some_interface_ptr& s)
   {
     std::cout << "struct_interface_impl::foo2 called" << std::endl;
     assert(foo1_ && !foo2_ && !foo3_ && !foo4_);
-    s.a1 = false;
-    s.b1 = true;
-    s.c1 = false;
-    s.a2 = 'c';
-    s.b2 = 'd';
-    s.a3 = 3.0;
-    s.a4 = 3.0f;
-    s.a5 = 3;
-    s.a6 = 'e';
-    s.a7 = 3;
     foo2_ = true;
+    s = p;
   }
 
-  void foo3(some_struct& s)
+  void foo3(some_interface_ptr& s)
   {
     std::cout << "struct_interface_impl::foo3 called" << std::endl;
     assert(foo1_ && foo2_ && !foo3_ && !foo4_);
-    assert(s.a1);
-    assert(!s.b1);
-    assert(s.c1);
-    assert(s.a2 == 'a');
-    assert(s.b2 == 'b');
-    assert(s.a3 == 2.0);
-    assert(s.a4 == 2.0f);
-    assert(s.a5 == 2);
-    assert(s.a6 == 'c');
-    assert(s.a7 == 2);
-
-    s.a1 = false;
-    s.b1 = true;
-    s.c1 = false;
-    s.a2 = 'c';
-    s.b2 = 'd';
-    s.a3 = 3.0;
-    s.a4 = 3.0f;
-    s.a5 = 3;
-    s.a6 = 'e';
-    s.a7 = 3;
-
     foo3_ = true;
+    s = p;
   }
 
-  some_struct foo4()
+  some_interface_ptr foo4()
   {
     std::cout << "struct_interface_impl::foo4 called" << std::endl;
     assert(foo1_ && foo2_ && foo3_ && !foo4_);
     foo4_ = true;
     orb->shutdown(true);
-    some_struct r = {true, false, true, 'a', 'b', 2.0, 2.0f, 2, 'c', 2};
-    return r;
+    return p;
   }
 
+  some_interface_ptr p;
   bool foo1_, foo2_, foo3_, foo4_;
   CORBA::ORB_var orb;
 };
@@ -103,9 +64,9 @@ int main(int argc, char* argv[])
   PortableServer::POA_var poa = PortableServer::POA::_narrow (poa_obj);
   PortableServer::POAManager_var poa_manager = poa->the_POAManager();
   
-  struct_interface_impl struct_interface(orb);
+  some_other_interface_impl some_other_interface(orb);
 
-  PortableServer::ObjectId_var oid = poa->activate_object (&struct_interface);
+  PortableServer::ObjectId_var oid = poa->activate_object (&some_other_interface);
 
   CORBA::Object_var ref = poa->id_to_reference (oid.in());
   CORBA::String_var str = orb->object_to_string (ref.in());
@@ -122,5 +83,5 @@ int main(int argc, char* argv[])
   poa_manager->activate();
   orb->run();
 
-  assert(struct_interface.foo1_ && struct_interface.foo2_ && struct_interface.foo3_ && struct_interface.foo4_);
+  assert(some_other_interface.foo1_ && some_other_interface.foo2_ && some_other_interface.foo3_ && some_other_interface.foo4_);
 }

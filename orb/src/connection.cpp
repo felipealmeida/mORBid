@@ -260,6 +260,10 @@ bool connection::handle_request(std::vector<char>::const_iterator first
             std::cout << "Servant not found, should throw OBJECT_NOT_EXIST" << std::endl;
           }
         }
+        else
+        {
+          std::cout << "Couldn't parse reference pointer from object key" << std::endl;
+        }
       }
     }
   }

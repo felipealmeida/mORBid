@@ -10,6 +10,7 @@
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
+#include <morbid/idl_compiler/generator/return.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 
 #include <boost/spirit/home/karma.hpp>
@@ -27,6 +28,7 @@ struct header_remote_stub_generator : karma::grammar
   header_remote_stub_generator();
 
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::return_<OutputIterator, Iterator> return_;
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;
@@ -50,26 +52,6 @@ struct header_remote_stub_generator : karma::grammar
   karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
   karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;
-};
-
-template <typename OutputIterator, typename Iterator>
-struct cpp_remote_stub_generator : karma::grammar
-<OutputIterator, idl_parser::interface_def<Iterator>(), karma::locals<std::string> >
-{
-  cpp_remote_stub_generator();
-
-  idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()> synchronous_template_args;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>()
-              , karma::locals<unsigned int> > synchronous_args;
-  karma::rule<OutputIterator, std::string()> ior_function;
-  karma::rule<OutputIterator> indent;
-  karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(std::string)
-              , karma::locals<unsigned int> > operation;
-  karma::rule<OutputIterator
-              , idl_parser::interface_def<Iterator>()
-              , karma::locals<std::string> > start;
 };
 
 } } }

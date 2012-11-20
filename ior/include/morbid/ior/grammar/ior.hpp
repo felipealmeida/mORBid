@@ -58,7 +58,7 @@ struct ior : qi::grammar<Iterator, morbid::ior::ior(Iterator)
   }
 
   grammar::tagged_profiles<Iterator> tagged_profiles;
-  iiop::grammar::string<Iterator, char> string;
+  iiop::grammar::string<Iterator> string;
   qi::rule<Iterator, morbid::ior::ior(Iterator), qi::locals<bool> > start;
 };
 

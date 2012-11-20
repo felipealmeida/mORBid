@@ -1,0 +1,10 @@
+
+import feature ;
+
+feature.feature test-orb : morbid mico : composite link-incompatible ;
+
+project morbid/tests/interop ;
+
+alias interops : mico/simple1//simple1
+ mico/module_simple1//module_simple1 ;
+

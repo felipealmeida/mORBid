@@ -7,8 +7,6 @@
 import testing ;
 import feature ;
 
-feature.feature test-orb : morbid mico : composite link-incompatible ;
-
 path-constant current : . ;
 path-constant install : ../../../../install ;
 
@@ -60,3 +58,4 @@ make mico_mico.output : mico_client mico_server : @run-client-server ;
 make morbid_mico.output : morbid_client mico_server : @run-client-server ;
 make mico_morbid.output : mico_client morbid_server : @run-client-server ;
 
+alias simple1 : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output ;

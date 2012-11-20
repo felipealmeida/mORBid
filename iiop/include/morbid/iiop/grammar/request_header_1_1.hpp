@@ -51,7 +51,7 @@ struct request_header_1_1 : qi::grammar
   }
 
   grammar::sequence<Iterator, char> octet_sequence;
-  grammar::string<Iterator, char> string;
+  grammar::string<Iterator> string;
   grammar::dword<Iterator> dword;
   service_context_list<Iterator> service_context_list_grammar;
   qi::rule<Iterator, iiop::request_header(Iterator, bool)

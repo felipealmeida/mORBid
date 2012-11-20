@@ -9,6 +9,7 @@
 #define TECORB_IDL_COMPILER_LOCAL_STUB_GENERATOR_IPP
 
 #include <morbid/idl_compiler/generator/local_stub_generator.hpp>
+#include <morbid/idl_compiler/generator/return.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
 
@@ -54,7 +55,7 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     ;
   operation =
     indent
-    << type_spec
+    << return_
     (
      at_c<1>(_r1)[at_c<0>(_val)]
     )[_1 = at_c<0>(_val)]
@@ -85,31 +86,23 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
     << indent
     << (
         karma::string[_1 = at_c<0>(_val)]
-        << "(std::string const& host, unsigned short port" << eol
-        << indent << indent << ", ::morbid::String_ptr poa_name" << eol
-        << indent << indent << ", " << poa_class_name(_r1)[_1 = at_c<0>(_val)]
+        << "(::morbid::structured_ior const& ior" << ", " << poa_class_name(_r1)[_1 = at_c<0>(_val)]
         << "* servant)" << eol
-        << indent << " : host(host), port(port), poa_name(poa_name), servant(servant)" << eol
+        << indent << " : _structured_ior_(ior), servant(servant)" << eol
         << indent << "{}" << eol
        )
     << indent << "~" << karma::string[_1 = at_c<0>(_val)] << "();" << eol
+    << indent << "::morbid::structured_ior _structured_ior() const { return _structured_ior_; }" << eol
     ;
 
   common_members =
     indent
     << "// Members" << eol
-    << indent << "std::string host;" << eol
-    << indent << "unsigned short port;" << eol
-    << indent << "::morbid::String_ptr poa_name;" << eol
+    << indent << "::morbid::structured_ior _structured_ior_;" << eol
     << indent << poa_class_name(_r1)[_1 = _val] << "* servant;" << eol
     ;
   indent = karma::space << karma::space;
-  ior_function =
-    indent << "::morbid::String_ptr ior() const" << eol
-    << indent << "{" << eol
-    << indent << indent << "return ::morbid::poa::create_ior_string" << eol
-    << indent << indent << indent << "(host, port, poa_name, servant);" << eol
-    << indent << "}" << eol
+  ior_function = karma::eps
     ;
 }
 

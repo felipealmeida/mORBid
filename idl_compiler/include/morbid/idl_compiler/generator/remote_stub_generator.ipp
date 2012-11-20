@@ -62,7 +62,7 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
     ;
   operation =
     indent
-    << type_spec
+    << return_
     (
      at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
     )
@@ -88,7 +88,7 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
         << "(_repository_id, \"" << karma::string[_1 = at_c<1>(_val)]
-        << "\", host, port, object_key"
+        << "\", _structured_ior_"
         << eol << indent << indent << indent << indent << ", "
         << "boost::fusion::vector"
         << eol << indent << indent << indent << indent << '<'
@@ -122,10 +122,8 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
     << indent
     << (
         karma::string[_1 = at_c<0>(_val)]
-        << "(std::string const& host, unsigned short port" << eol
-        << indent << indent << indent << ", std::string const& object_key)" << eol
-        << indent << indent << " : host(host), port(port), object_key(object_key)"
-        << eol
+        << "( ::morbid::structured_ior const& structured_ior)" << eol
+        << indent << indent << " : _structured_ior_(structured_ior)" << eol
         << indent << "{}" << eol
        )
     << indent << "~" << karma::string[_1 = at_c<0>(_val)] << "();" << eol
@@ -134,89 +132,15 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
   common_members =
     indent
     << "// Members" << eol
-    << indent << "std::string host;" << eol
-    << indent << "unsigned short port;" << eol
-    << indent << "std::string object_key;" << eol
+    << indent << "::morbid::structured_ior _structured_ior_;" << eol
     ;
   indent = karma::space << karma::space;
   ior_function =
-    indent << "::morbid::String_ptr ior() const" << eol
-    << indent << '{' << eol
-    << indent << indent << "return ::morbid::poa::create_ior_string" << eol
-    << indent << indent << indent << "(host, port, object_key);" << eol
-    << indent << '}' << eol
+    indent << "::morbid::structured_ior _structured_ior() const { return _structured_ior_; }" << eol
     ;
 
   start.name("header_remote_stub_generator");
   karma::debug(start);
-}
-
-template <typename OutputIterator, typename Iterator>
-cpp_remote_stub_generator<OutputIterator, Iterator>::cpp_remote_stub_generator()
-  : cpp_remote_stub_generator::base_type(start)
-{
-  namespace phoenix = boost::phoenix;
-  using karma::_a;
-  using karma::_val;
-  using karma::_1;
-  using karma::_2;
-  using karma::eol;
-  using karma::_r1;
-  using phoenix::at_c;
-
-  // start = 
-  //   "namespace morbid { namespace remote_stub {"
-  //   << eol << eol
-  //   << karma::eps[_a = phoenix::at_c<0>(_val)]
-  //   << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol
-  //   << eol
-  //   << "// Start of operations defined in IDL" << eol
-  //   << (*(operation(_a) << eol))
-  //   [_1 = phoenix::at_c<1>(_val)]
-  //   << "// End of operations defined in IDL" << eol
-  //   << ior_function[_1 = _a] << eol
-  //   << "} }" << eol << eol
-  //   ;
-  // ior_function =
-  //   "::morbid::String_ptr "
-  //   << karma::string[_1 = _val] << "::ior() const" << eol
-  //   << "{" << eol
-  //   << indent << "return ::morbid::poa::create_ior_string" << eol
-  //   << indent << indent << "(host, port, object_key);" << eol
-  //   << "}" << eol
-  //   ;
-  // operation =
-  //   karma::string[_1 = phoenix::at_c<0>(_val)]
-  //   << karma::space << karma::string[_1 = _r1]
-  //   << "::" << karma::string[_1 = phoenix::at_c<1>(_val)]
-  //   << "("
-  //   << karma::eps[_a = 0]
-  //   << -((parameter << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
-  //   << ")" << eol
-  //   << "{" << eol
-  //   << (
-  //       indent
-  //       << "std::cout << \"Called " << karma::string[_1 = phoenix::at_c<1>(_val)]
-  //       << " was called\" << std::endl;" << eol
-  //       << indent << "return ::morbid::synchronous_call::call" << eol
-  //       << indent << indent << "<" << karma::string[_1 = at_c<0>(_val)]
-  //       << (*(eol << indent << indent << ", " << synchronous_template_args))[_1 = at_c<2>(_val)]
-  //       << eol << indent << indent << ">" << eol
-  //       << indent << indent
-  //       << "(_repository_id, \"" << karma::string[_1 = at_c<1>(_val)]
-  //       << "\", host, port, object_key"
-  //       << (*(", " << synchronous_args))[_1 = at_c<2>(_val)]
-  //       << ");" << eol
-  //      )
-  //   << "}" << eol
-  //   ;
-  // synchronous_template_args
-  //   = "::morbid::type_tag::value_type_tag<"
-  //   << parameter[_1 = _val]
-  //   << ", ::morbid::type_tag::" << karma::string[_1 = at_c<0>(_val)]
-  //   << "_tag>";
-  // synchronous_args = karma::eps[_a = 0u] << "arg" << karma::lit(++_a);
-  // indent = karma::space << karma::space;
 }
 
 } } }

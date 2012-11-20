@@ -10,7 +10,9 @@
 
 #include <morbid/type_tag.hpp>
 #include <morbid/in_out_traits.hpp>
+#include <morbid/reference_wrapper.hpp>
 #include <morbid/iiop/serialize_object.hpp>
+#include <morbid/iiop/serialize_reference.hpp>
 
 #include <boost/utility/enable_if.hpp>
 
@@ -36,6 +38,16 @@ struct serialize_object_aux<T, typename boost::enable_if
   {
     iiop::serialize_object<typename T::template _morbid_generator<OutputIterator> >
       (iterator, true, a);
+  }
+};
+
+template <typename T>
+struct serialize_object_aux<reference_wrapper<T> >
+{
+  template <typename OutputIterator>
+  static void call(OutputIterator& iterator, reference_wrapper<T> r)
+  {
+    // iiop::serialize_reference(iterator, r.ptr.);
   }
 };
 

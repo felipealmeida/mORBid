@@ -14,6 +14,7 @@
 #include <morbid/local_object.hpp>
 #include <morbid/string.hpp>
 #include <morbid/reply.hpp>
+#include <morbid/structured_ior.hpp>
 
 #include <boost/mpl/vector.hpp>
 #include <boost/asio/io_service.hpp>
@@ -38,13 +39,12 @@ struct ServantBase
 {
   Object_ptr _this();
 
-  virtual Object_ptr _construct_local_stub(std::string const& host
-                                           , unsigned short port
-                                           , String_ptr poa_name) = 0;
+  virtual Object_ptr _construct_local_stub(structured_ior const& ior) = 0;
   virtual void _dispatch(const char* name
                          , const char* first, const char* request_body_first
                          , const char* request_body_last
                          , bool little_endian, reply&) = 0;
+  virtual const char* _get_interface() const = 0;
 };
 
 struct POAManager : narrow<POAManager, boost::mpl::vector1<LocalObject> >
@@ -55,8 +55,8 @@ struct POAManager : narrow<POAManager, boost::mpl::vector1<LocalObject> >
 
   // Object
   bool _is_a(const char* id) { return true; }
-  static POAManager_ptr _construct_remote_stub(std::string const&, unsigned short
-                                               , std::string const&) { std::abort(); }
+  const char* _get_interface() const { std::abort(); }
+  static POAManager_ptr _construct_remote_stub(structured_ior const&) { std::abort(); }
 
   POA_ptr poa;
 };
@@ -76,8 +76,8 @@ struct POA : narrow<POA, boost::mpl::vector1<LocalObject> >
   POAManager_ptr the_POAManager();
   // Object
   bool _is_a(const char* id) { return true; }
-  static POA_ptr _construct_remote_stub(std::string const&, unsigned short
-                                        , std::string const&) { std::abort(); }
+  static POA_ptr _construct_remote_stub(structured_ior const&) { std::abort(); }
+  const char* _get_interface() const { std::abort(); }
 private:
   friend struct connection;
 
@@ -90,10 +90,10 @@ private:
   std::set<ServantBase*> object_map;
 };
 
-String_ptr create_ior_string(std::string const& host, unsigned short port
-                             , String_ptr poa_name, ServantBase* impl);
-String_ptr create_ior_string(std::string const& host, unsigned short port
-                             , std::string const& object_key);
+// String_ptr create_ior_string(std::string const& host, unsigned short port
+//                              , String_ptr poa_name, ServantBase* impl);
+// String_ptr create_ior_string(std::string const& host, unsigned short port
+//                              , std::string const& object_key);
 
 } }
 

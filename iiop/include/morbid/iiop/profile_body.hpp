@@ -19,13 +19,12 @@ struct profile_body
 {
   std::string host;
   unsigned short port;
-  std::string object_key;
+  std::vector<char> object_key;
 
   profile_body() : port(0u) {}
-  profile_body(std::vector<char> const& host, unsigned short port
+  profile_body(std::string const& host, unsigned short port
                , std::vector<char> const& object_key)
-    : host(host.begin(), host.end()), port(port)
-    , object_key(object_key.begin(), object_key.end())
+    : host(host), port(port), object_key(object_key)
   {}
 };
 
@@ -40,6 +39,6 @@ inline std::ostream& operator<<(std::ostream& os, profile_body const& p)
 BOOST_FUSION_ADAPT_STRUCT( ::morbid::iiop::profile_body
                            , (std::string, host)
                            (unsigned short, port)
-                           (std::string, object_key));
+                           (std::vector<char>, object_key));
 
 #endif

@@ -15,7 +15,7 @@ namespace morbid {
 
 struct LocalObject : narrow<LocalObject, boost::mpl::vector1<Object> >
 {
-  String_ptr ior() const
+  structured_ior _structured_ior() const
   {
     throw MARSHALL();
   }

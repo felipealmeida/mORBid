@@ -14,7 +14,9 @@
 #include <morbid/type_tag.hpp>
 #include <morbid/parse_argument.hpp>
 #include <morbid/serialize_object.hpp>
+#include <morbid/structured_ior.hpp>
 #include <morbid/struct_fusion.hpp>
+#include <morbid/grammar/reference_from_ior.hpp>
 #include <morbid/iiop/generator/request_header.hpp>
 #include <morbid/iiop/generator/message_header.hpp>
 #include <morbid/iiop/message_header.hpp>
@@ -33,6 +35,10 @@
 #include <boost/asio/completion_condition.hpp>
 #include <boost/ref.hpp>
 #include <boost/mpl/copy_if.hpp>
+#include <boost/mpl/back_inserter.hpp>
+#include <boost/mpl/transform.hpp>
+#include <boost/mpl/begin.hpp>
+#include <boost/mpl/end.hpp>
 #include <boost/fusion/include/as_vector.hpp>
 #include <boost/fusion/include/remove_if.hpp>
 
@@ -96,8 +102,8 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
     r.name("boolean");
     qi::debug(r);
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> r);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq, expr >> r);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -107,8 +113,8 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::char_);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq, expr >> qi::char_);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -118,8 +124,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::char_);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> qi::char_);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -129,8 +136,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> iiop::grammar::float_<Iterator>()(little_endian));
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> iiop::grammar::float_<Iterator>()(little_endian));
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -140,8 +148,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> iiop::grammar::double_<Iterator>()(little_endian));
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> iiop::grammar::double_<Iterator>()(little_endian));
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -151,8 +160,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::as<morbid::UShort>()[iiop::grammar::word<Iterator>()(little_endian)]);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> qi::as<morbid::UShort>()[iiop::grammar::word<Iterator>()(little_endian)]);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -162,8 +172,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::as<morbid::Short>()[iiop::grammar::word<Iterator>()(little_endian)]);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> qi::as<morbid::Short>()[iiop::grammar::word<Iterator>()(little_endian)]);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -173,8 +184,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::as<morbid::ULong>()[iiop::grammar::dword<Iterator>()(little_endian)]);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> qi::as<morbid::ULong>()[iiop::grammar::dword<Iterator>()(little_endian)]);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -184,8 +196,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::as<morbid::Long>()[iiop::grammar::dword<Iterator>()(little_endian)]);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> qi::as<morbid::Long>()[iiop::grammar::dword<Iterator>()(little_endian)]);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -195,8 +208,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::as<morbid::ULongLong>()[iiop::grammar::qword<Iterator>()(little_endian)]);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> qi::as<morbid::ULongLong>()[iiop::grammar::qword<Iterator>()(little_endian)]);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -206,8 +220,9 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                                  , OutputSeq seq, ParserExpr const& expr)
   {
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> qi::as<morbid::LongLong>()[iiop::grammar::qword<Iterator>()(little_endian)]);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq
+       , expr >> qi::as<morbid::LongLong>()[iiop::grammar::qword<Iterator>()(little_endian)]);
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename T, typename OutputSeq, typename ParserExpr>
@@ -221,8 +236,23 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
   {
     typename T::template _morbid_parser<Iterator> parser;
     return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
-      ::template call<R>(vbegin, vfirst, vlast, little_endian, is_void, seq
-                         , expr >> parser);
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq, expr >> parser);
+  }
+
+  template <typename R, typename Iterator, typename IsVoid, typename T, typename OutputSeq, typename ParserExpr>
+  inline static R create_grammar(Iterator vbegin, Iterator vfirst
+                                 , Iterator vlast, bool little_endian
+                                 , IsVoid is_void, argument_tag<T>
+                                 , OutputSeq seq, ParserExpr const& expr
+                                 , typename boost::enable_if
+                                 <boost::is_same<typename T::_morbid_type_kind, interface_tag>
+                                 , void*>::type = 0)
+  {
+    grammar::reference_from_ior<Iterator, T> parser;
+    return create_expression_and_parse<typename boost::mpl::next<Iter>::type, Last, boost::mpl::false_>
+      ::template call<R>
+      (vbegin, vfirst, vlast, little_endian, is_void, seq, expr >> parser(boost::phoenix::val(vbegin)));
   }
 
   template <typename R, typename Iterator, typename IsVoid, typename OutputSeq, typename ParserExpr>
@@ -230,12 +260,13 @@ struct create_expression_and_parse<Iter, Last, mpl::false_
                        , Iterator vlast, bool little_endian
                        , IsVoid is_void, OutputSeq seq, ParserExpr const& expr)
   {
-    return create_grammar<R>(vbegin, vfirst, vlast, little_endian, is_void
-                             , argument_tag
-                             <typename boost::remove_reference
-                             <typename boost::mpl::deref<Iter>::type
-                             >::type>()
-                             , seq, expr);
+    return create_grammar<R>
+      (vbegin, vfirst, vlast, little_endian, is_void
+       , argument_tag
+       <typename boost::remove_reference
+       <typename boost::mpl::deref<Iter>::type
+       >::type>()
+       , seq, expr);
   }
 };
 
@@ -310,7 +341,7 @@ struct create_expression_and_parse<Iter, Last, boost::mpl::true_ // sequence siz
   }
 };
 
-template <typename OutputArgsSeq>
+template <typename OutputMPLSeq, typename OutputArgsSeq>
 inline void process_reply(std::vector<char>::iterator vbegin, std::vector<char>::iterator vfirst
                           , std::vector<char>::iterator vlast, bool little_endian
                           , morbid::argument_tag<void>
@@ -339,18 +370,20 @@ inline void process_reply(std::vector<char>::iterator vbegin, std::vector<char>:
                     , mpl::true_>));
 
   return create_expression_and_parse
-    <typename mpl::next<typename mpl::begin<sequence_type>::type>::type
-     , typename mpl::end<sequence_type>::type
+    <typename mpl::begin<OutputMPLSeq>::type
+     , typename mpl::end<OutputMPLSeq>::type
      , mpl::bool_<boost::fusion::result_of::size<sequence_type>::value == 1> >
-    ::template call<void>(vbegin, vfirst, vlast, little_endian, mpl::true_(), sequence
-                          , reply_header_grammar(phoenix::val(vbegin), little_endian));
+    ::template call<void>
+    (vbegin, vfirst, vlast, little_endian, mpl::true_(), sequence
+     , reply_header_grammar(phoenix::val(vbegin), little_endian));
 }
 
-template <typename R, typename OutputArgsSeq>
-inline R process_reply(std::vector<char>::iterator vbegin, std::vector<char>::iterator vfirst
-                       , std::vector<char>::iterator vlast, bool little_endian
-                       , morbid::argument_tag<R>
-                       , OutputArgsSeq output_args)
+template <typename OutputMPLSeq, typename R, typename OutputArgsSeq>
+inline typename return_traits<R>::type
+  process_reply(std::vector<char>::iterator vbegin, std::vector<char>::iterator vfirst
+                , std::vector<char>::iterator vlast, bool little_endian
+                , morbid::argument_tag<R>
+                , OutputArgsSeq output_args)
 {
   namespace qi = boost::spirit::qi;
   namespace phoenix = boost::phoenix;
@@ -362,21 +395,25 @@ inline R process_reply(std::vector<char>::iterator vbegin, std::vector<char>::it
   std::cout << "not_in_params read_arguments " << typeid(output_args).name() << std::endl;
   std::cout << "Args " << boost::fusion::result_of::size<OutputArgsSeq>::value << std::endl;
 
-  R r = R();
+  typedef typename return_traits<R>::type result_type;
+  result_type r = result_type();
   typedef typename boost::fusion::result_of::push_front
     <typename boost::add_const<typename boost::fusion::result_of::push_back
-                              <OutputArgsSeq const, R&>::type>::type
+                              <OutputArgsSeq const, result_type&>::type>::type
       , iiop::reply_header&>::type
     sequence_type;
   sequence_type sequence = boost::fusion::push_front
     (boost::fusion::push_back(output_args, boost::ref(r)), boost::ref(reply_header));
 
+  typedef typename mpl::push_back<OutputMPLSeq, R>::type mpl_sequence;
+
   return create_expression_and_parse
-    <typename boost::mpl::next<typename boost::mpl::begin<sequence_type>::type>::type
-     , typename boost::mpl::end<sequence_type>::type
+    <typename mpl::begin<mpl_sequence>::type
+     , typename mpl::end<mpl_sequence>::type
      , boost::mpl::false_>
-    ::template call<R>(vbegin, vfirst, vlast, little_endian, mpl::false_(), sequence
-                       , reply_header_grammar(phoenix::val(vbegin), little_endian));
+    ::template call<typename return_traits<R>::type>
+    (vbegin, vfirst, vlast, little_endian, mpl::false_(), sequence
+     , reply_header_grammar(phoenix::val(vbegin), little_endian));
 }
 
 struct remove_value_type;
@@ -407,18 +444,37 @@ struct remove_value_type
 }
 
 template <typename R, typename ArgsSeq>
-R call(const char* repoid, const char* method, std::string const& host, unsigned short port
-       , std::string const& object_key, ArgsSeq args)
+typename return_traits<R>::type call
+  (const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args)
 {
   namespace mpl = boost::mpl;
+  if(ior.structured_profiles.empty())
+    throw MARSHALL();
+
+  iiop::profile_body const* profile_body = 0;
+  for(std::vector<structured_ior::variant_type>::const_iterator
+        first = ior.structured_profiles.begin()
+        , last = ior.structured_profiles.end()
+        ;first != last; ++first)
+  {
+    if((profile_body = boost::get<iiop::profile_body const>(&*first)))
+      break;
+  }
+
+  if(!profile_body)
+    throw MARSHALL();
+
+  std::string host = profile_body->host;
+  std::vector<char> object_key = profile_body->object_key;
+  unsigned short port = profile_body->port;
+
   std::cout << "Making synchronous call to " << host << ":" << port
-            << " to object with object_key " << object_key
+            << " to object with object_key " << boost::make_iterator_range(object_key.begin(), object_key.end())
             << " with repoid: " << repoid << " to method " << method
             << " and args [" << typeid(args).name()
             << ']' << std::endl;
 
   std::vector<char> request_body;
-
   {
     typedef std::back_insert_iterator<std::vector<char> > iterator_type;
     iterator_type iterator(request_body);
@@ -436,8 +492,7 @@ R call(const char* repoid, const char* method, std::string const& host, unsigned
   typedef iiop::generator::request_header<iterator_type> 
     request_header_grammar;
   request_header_grammar request_header_grammar_;
-  iterator_base_type iterator_base(request_header_buffer);
-  iterator_type iterator(iterator_base);
+  iterator_type iterator(request_header_buffer);
 
   iiop::request_header request_header
     = {
@@ -455,8 +510,7 @@ R call(const char* repoid, const char* method, std::string const& host, unsigned
     std::cout << "generated request_header" << std::endl;
 
     std::vector<char> message_header_buffer;
-    iterator_base_type iterator_base(message_header_buffer);
-    iterator_type iterator(iterator_base);
+    iterator_type iterator(message_header_buffer);
     
     typedef iiop::generator::message_header<iterator_type>
       message_header_grammar;
@@ -537,6 +591,16 @@ R call(const char* repoid, const char* method, std::string const& host, unsigned
 
         std::cout << "Process reply" << std::endl;
         return process_reply_detail::process_reply
+          <typename mpl::transform
+           <
+             typename mpl::copy_if
+             <ArgsSeq
+              , type_tag::is_not_in_type_tag<mpl::_1>
+              , mpl::back_inserter<mpl::vector0<> >
+             >::type
+             , type_tag::original_type<mpl::_1>
+           >::type
+          >
           (reply_buffer.begin(), first
            , reply_buffer.end(), little_endian
            , argument_tag<R>()
@@ -557,8 +621,7 @@ R call(const char* repoid, const char* method, std::string const& host, unsigned
   {
     std::cout << "Failed generating request_header" << std::endl;
   }
-
-  return R();
+  throw MARSHALL();
 }
 
 } }

@@ -82,37 +82,55 @@ Object_ptr POA::id_to_reference(const char* s)
   std::stringstream stm(s);
   stm >> impl_void;
   ServantBase* p = static_cast<ServantBase*>(impl_void);
-  return p->_construct_local_stub("localhost", local_endpoint.port(), name);
-}
+  structured_ior ior;
+  const char* interface_ = p->_get_interface();
+  ior.type_id.insert(ior.type_id.end(), interface_, interface_ + std::strlen(interface_));
+  iiop::profile_body profile_body;
+  const char* localhost = "localhost";
+  profile_body.host.insert(profile_body.host.end(), localhost, localhost + std::strlen(localhost));
+  profile_body.port = local_endpoint.port();
 
-String_ptr create_ior_string(std::string const& host, unsigned short port
-                             , String_ptr poa_name, ServantBase* impl)
-{
-  std::string string;
   std::size_t impl_;
-  std::memcpy(&impl_, &impl, sizeof(impl));
-  assert(sizeof(std::size_t) >= sizeof(ServantBase*));
+  std::memcpy(&impl_, &impl_void, sizeof(impl_void));
+  assert(sizeof(std::size_t) >= sizeof(impl_void));
   namespace karma = boost::spirit::karma;
-  karma::generate(std::back_inserter<std::string>(string)
-                  , "corbaloc::" << karma::lit(host)
-                  << ":" << karma::ushort_(port) << "/" << karma::lit(poa_name/*.get()*/)
-                  << "/" << karma::uint_generator<std::size_t, 16u>()(impl_));
-  String_ptr r( new char[string.size()+1] );
-  std::strcpy(r/*.get()*/, string.c_str());
-  return r;
+  std::vector<char> object_key;
+  karma::generate(std::back_inserter(object_key)
+                  , karma::lit(name) << "/" << karma::uint_generator<std::size_t, 16u>()(impl_));
+
+  profile_body.object_key = object_key;
+  ior.structured_profiles.push_back(profile_body);
+  return p->_construct_local_stub(ior);
 }
 
-String_ptr create_ior_string(std::string const& host, unsigned short port
-                             , std::string const& object_key)
-{
-  std::string string;
-  namespace karma = boost::spirit::karma;
-  karma::generate(std::back_inserter<std::string>(string)
-                  , "corbaloc::" << karma::lit(host)
-                  << ":" << karma::ushort_(port) << "/" << karma::lit(object_key));
-  String_ptr r( new char[string.size()+1] );
-  std::strcpy(r/*.get()*/, string.c_str());
-  return r;
-}
+// String_ptr create_ior_string(std::string const& host, unsigned short port
+//                              , String_ptr poa_name, ServantBase* impl)
+// {
+//   std::string string;
+//   std::size_t impl_;
+//   std::memcpy(&impl_, &impl, sizeof(impl));
+//   assert(sizeof(std::size_t) >= sizeof(ServantBase*));
+//   namespace karma = boost::spirit::karma;
+//   karma::generate(std::back_inserter<std::string>(string)
+//                   , "corbaloc::" << karma::lit(host)
+//                   << ":" << karma::ushort_(port) << "/" << karma::lit(poa_name/*.get()*/)
+//                   << "/" << karma::uint_generator<std::size_t, 16u>()(impl_));
+//   String_ptr r( new char[string.size()+1] );
+//   std::strcpy(r/*.get()*/, string.c_str());
+//   return r;
+// }
+
+// String_ptr create_ior_string(std::string const& host, unsigned short port
+//                              , std::string const& object_key)
+// {
+//   std::string string;
+//   namespace karma = boost::spirit::karma;
+//   karma::generate(std::back_inserter<std::string>(string)
+//                   , "corbaloc::" << karma::lit(host)
+//                   << ":" << karma::ushort_(port) << "/" << karma::lit(object_key));
+//   String_ptr r( new char[string.size()+1] );
+//   std::strcpy(r/*.get()*/, string.c_str());
+//   return r;
+// }
 
 } }

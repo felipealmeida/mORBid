@@ -84,12 +84,33 @@ struct alignable_generator : karma::unary_generator<alignable_generator<Subject>
     return b;
   }
 
+  template <typename Context>
+  karma::info what(Context& context) const
+  {
+    return karma::info("alignable", subject.what(context));
+  }
+
   Subject subject;
 };
 
 } } }
 
 namespace boost { namespace spirit {
+
+namespace traits
+{
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Subject>
+    struct has_semantic_action< ::morbid::iiop::generator::alignable_generator<Subject> >
+      : unary_has_semantic_action<Subject> {};
+
+    ///////////////////////////////////////////////////////////////////////////
+    template <typename Subject, typename Attribute, typename Context
+        , typename Iterator>
+    struct handles_container< ::morbid::iiop::generator::alignable_generator<Subject>, Attribute
+        , Context, Iterator>
+      : unary_handles_container<Subject, Attribute, Context, Iterator> {};
+}
 
   ///////////////////////////////////////////////////////////////////////////
   // Enablers
@@ -137,8 +158,7 @@ struct make_directive<morbid::iiop::generator::tag::alignable, Subject, Modifier
 {
   typedef morbid::iiop::generator::alignable_generator<Subject> result_type;
 
-  template <typename Terminal>
-  result_type operator()(Terminal const& term, Subject const& subject
+  result_type operator()(karma::unused_type, Subject const& subject
                          , karma::unused_type) const
   {
     return result_type (subject);

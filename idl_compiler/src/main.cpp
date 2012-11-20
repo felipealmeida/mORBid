@@ -296,10 +296,9 @@ int main(int argc, char** argv)
                << karma::lit("#include <morbid/poa.hpp>") << karma::eol
                << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
                << karma::lit("#include <morbid/reply.hpp>") << karma::eol
-               << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol
-               << karma::lit("#include <CORBA.h>") << karma::eol << karma::eol
+               << karma::lit("#include <morbid/structured_ior.hpp>") << karma::eol
+               << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <boost/integer.hpp>") << karma::eol
-               << karma::lit("#include <boost/fusion/include/vector.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol

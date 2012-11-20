@@ -54,33 +54,33 @@ struct struct_generator_generator : karma::grammar
     integer_generator =
       (
        karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
-       << "karma::attr_cast< ::CORBA::Short>(word(true/*little_endian*/))"
+       << "karma::attr_cast< ::morbid::Short>(word(true/*little_endian*/))"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
-       << "karma::attr_cast< ::CORBA::Long>(dword(true/*little_endian*/))"
+       << "karma::attr_cast< ::morbid::Long>(dword(true/*little_endian*/))"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
-       << "karma::attr_cast< ::CORBA::LongLong>(qword(true/*little_endian*/))"
+       << "karma::attr_cast< ::morbid::LongLong>(qword(true/*little_endian*/))"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
-       << "karma::attr_cast< ::CORBA::UShort>(word(true/*little_endian*/))"
+       << "karma::attr_cast< ::morbid::UShort>(word(true/*little_endian*/))"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
-       << "karma::attr_cast< ::CORBA::ULong>(dword(true/*little_endian*/))"
+       << "karma::attr_cast< ::morbid::ULong>(dword(true/*little_endian*/))"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
-       << "karma::attr_cast< ::CORBA::ULongLong>(qword(true/*little_endian*/))"
+       << "karma::attr_cast< ::morbid::ULongLong>(qword(true/*little_endian*/))"
       )
       ;
     char_generator = karma::string[_1 = "karma::char_"];
     wchar_generator = karma::string[_1 = "karma::wchar_"];
-    boolean_generator = karma::string[_1 = "karma::attr_cast< ::CORBA::Boolean>(karma::char_)"];
-    octet_generator = karma::string[_1 = "karma::attr_cast< ::CORBA::Octet>(karma::char_)"];
+    boolean_generator = karma::string[_1 = "karma::attr_cast< ::morbid::Boolean>(karma::char_)"];
+    octet_generator = karma::string[_1 = "karma::attr_cast< ::morbid::Octet>(karma::char_)"];
     // any_generator = karma::eps;
     // object_generator = karma::eps;
     // value_base_generator = karma::eps;

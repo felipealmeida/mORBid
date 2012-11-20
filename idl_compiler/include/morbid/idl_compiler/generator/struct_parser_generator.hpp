@@ -63,27 +63,27 @@ struct struct_parser_generator : karma::grammar
     integer_parser =
       (
        karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
-       << "qi::as< ::CORBA::Short>()[ word(true/*little_endian*/)]"
+       << "qi::as< ::morbid::Short>()[ word(true/*little_endian*/)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
-       << "qi::as< ::CORBA::Long>()[ dword(true/*little_endian*/)]"
+       << "qi::as< ::morbid::Long>()[ dword(true/*little_endian*/)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
-       << "qi::as< ::CORBA::LongLong>()[ qword(true/*little_endian*/)]"
+       << "qi::as< ::morbid::LongLong>()[ qword(true/*little_endian*/)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
-       << "qi::as< ::CORBA::UShort>()[ word(true/*little_endian*/)]"
+       << "qi::as< ::morbid::UShort>()[ word(true/*little_endian*/)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
-       << "qi::as< ::CORBA::ULong>()[ dword(true/*little_endian*/)]"
+       << "qi::as< ::morbid::ULong>()[ dword(true/*little_endian*/)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
-       << "qi::as< ::CORBA::ULongLong>()[ qword(true/*little_endian*/)]"
+       << "qi::as< ::morbid::ULongLong>()[ qword(true/*little_endian*/)]"
       )
       ;
     char_parser = karma::string[_1 = "qi::char_"];

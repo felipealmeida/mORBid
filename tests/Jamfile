@@ -121,9 +121,26 @@ exe struct_server
 
 make struct.output : struct_client struct_server : @run-server-client ;
 
+make reference.h : reference.idl : @compileidl : <dependency>/morbid//install ;
+make reference.cpp : reference.h
+ : @donothing : <dependency>/morbid//install ;
+
+exe reference_client
+ : reference_client.cpp /morbid//morbid reference.cpp
+ : <implicit-dependency>reference.h
+ ;
+exe reference_server
+ : reference_server.cpp /morbid//morbid reference.cpp
+ : <implicit-dependency>reference.h
+   <implicit-dependency>reference.cpp
+ ;
+
+make reference.output : reference_client reference_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
 alias inout_allprimitives : inout_allprimitives.output ;
 alias return_allprimitives : return_allprimitives.output ;
 alias modules_allprimitives : modules_allprimitives.output ;
 alias struct : struct.output ;
+alias reference : reference.output ;

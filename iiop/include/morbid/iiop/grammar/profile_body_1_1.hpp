@@ -44,7 +44,7 @@ struct profile_body_1_1 : qi::grammar<Iterator, iiop::profile_body(Iterator, boo
 
   grammar::word<Iterator> word;
   grammar::sequence<Iterator, char> octet_sequence;
-  grammar::string<Iterator, char> string;
+  grammar::string<Iterator> string;
   qi::rule<Iterator, iiop::profile_body(Iterator, bool)
            , qi::locals<boost::uint_t<32u>::least> > start;
 };

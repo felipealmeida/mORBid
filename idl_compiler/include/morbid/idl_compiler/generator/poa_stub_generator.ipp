@@ -60,7 +60,7 @@ header_poa_stub_generator<OutputIterator, Iterator>::header_poa_stub_generator()
   operation =
     indent
     << -(karma::eps(at_c<3>(_val)) << "virtual ")
-    << type_spec
+    << return_
     (
      at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
     )
@@ -83,13 +83,9 @@ header_poa_stub_generator<OutputIterator, Iterator>::header_poa_stub_generator()
   indent = karma::space << karma::space;
   construct_local_stub_function = 
     indent
-    << "::morbid::Object_ptr _construct_local_stub(std::string const& host" << eol
-    << indent << indent << ", unsigned short port, ::morbid::String_ptr poa_name);"
+    << "::morbid::Object_ptr _construct_local_stub(::morbid::structured_ior const& ior);"
     << eol
-    // << indent << "{" << eol
-    // << indent << indent << "return ::morbid::Object_ptr(new local_stub::"
-    // << karma::string[_1 = _val] << "(host, port, poa_name, this));" << eol
-    // << indent << "}" << eol
+    << indent << "const char* _get_interface() const;" << eol
     ;
   dispatch_function =
     indent << "void _dispatch(const char*, const char*, const char*, const char*"
@@ -172,7 +168,7 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
   non_user_defined_operations =
     -(
       karma::eps(!at_c<3>(_val))[_a = 0u]
-      << type_spec
+      << return_
       (
        at_c<1>(_r2)[at_c<0>(_val)]
       )
@@ -206,13 +202,17 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
   construct_local_stub_function = 
     indent
     << "::morbid::Object_ptr " << class_name(_r1)[_1 = _val]
-    << "::_construct_local_stub(std::string const& host" << eol
-    << indent << indent << ", unsigned short port, ::morbid::String_ptr poa_name)"
+    << "::_construct_local_stub(::morbid::structured_ior const& ior)"
     << eol
-    << indent << "{" << eol
-    << indent << indent << "return ::morbid::Object_ptr(new local_stub::"
-    << karma::string[_1 = _val] << "(host, port, poa_name, this));" << eol
-    << indent << "}" << eol
+    << "{" << eol
+    << indent << "return ::morbid::Object_ptr(new local_stub::"
+    << karma::string[_1 = _val] << "(ior, this));" << eol
+    << "}" << eol << eol
+    << "::morbid::return_traits< ::morbid::string>::type "
+    << class_name(_r1)[_1 = _val] << "::_get_interface() const" << eol
+    << '{' << eol
+    << indent << " return local_stub::" << karma::string[_1 = _val] << "::_repository_id;" << eol
+    << '}' << eol
     ;
 
   // start.name("cpp_poa_stub_generator");

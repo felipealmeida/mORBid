@@ -26,6 +26,15 @@ struct out_traits;
 template <typename T, typename Enable = void>
 struct inout_traits;
 
+template <typename T, typename Enable = void>
+struct return_traits : in_traits<T, Enable> {};
+
+template <typename Enable>
+struct return_traits<void, Enable>
+{
+  typedef void type;
+};
+
 template <typename T>
 struct in_traits<T, typename boost::enable_if
                  <boost::is_same<typename T::_morbid_type_kind, struct_tag>
@@ -48,6 +57,30 @@ struct inout_traits<T, typename boost::enable_if
                     , void>::type>
 {
   typedef T& type;
+};
+
+template <typename T>
+struct in_traits<T, typename boost::enable_if
+                 <boost::is_same<typename T::_morbid_type_kind, interface_tag>
+                 , void>::type>
+{
+  typedef typename T::_ptr_type type;
+};
+
+template <typename T>
+struct out_traits<T, typename boost::enable_if
+                  <boost::is_same<typename T::_morbid_type_kind, interface_tag>
+                  , void>::type>
+{
+  typedef typename T::_ptr_type& type;
+};
+
+template <typename T>
+struct inout_traits<T, typename boost::enable_if
+                    <boost::is_same<typename T::_morbid_type_kind, interface_tag>
+                    , void>::type>
+{
+  typedef typename T::_ptr_type& type;
 };
 
 template <>

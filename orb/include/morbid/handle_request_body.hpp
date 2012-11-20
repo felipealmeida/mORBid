@@ -16,6 +16,8 @@
 #include <morbid/primitive_types.hpp>
 #include <morbid/type_tag.hpp>
 #include <morbid/serialize_object.hpp>
+#include <morbid/in_out_traits.hpp>
+#include <morbid/iiop/profile_body.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -39,6 +41,14 @@ struct wrapped_type<T, typename boost::enable_if
                      , void>::type>
 {
   typedef T type;
+};                    
+
+template <typename T>
+struct wrapped_type<T, typename boost::enable_if
+                    <boost::is_same<typename T::_morbid_type_kind, interface_tag>
+                     , void>::type>
+{
+  typedef reference_wrapper<T> type;
 };                    
 
 template <>
@@ -120,11 +130,9 @@ struct wrapped_type<morbid::Any_ptr>
 // };
 
 template <typename T>
-inline T const& unwrap(T const& o, typename boost::enable_if
-                       <boost::is_same<typename T::_morbid_type_kind, struct_tag>
-                       , void*>::type = 0)
+inline typename T::_ptr_type& unwrap(reference_wrapper<T>& o)
 {
-  return o;
+  return o.get_ptr();
 }
 
 template <typename T>
@@ -202,8 +210,8 @@ template <>
 struct init_arg<type_tag::in_tag>
 {
   template <typename R>
-  static R call(const char* first, const char*& rq_current
-                , const char* rq_last, bool little_endian)
+  static /*typename return_traits<*/R/*>::type*/ call(const char* first, const char*& rq_current
+                                                      , const char* rq_last, bool little_endian)
   {
     std::cout << "init arg parsing in param " << typeid(R).name() << std::endl;
     return parse_argument(first, rq_current, rq_last, little_endian
@@ -215,8 +223,8 @@ template <>
 struct init_arg<type_tag::out_tag>
 {
   template <typename R>
-  static R call(const char* first, const char*& rq_current
-                , const char* rq_last, bool little_endian)
+  static /*typename return_traits<*/R/*>::type*/ call(const char* first, const char*& rq_current
+                                                      , const char* rq_last, bool little_endian)
   {
     std::cout << "init arg default constructing out param " << typeid(R).name() << std::endl;
     return R();
@@ -297,9 +305,10 @@ void handle_request_body(T* self, F f, const char* first
   MORBID_MAKE_REQUEST_tag(I);                                           \
   typedef typename wrapped_type<MORBID_MAKE_REQUEST_original(I)>::type  \
   MORBID_MAKE_REQUEST_arg_type(I);                                      \
-  MORBID_MAKE_REQUEST_arg_type(I) MORBID_MAKE_REQUEST_arg_name(I)       \
-  = init_arg<MORBID_MAKE_REQUEST_tag(I)>                           \
-    ::template call<MORBID_MAKE_REQUEST_arg_type(I)> \
+  /*typename in_traits<*/MORBID_MAKE_REQUEST_arg_type(I)/*>::type*/     \
+  MORBID_MAKE_REQUEST_arg_name(I)                                       \
+  = init_arg<MORBID_MAKE_REQUEST_tag(I)>                                \
+  ::template call<MORBID_MAKE_REQUEST_arg_type(I)>                      \
     (first, rq_current, rq_last, little_endian);
 
 #define MORBID_MAKE_REQUEST_ARGUMENT_SERIALIZE_OUTPUT(Z, I, DATA)       \

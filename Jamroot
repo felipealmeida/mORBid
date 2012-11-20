@@ -52,7 +52,8 @@ alias inout_allprimitives : tests//inout_allprimitives ;
 alias return_allprimitives : tests//return_allprimitives ;
 alias modules_allprimitives : tests//modules_allprimitives ;
 alias struct : tests//struct ;
+alias reference : tests//reference ;
 
 alias tests : install allprimitives out_allprimitives inout_allprimitives
- return_allprimitives modules_allprimitives struct ;
+ return_allprimitives modules_allprimitives struct reference ;
 

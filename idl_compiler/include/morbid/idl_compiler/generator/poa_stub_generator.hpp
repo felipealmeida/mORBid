@@ -10,6 +10,7 @@
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
+#include <morbid/idl_compiler/generator/return.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/interface.hpp>
 
@@ -26,7 +27,7 @@ struct header_poa_stub_generator : karma::grammar
   header_poa_stub_generator();
 
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
-  idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
+  idl_compiler::generator::return_<OutputIterator, Iterator> return_;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;
   karma::rule<OutputIterator, std::string()> construct_local_stub_function;
@@ -48,6 +49,7 @@ struct cpp_poa_stub_generator : karma::grammar
   cpp_poa_stub_generator();
 
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::return_<OutputIterator, Iterator> return_;
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;

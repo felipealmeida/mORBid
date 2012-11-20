@@ -20,7 +20,7 @@ namespace morbid { namespace ior {
 
 struct ior
 {
-  std::vector<char> type_id;
+  std::string type_id;
   std::vector<tagged_profile> profiles;
 };
 
@@ -33,7 +33,7 @@ inline std::ostream& operator<<(std::ostream& os, ior const& i)
 } }
 
 BOOST_FUSION_ADAPT_STRUCT( ::morbid::ior::ior
-                           , (std::vector<char>, type_id)
+                           , (std::string, type_id)
                            (std::vector< ::morbid::ior::tagged_profile>, profiles));
 
 #endif

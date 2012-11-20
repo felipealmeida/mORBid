@@ -21,7 +21,7 @@ namespace phoenix = boost::phoenix;
 template <typename Iterator>
 struct corbaloc : qi::grammar
 <Iterator, iiop::profile_body()
- , qi::locals<std::vector<char>, unsigned short, std::vector<char> > >
+ , qi::locals<std::string, unsigned short, std::vector<char> > >
 {
   corbaloc()
     : corbaloc::base_type(start)
@@ -35,7 +35,7 @@ struct corbaloc : qi::grammar
           -qi::lit("iiop")
           >> ":"
           >> -(qi::uint_ >> "." >> qi::uint_ >> "@")
-          >> (+(qi::alnum | qi::char_('_') | qi::char_('-') | qi::char_('.')))[_a = _1]
+          >> qi::as_string[(+(qi::alnum | qi::char_('_') | qi::char_('-') | qi::char_('.')))][_a = _1]
           >> -(":" >> qi::ushort_[_b = _1])
          ) % ","
       >> "/" >> (+qi::char_)[_c = _1]
@@ -44,7 +44,7 @@ struct corbaloc : qi::grammar
   }
 
   qi::rule<Iterator, iiop::profile_body()
-           , qi::locals<std::vector<char>, unsigned short, std::vector<char> > > start;
+           , qi::locals<std::string, unsigned short, std::vector<char> > > start;
 };
 
 } } }

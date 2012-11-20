@@ -48,50 +48,50 @@ struct parameter : karma::grammar<OutputIterator
     floating_point =
       (
        karma::eps(at_c<0>(_val) == types::floating_point::float_)
-       << "CORBA::Float"
+       << "::morbid::Float"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::double_)
-       << "CORBA::Double"
+       << "::morbid::Double"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::long_double_)
-       << "CORBA::LongDouble"
+       << "::morbid::LongDouble"
       )
       ;
     integer =
       (
        karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
-       << "CORBA::Short"
+       << "::morbid::Short"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
-       << "CORBA::Long"
+       << "::morbid::Long"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
-       << "CORBA::LongLong"
+       << "::morbid::LongLong"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
-       << "CORBA::UShort"
+       << "::morbid::UShort"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
-       << "CORBA::ULong"
+       << "::morbid::ULong"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
-       << "CORBA::ULongLong"
+       << "::morbid::ULongLong"
       )
       ;
-    char_ = karma::string[_1 = "CORBA::Char"];
-    wchar_ = karma::string[_1 = "CORBA::WChar"];
-    boolean = karma::string[_1 = "CORBA::Boolean"];
-    octet = karma::string[_1 = "CORBA::Octet"];
-    any = karma::string[_1 = "CORBA::Any"];
-    object = karma::string[_1 = "CORBA::Object"];
-    value_base = karma::string[_1 = "CORBA::ValueBase"];
+    char_ = karma::string[_1 = "::morbid::Char"];
+    wchar_ = karma::string[_1 = "::morbid::WChar"];
+    boolean = karma::string[_1 = "::morbid::Boolean"];
+    octet = karma::string[_1 = "::morbid::Octet"];
+    any = karma::string[_1 = "::morbid::Any"];
+    object = karma::string[_1 = "::morbid::Object"];
+    value_base = karma::string[_1 = "::morbid::ValueBase"];
     void_ = karma::string[_1 = "void"];
     scoped_name =
       (karma::string % "::")[_1 = at_c<0>(_r2)]

@@ -6,6 +6,7 @@
  */
 
 #include "hello.h"
+#include <CORBA.h>
 
 #include <fstream>
 

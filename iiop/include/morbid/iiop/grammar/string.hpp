@@ -15,9 +15,9 @@
 
 namespace morbid { namespace iiop { namespace grammar {
 
-template <typename Iterator, typename T>
+template <typename Iterator>
 struct string : qi::grammar
-<Iterator, std::vector<T>(bool), qi::locals<boost::uint_t<32u>::least> >
+<Iterator, std::string(bool), qi::locals<boost::uint_t<32u>::least> >
 {
   string()
     : string::base_type(start)
@@ -38,7 +38,7 @@ struct string : qi::grammar
   }
 
   grammar::dword<Iterator> dword;
-  qi::rule<Iterator, std::vector<T>(bool)
+  qi::rule<Iterator, std::string(bool)
            , qi::locals<boost::uint_t<32u>::least> > start;
 };
 

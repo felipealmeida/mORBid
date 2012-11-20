@@ -15,6 +15,7 @@
 #include <morbid/any.hpp>
 #include <morbid/primitive_types.hpp>
 #include <morbid/exception.hpp>
+#include <morbid/reference_wrapper.hpp>
 
 #include <boost/mpl/assert.hpp>
 #include <boost/spirit/home/qi.hpp>
@@ -210,6 +211,22 @@ inline T parse_argument(const char* first, const char*& rq_current
     return obj;
   else
     throw MARSHALL();
+}
+
+template <typename T>
+inline reference_wrapper<T> parse_argument(const char* first, const char*& rq_current
+                                           , const char* rq_last, bool little_endian
+                                           , argument_tag<morbid::reference_wrapper<T> >
+                                           , typename boost::enable_if
+                                           <boost::is_same<typename T::_morbid_type_kind, interface_tag>
+                                           , void*>::type = 0)
+{
+  // typename T::template _morbid_parser<const char*> parser;
+  // T obj;
+  // if(qi::parse(rq_current, rq_last, parser, obj))
+  //   return obj;
+  // else
+  throw MARSHALL();
 }
 
 inline std::vector<WChar> parse_argument(const char* first, const char*& rq_current

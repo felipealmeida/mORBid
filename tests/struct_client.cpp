@@ -6,6 +6,7 @@
  */
 
 #include "struct.h"
+#include <CORBA.h>
 
 #include <fstream>
 

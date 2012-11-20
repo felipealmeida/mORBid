@@ -5,18 +5,15 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef MORBID_IDL_COMPILER_TYPE_SPEC_HPP
-#define MORBID_IDL_COMPILER_TYPE_SPEC_HPP
+#ifndef MORBID_IDL_COMPILER_RETURN_HPP
+#define MORBID_IDL_COMPILER_RETURN_HPP
 
-#include <morbid/idl_compiler/common_types.hpp>
-#include <morbid/idl_compiler/lookuped_type.hpp>
-#include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/generator/scoped_name.hpp>
-#include <morbid/idl_parser/type_spec.hpp>
+#include <morbid/idl_compiler/lookuped_type.hpp>
+#include <morbid/idl_parser/op_decl.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/phoenix.hpp>
-#include <boost/fusion/include/adapt_adt.hpp>
 
 namespace morbid { namespace idl_compiler { namespace generator {
 
@@ -24,11 +21,11 @@ namespace karma = boost::spirit::karma;
 namespace phoenix = boost::phoenix;
 
 template <typename OutputIterator, typename Iterator>
-struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator>
+struct return_ : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator>
                                   (lookuped_type)>
 {
-  type_spec()
-    : type_spec::base_type(start)
+  return_()
+    : return_::base_type(start)
   {
     using karma::_1;
     using karma::_r1;
@@ -36,10 +33,11 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
     using phoenix::at_c;
     namespace types = idl_parser::types;
 
-    start = 
-      (floating_point | integer | char_ | wchar_ | boolean | octet
-       | any | object | value_base | void_ | scoped_name(_r1)
-       | sequence(_r1)) [_1 = at_c<0>(_val)]
+    start = karma::string[_1 = "::morbid::return_traits< "]
+      << (floating_point | integer | char_ | wchar_ | boolean | octet
+          | any | object | value_base | void_ | scoped_name(_r1)
+          | sequence(_r1)) [_1 = at_c<0>(_val)]
+      << " >::type"
       ;
     floating_point =
       (
@@ -107,7 +105,6 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_;
   karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>(lookuped_type_wrapper)> sequence;
-  
 };
 
 } } }
