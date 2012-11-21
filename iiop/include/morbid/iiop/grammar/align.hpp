@@ -38,7 +38,7 @@ struct align_parser : qi::primitive_parser<align_parser<Iterator> >
   {
     std::size_t dist = std::distance(first_iterator, first);
     int div_dif = dist % align;
-    int align_dif = div_dif? 4 - div_dif : 0;
+    int align_dif = div_dif? align - div_dif : 0;
     if(align_dif <= std::distance(first, last))
     {
       std::advance(first, align_dif);

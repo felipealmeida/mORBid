@@ -44,7 +44,7 @@ struct align_generator : karma::primitive_generator<align_generator>
 
     std::size_t dist = count->get_count();
     int div_dif = dist % align;
-    int align_dif = div_dif? 4 - div_dif : 0;
+    int align_dif = div_dif? align - div_dif : 0;
     for(;align_dif != 0; --align_dif)
       *sink++ = '\0';
     return true;
