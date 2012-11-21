@@ -59,8 +59,7 @@ struct ref_ior_parser : qi::primitive_parser<ref_ior_parser<T> >
         {
           if(boost::spirit::qi::parse(first->profile_data.begin()
                                       , first->profile_data.end()
-                                      , profile_body_grammar(val(first->profile_data.begin())
-                                                             , little_endian)
+                                      , profile_body_grammar(val(first->profile_data.begin()))
                                       , profile_body))
           {
             std::cout << "Parsed IIOP profile body information host: " << profile_body.host

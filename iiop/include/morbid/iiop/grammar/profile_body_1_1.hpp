@@ -18,8 +18,8 @@ namespace morbid { namespace iiop { namespace grammar {
 namespace qi = boost::spirit::qi;
 
 template <typename Iterator>
-struct profile_body_1_1 : qi::grammar<Iterator, iiop::profile_body(Iterator, bool)
- , qi::locals<boost::uint_t<32u>::least> >
+struct profile_body_1_1 : qi::grammar<Iterator, iiop::profile_body(Iterator)
+                        , qi::locals<bool, boost::uint_t<32u>::least> >
 {
   profile_body_1_1()
     : profile_body_1_1::base_type(start)
@@ -29,15 +29,17 @@ struct profile_body_1_1 : qi::grammar<Iterator, iiop::profile_body(Iterator, boo
 
     start %= 
       qi::omit
-      [qi::char_ // major version
+      [
+       qi::char_[_a = _1]
+       >> qi::char_ // major version
        >> qi::char_ // minor version
       ]
       >> grammar::align(_r1, 4u)
-      >> string(_r2)
+      >> string(_a)
+      >> grammar::align(_r1, 2u)
+      >> word(_a)
       >> grammar::align(_r1, 4u)
-      >> word(_r2)
-      >> grammar::align(_r1, 4u)
-      >> octet_sequence(_r2)
+      >> octet_sequence(_a)
       /* >> tagged_components */
       ;
   }
@@ -45,8 +47,8 @@ struct profile_body_1_1 : qi::grammar<Iterator, iiop::profile_body(Iterator, boo
   grammar::word<Iterator> word;
   grammar::sequence<Iterator, char> octet_sequence;
   grammar::string<Iterator> string;
-  qi::rule<Iterator, iiop::profile_body(Iterator, bool)
-           , qi::locals<boost::uint_t<32u>::least> > start;
+  qi::rule<Iterator, iiop::profile_body(Iterator)
+           , qi::locals<bool, boost::uint_t<32u>::least> > start;
 };
 
 } } }

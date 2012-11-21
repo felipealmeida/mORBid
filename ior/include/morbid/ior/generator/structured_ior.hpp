@@ -33,10 +33,11 @@ struct structured_ior_generator : karma::grammar<OutputIterator, StructuredIOR(b
     start =
       iiop::generator::alignable
       [
-       (
-        karma::eps(_r1) << karma::lit('\1')
-        | karma::lit('\0')
-       )
+       // (
+       //  karma::eps(_r1) << karma::char_('\1')
+       //  | karma::char_('\0')
+       // )
+       karma::char_(_r1)
        << iiop::generator::align(4u)
        // type id
        << string(_r1)[_1 = at_c<0>(_val)]
@@ -68,17 +69,18 @@ struct structured_ior_generator : karma::grammar<OutputIterator, StructuredIOR(b
        [
         (_a = phoenix::size(phoenix::at_c<0>(_val))+4)
         , (_b = phoenix::size(phoenix::at_c<2>(_val))+4)
-        , (_1 = if_else(_a % 4u, (4 - (_a % 4u)) + _a, _a)
+        , (_1 = if_else(_a % 2u, (2 - (_a % 2u)) + _a, _a)
            + if_else(_b % 4u, (4 - (_b % 4u)) + _b, _b)
-           + 8)
+           + 4 + 2)
        ]
-       << karma::lit('\1')
-       << karma::lit('\0')
+       << karma::char_(_r1)
+       << karma::char_(1)
+       << karma::char_(0)
        << iiop::generator::align(4u)
        // host
        << string(_r1)[_1 = at_c<0>(_val)]
        // port
-       << iiop::generator::align(4u)
+       << iiop::generator::align(2u)
        << word(_r1)[_1 = at_c<1>(_val)]
        << iiop::generator::align(4u)
        // object key

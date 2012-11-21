@@ -242,8 +242,7 @@ inline reference_wrapper<T> parse_argument(const char* first, const char*& rq_cu
       {
         if(boost::spirit::qi::parse(first->profile_data.begin()
                                     , first->profile_data.end()
-                                    , profile_body_grammar(val(first->profile_data.begin())
-                                                           , little_endian)
+                                    , profile_body_grammar(val(first->profile_data.begin()))
                                     , profile_body))
         {
           std::cout << "Parsed IIOP profile body information host: " << profile_body.host

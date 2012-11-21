@@ -126,10 +126,10 @@ Object_ptr ORB::string_to_object(const char* ref)
             ;first != last; ++first)
       {
         if(first->tag == 0 /*TAG_INTERNET_IOP*/)
+        {
           if(boost::spirit::qi::parse(first->profile_data.begin()
                                       , first->profile_data.end()
-                                      , profile_body_grammar(val(first->profile_data.begin())
-                                                             , binary[0])
+                                      , profile_body_grammar(val(first->profile_data.begin()))
                                       , profile_body))
           {
             std::cout << "Parsed IIOP profile body information" << std::endl;
@@ -140,6 +140,7 @@ Object_ptr ORB::string_to_object(const char* ref)
           {
             std::cout << "Couldn't parse IIOP tagged profile" << std::endl;
           }
+        }
       }
       if(found)
       {
