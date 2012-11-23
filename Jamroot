@@ -15,7 +15,9 @@ alias idl_parser : /boost//headers : :
  : <include>idl_parser/include
  ;
 
-alias iiop : /boost//headers : : : <include>iiop/include ;
+alias giop : /boost//headers : : : <include>giop/include ;
+
+alias iiop : /boost//headers giop : : : <include>iiop/include ;
 
 alias ior : iiop /boost//headers : : : <include>ior/include ;
 
@@ -39,6 +41,7 @@ lib morbid : orb/src/orb.cpp orb/src/poa.cpp
    <include>orb/include_impl
    <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  : : <include>orb/include
+   <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  ; 
 explicit morbid ;
 
