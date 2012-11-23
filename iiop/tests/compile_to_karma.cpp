@@ -6,6 +6,9 @@
  */
 
 #include <morbid/iiop/all.hpp>
+#include <morbid/giop/forward_back_insert_iterator.hpp>
+
+#include <boost/algorithm/hex.hpp>
 
 int main()
 {
@@ -19,23 +22,37 @@ int main()
 
   typedef fusion::vector<unsigned char, unsigned char, std::string
                          , unsigned short, std::vector<unsigned char> > attribute_type;
-  typedef char* iterator_type;
-  karma::rule<iterator_type, attribute_type(), spirit::locals<unsigned short> > rule;
+  typedef giop::forward_back_insert_iterator<std::vector<char> > iterator_type;
 
-  rule %=
-  giop::compile<iiop::generator_domain>
-    (
-     giop::endianness
-     [
-      giop::octet                      // IIOP major version
-      & giop::octet                    // IIOP minor version
-      & giop::string                   // host
-      & giop::ushort_                  // port
-      & giop::sequence[giop::octet]    // object key
-     ]
-    )
-  ;
+  const char object_key_literal[] = "RootPOA/OBJECTKEY";
+  std::vector<unsigned char> object_key;
+  std::copy(&object_key_literal[0], &object_key_literal[sizeof(object_key_literal)-1]
+            , std::back_inserter(object_key));
+  attribute_type attribute('\1', '\0', "localhost", 8080, object_key);
 
-  std::abort();
+  std::vector<char> output;
+  iterator_type iterator(output);
+  if(karma::generate(iterator
+                     , giop::compile<iiop::generator_domain>
+                     (
+                      giop::endianness(true)
+                      [
+                       giop::octet                      // IIOP major version
+                       & giop::octet                    // IIOP minor version
+                       & giop::string                   // host
+                       & giop::ushort_                  // port
+                       & giop::sequence[giop::octet]    // object key
+                      ]
+                     )
+                     , attribute))
+  {
+    std::cout << "Success" << std::endl;
+    boost::algorithm::hex(output.begin(), output.end(), std::ostream_iterator<char>(std::cout));
+  }
+  else
+  {
+    std::cout << "Failed" << std::endl;
+    std::abort();
+  }
 }
 
