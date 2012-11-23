@@ -11,12 +11,11 @@
 namespace morbid { namespace giop {
 
 template <typename Domain, typename Expr>
-typename boost::spirit::result_of::compile< Domain, Expr>::type
+typename boost::result_of<typename Domain::compiler(Expr)>::type
 compile(Expr const& expr)
 {
-  typedef typename boost::spirit::result_of::compile< Domain, Expr>::type result_type;
-  std::cout << "expr " << typeid(result_type).name() << std::endl;
-  return boost::spirit::compile< Domain>(expr);
+  typename Domain::compiler c;
+  return c(expr);
 }
 
 } }

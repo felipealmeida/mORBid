@@ -35,9 +35,20 @@ struct sequence_generator : karma::unary_generator<sequence_generator<Subject> >
   };
 
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
-  bool generate(OutputIterator& sink, Context&, Delimiter const&, C& attr) const
+  bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
-    return false;
+    unsigned_generator<32u> unsigned_;
+    boost::uint_t<32>::least size = attr.size();
+    bool r = unsigned_.generate(sink, ctx, d, size);
+    for(typename spirit::traits::container_iterator<C>::type 
+          first = spirit::traits::begin(attr)
+          , last = spirit::traits::end(attr)
+          ;first != last; ++first)
+    {
+      typename spirit::traits::container_value<C>::type value = *first;
+      r = subject.generate(sink, ctx, d, value);
+    }
+    return r;
   }
 
   sequence_generator(Subject const& subject)

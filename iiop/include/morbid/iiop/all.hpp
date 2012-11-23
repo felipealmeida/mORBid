@@ -5,6 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#include <morbid/iiop/alignment.hpp>
+#include <morbid/iiop/generator_compiler.hpp>
 #include <morbid/iiop/endianness.hpp>
 #include <morbid/iiop/operators.hpp>
 #include <morbid/iiop/octet.hpp>

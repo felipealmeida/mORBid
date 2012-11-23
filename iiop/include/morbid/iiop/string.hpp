@@ -9,6 +9,9 @@
 #define MORBID_IIOP_STRING_HPP
 
 #include <morbid/iiop/meta_compiler.hpp>
+#include <morbid/iiop/numeric.hpp>
+#include <morbid/iiop/octet.hpp>
+
 #include <morbid/giop/common_terminals.hpp>
 
 #include <boost/spirit/home/karma.hpp>
@@ -29,9 +32,23 @@ struct string_generator : karma::primitive_generator<string_generator>
   };
 
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
-  bool generate(OutputIterator& sink, Context&, Delimiter const&, C& attr) const
+  bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
-    return false;
+    unsigned_generator<32u> unsigned_;
+    boost::uint_t<32>::least size = attr.size()+1;
+    bool r = unsigned_.generate(sink, ctx, d, size);
+    karma::any_char<octet_encoding, spirit::unused_type> octet_generator;
+    for(typename spirit::traits::container_iterator<C>::type 
+          first = spirit::traits::begin(attr)
+          , last = spirit::traits::end(attr)
+          ;first != last; ++first)
+    {
+      octet_encoding::char_type c = *first;
+      octet_generator.generate(sink, ctx, d, c);
+    }
+    octet_encoding::char_type zero = '\0';
+    octet_generator.generate(sink, ctx, d, zero);
+    return r;
   }
 };
 

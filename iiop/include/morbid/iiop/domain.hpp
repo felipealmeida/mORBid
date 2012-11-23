@@ -8,9 +8,17 @@
 #ifndef MORBID_IIOP_DOMAIN_HPP
 #define MORBID_IIOP_DOMAIN_HPP
 
+#include <boost/spirit/home/support.hpp>
+
 namespace morbid { namespace iiop {
 
-struct generator_domain {};
+struct generator_compiler;
+
+struct generator_domain
+{
+  typedef generator_compiler compiler;
+};
+
 struct parser_domain {};
 
 } }
