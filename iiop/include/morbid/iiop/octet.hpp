@@ -15,6 +15,8 @@
 
 namespace morbid { namespace iiop {
 
+namespace fusion = boost::fusion;
+
 struct octet_encoding
 {
   typedef unsigned char char_type;
@@ -55,6 +57,19 @@ struct make_primitive<giop::tag::octet, Modifiers, Enable>
   }
 };
 
+template <typename T, typename Modifiers>
+struct make_primitive<T, Modifiers, typename boost::enable_if
+                      <spirit::traits::is_string<T>, void>::type>
+{
+  typedef typename boost::add_const<T>::type const_string;
+  typedef karma::literal_string<const_string, octet_encoding, spirit::unused_type, true> result_type;
+
+  result_type operator()(typename boost::add_reference<const_string>::type val, boost::spirit::unused_type) const
+  {
+    return result_type(val);
+  }
+};
+
 }
 
 } }
@@ -63,6 +78,12 @@ namespace boost { namespace spirit {
 
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::octet, Enable> : mpl::true_ {};
+template <typename T>
+struct use_terminal< ::morbid::iiop::generator_domain
+                     , T, typename enable_if<traits::is_string<T>, void>::type> : mpl::true_ {};
+// template <std::size_t N, typename Enable>
+// struct use_terminal< ::morbid::iiop::generator_domain
+//                      , terminal_ex<tag::lit, fusion::vector1<const char (&)[N]> >, Enable> : mpl::true_ {};
 
 } }
 

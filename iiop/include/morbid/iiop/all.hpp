@@ -13,3 +13,4 @@
 #include <morbid/iiop/string.hpp>
 #include <morbid/iiop/numeric.hpp>
 #include <morbid/iiop/sequence.hpp>
+#include <morbid/iiop/rule.hpp>

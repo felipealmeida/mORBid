@@ -10,6 +10,15 @@
 
 namespace morbid { namespace giop {
 
+namespace result_of {
+
+template <typename Domain, typename Expr>
+struct compile : boost::result_of<typename Domain::compiler(Expr)>
+{
+};
+
+}
+
 template <typename Domain, typename Expr>
 typename boost::result_of<typename Domain::compiler(Expr)>::type
 compile(Expr const& expr)

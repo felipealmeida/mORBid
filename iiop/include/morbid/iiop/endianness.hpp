@@ -52,12 +52,8 @@ template <typename Subject>
 struct endianness_generator : karma::unary_generator<endianness_generator<Subject> >
 {
   template <typename Context, typename Iterator>
-  struct attribute
+  struct attribute : spirit::traits::attribute_of<Subject, Context, Iterator>
   {
-    typedef
-      typename spirit::traits::attribute_of<
-        Subject, Context, Iterator>::type
-    type;
   };
 
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>

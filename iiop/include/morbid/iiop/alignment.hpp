@@ -76,13 +76,11 @@ template <typename Subject>
 struct alignment_enabler : karma::unary_generator<alignment_enabler<Subject> >
 {
   template <typename Context, typename Iterator>
-  struct attribute
+  struct attribute : spirit::traits::attribute_of<Subject, Context, Iterator>
   {
-    typedef
-      typename spirit::traits::attribute_of<
-        Subject, Context, Iterator>::type
-    type;
   };
+
+  typedef typename Subject::properties properties;
 
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const

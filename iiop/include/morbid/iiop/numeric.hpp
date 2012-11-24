@@ -47,19 +47,17 @@ void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<N>)
 }
 
 template <std::size_t N, typename OutputIterator>
-bool little_endian_unsigned_generate(OutputIterator& sink, typename boost::uint_t<N>::exact value)
+void reverse_unsigned_generate(OutputIterator& sink, typename boost::uint_t<N>::exact value)
 {
   BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
   unroll_copy_backward(sink, value, unroll_tag<N/CHAR_BIT>());
-  return true;
 }
 
 template <std::size_t N, typename OutputIterator>
-bool big_endian_unsigned_generate(OutputIterator& sink, typename boost::uint_t<N>::exact value)
+void normal_unsigned_generate(OutputIterator& sink, typename boost::uint_t<N>::exact value)
 {
   BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
   unroll_copy(sink, value, unroll_tag<0u>(), unroll_tag<N/CHAR_BIT>());
-  return true;
 }
 
 template <std::size_t N>
@@ -71,15 +69,37 @@ struct unsigned_generator : karma::primitive_generator<unsigned_generator<N> >
     typedef typename boost::uint_t<N>::least type;
   };
 
+  template <typename OutputIterator, typename Context, typename Delimiter>
+  bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, spirit::unused_type attr) const
+  {
+    // It is not possible (doesn't make sense) to use unsigned without
+    // providing any attribute, as the generator doesn't 'know' what
+    // number to output. The following assertion fires if this
+    // situation is detected in your code.
+    BOOST_SPIRIT_ASSERT_MSG(false, unsigned_not_usable_without_attribute, ());
+    
+    return false;
+  }
+
   template <typename OutputIterator, typename Context, typename Delimiter, typename U>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, U& attr) const
   {
     alignment_padding<N>(sink, ctx.attributes);
+    typedef typename attribute<Context, OutputIterator>::type attribute_type;
 
     bool endianness = generator_endianness<typename Context::attributes_type>
       ::call(ctx.attributes);
-    return endianness ? little_endian_unsigned_generate<N>(sink, attr)
-      : big_endian_unsigned_generate<N>(sink, attr);
+#ifdef BOOST_BIG_ENDIAN
+    if(endianness)
+#elif defined(BOOST_LITTLE_ENDIAN)
+    if(!endianness)
+#else
+#error No native endianness found
+#endif
+      reverse_unsigned_generate<N>(sink, attr);
+    else
+      normal_unsigned_generate<N>(sink, attr);
+    return true;
   }
 };
 

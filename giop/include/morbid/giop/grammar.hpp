@@ -1,0 +1,63 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
+#ifndef MORBID_GIOP_GRAMMAR_HPP
+#define MORBID_GIOP_GRAMMAR_HPP
+
+#include <morbid/giop/common_terminals.hpp>
+#include <morbid/giop/rule.hpp>
+
+namespace morbid { namespace giop {
+
+namespace spirit = boost::spirit;
+namespace proto = boost::proto;
+namespace fusion = boost::fusion;
+
+template <typename Domain, typename Iterator, typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void>
+struct grammar
+  : proto::extends
+  <
+    typename proto::terminal
+    <boost::reference_wrapper<rule<Domain, Iterator, T1, T2, T3, T4> const> >::type
+    , grammar<Domain, Iterator, T1, T2, T3, T4>
+  >
+{
+  typedef typename proto::terminal
+  <boost::reference_wrapper<rule<Domain, Iterator, T1, T2, T3, T4> const> >::type terminal_type;
+  typedef grammar<Domain, Iterator, T1, T2, T3, T4> self_type;
+
+  typedef self_type base_type;
+  typedef rule<Domain, Iterator, T1, T2, T3, T4> start_type;
+
+  grammar(start_type& rule)
+    : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule)))
+  {
+  }
+
+  static size_t const params_size = start_type::params_size;
+
+  // bring in the operator() overloads
+  start_type const& get_parameterized_subject() const
+  { return boost::unwrap_ref(this->proto_base().child0); }
+  typedef start_type parameterized_subject_type;
+#define lazy_enable_if_c boost::lazy_enable_if_c
+#include <boost/spirit/home/karma/nonterminal/detail/fcall.hpp>
+#undef lazy_enable_if_c
+
+//   // bring in the operator() overloads
+//   rule const& get_parameterized_subject() const { return *this; }
+//   typedef rule parameterized_subject_type;
+// #include <boost/spirit/home/karma/nonterminal/detail/fcall.hpp>
+
+private:
+  grammar(grammar const&);
+  grammar& operator=(grammar const&);
+};
+
+} }
+
+#endif

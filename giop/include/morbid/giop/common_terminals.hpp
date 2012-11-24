@@ -22,6 +22,7 @@ using ::boost::spirit::ulong_long;
 using ::boost::spirit::long_long;
 using ::boost::spirit::float_;
 using ::boost::spirit::double_;
+using ::boost::spirit::lit;
 BOOST_SPIRIT_TERMINAL_EX(long_double);
 BOOST_SPIRIT_TERMINAL_EX(string);
 BOOST_SPIRIT_TERMINAL_EX(octet);
