@@ -36,12 +36,14 @@ template <typename Domain, typename Iterator, typename T1, typename T2 = spirit:
 struct rule
   : proto::extends
     <typename proto::terminal
-     <boost::reference_wrapper<rule<Domain, Iterator, T1, T2, T3, T4> const> >::type
+     <boost::reference_wrapper
+      <typename rule_impl<Domain, Iterator, T1, T2, T3, T4>::type const> >::type
      , rule<Domain, Iterator, T1, T2, T3, T4>
     >
 {
   typedef rule<Domain, Iterator, T1, T2, T3, T4> self_type;
-  typedef typename proto::terminal<boost::reference_wrapper<self_type const> >::type terminal_type;
+  typedef typename giop::rule_impl<Domain, Iterator, T1, T2, T3, T4>::type rule_impl;
+  typedef typename proto::terminal<boost::reference_wrapper<rule_impl const> >::type terminal_type;
 
   typedef mpl::vector<T1, T2, T3, T4> template_params;
 
@@ -68,7 +70,7 @@ struct rule
   static size_t const params_size = fusion::result_of::size<parameter_types>::type::value;
 
   rule()
-    : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(*this)))
+    : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule_impl_)))
   {}
   ~rule()
   {
@@ -79,7 +81,7 @@ struct rule
   self_type& operator=(Expr const& expr)
   {
     typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    r = karma::detail::bind_generator<mpl::false_>(giop::compile<Domain>(expr));
+    rule_impl_ = karma::detail::bind_generator<mpl::false_>(giop::compile<Domain>(expr));
     return *this;
   }
 
@@ -87,19 +89,21 @@ struct rule
   self_type& operator%=(Expr const& expr)
   {
     typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    r %= karma::detail::bind_generator<mpl::true_>(giop::compile<Domain>(expr));
+    rule_impl_ %= karma::detail::bind_generator<mpl::true_>(giop::compile<Domain>(expr));
     return *this;
   }
 
   typedef Domain domain_type;
 
-  self_type const& get_parameterized_subject() const { return *this; }
-  typedef self_type parameterized_subject_type;
+  rule_impl const& get_parameterized_subject() const { return rule_impl_; }
+  typedef rule_impl parameterized_subject_type;
+#if 0
+#include <morbid/giop/detail/nonterminal_fcall.hpp>
+#endif
 #define BOOST_PP_ITERATION_PARAMS_1 (3, (1, MORBID_GIOP_MAX_ARGS, "morbid/giop/detail/nonterminal_fcall.hpp"))
 #include BOOST_PP_ITERATE()
 
-  typedef typename rule_impl<Domain, Iterator, T1, T2, T3, T4>::type rule_type;
-  rule_type r;
+  rule_impl rule_impl_;
 private:
   rule(self_type const&);
   self_type& operator=(self_type const&);

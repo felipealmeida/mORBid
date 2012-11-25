@@ -9,38 +9,6 @@
 
 #include "test_compile.hpp"
 
-struct rule
-{
-  rule() {}
-
-  template <typename C>
-  rule& operator=(C const& c)
-  {
-    return *this;
-  }
-
-  template <typename C>
-  rule& operator%=(C const& c)
-  {
-    return *this;
-  }
-
-private:
-  rule(rule const&) {}
-  rule& operator=(rule const&);
-};
-
-namespace morbid { namespace giop {
-
-template <typename Domain, typename I, typename T1, typename T2, typename T3
-          , typename T4>
-struct rule_impl
-{
-  typedef ::rule type;
-};
-
-} }
-
 struct float_terminal {};
 struct float_terminal_int {};
 struct ushort_terminal {};
@@ -96,11 +64,8 @@ struct make_primitive<boost::spirit::tag::ushort_, Modifiers, Enable>
   }
 };
 
-template <typename D, typename I, typename T1, typename T2, typename T3, typename T4
-          , typename Modifiers, typename Enable>
-struct make_primitive<boost::reference_wrapper
-                      <morbid::giop::rule<D, I, T1, T2, T3, T4>const>
-                      , Modifiers, Enable>
+template <typename Modifiers, typename Enable>
+struct make_primitive<boost::reference_wrapper<rule const>, Modifiers, Enable>
 {
   typedef ::rule_terminal result_type;
 
@@ -111,11 +76,8 @@ struct make_primitive<boost::reference_wrapper
   }
 };
 
-template <typename D1, typename D2, typename I, typename T1, typename T2, typename T3, typename T4
-          , typename Params, typename Modifiers, typename Enable>
-struct make_primitive<morbid::giop::parameterized_nonterminal
-                      <D1, morbid::giop::rule<D2, I, T1, T2, T3, T4>, Params>
-                      , Modifiers, Enable>
+template <typename D1, typename Params, typename Modifiers, typename Enable>
+struct make_primitive<morbid::giop::parameterized_nonterminal<D1, rule, Params>, Modifiers, Enable>
 {
   typedef ::rule_terminal_params result_type;
 

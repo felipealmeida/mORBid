@@ -32,13 +32,15 @@ struct grammar
   : proto::extends
   <
     typename proto::terminal
-    <boost::reference_wrapper<rule<Domain, Iterator, T1, T2, T3, T4> const> >::type
+    <boost::reference_wrapper
+     <typename rule<Domain, Iterator, T1, T2, T3, T4>::rule_impl const> >::type
     , grammar<Domain, Iterator, T1, T2, T3, T4>
   >
 {
   typedef rule<Domain, Iterator, T1, T2, T3, T4> start_type;
+  typedef typename rule<Domain, Iterator, T1, T2, T3, T4>::rule_impl rule_impl_type;
   typedef typename proto::terminal
-    <boost::reference_wrapper<start_type const> >::type
+    <boost::reference_wrapper<rule_impl_type const> >::type
     terminal_type;
   typedef grammar<Domain, Iterator, T1, T2, T3, T4> self_type;
   typedef self_type base_type;
@@ -46,15 +48,15 @@ struct grammar
   static size_t const params_size = start_type::params_size;
 
   grammar(start_type const& rule)
-    : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule)))
+    : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule.rule_impl_)))
   {
   }
 
   typedef Domain domain_type;
 
-  start_type const& get_parameterized_subject() const
+  rule_impl_type const& get_parameterized_subject() const
   { return this->proto_base().child0.get(); }
-  typedef start_type parameterized_subject_type;
+  typedef rule_impl_type parameterized_subject_type;
 #define BOOST_PP_ITERATION_PARAMS_1 (3, (1, MORBID_GIOP_MAX_ARGS, "morbid/giop/detail/nonterminal_fcall.hpp"))
 #include BOOST_PP_ITERATE()
 
