@@ -48,20 +48,12 @@ struct rule
   typedef mpl::vector<T1, T2, T3, T4> template_params;
 
   typedef typename
-    spirit::detail::extract_locals<template_params>::type
-  locals_type;
-
-  typedef typename
     spirit::detail::extract_sig<template_params>::type
   sig_type;
 
   typedef typename
     spirit::detail::attr_from_sig<sig_type>::type
   attr_type;
-
-  typedef typename boost::add_reference<
-    typename boost::add_const<attr_type>::type>::type
-  attr_reference_type;
 
   typedef typename
     spirit::detail::params_from_sig<sig_type>::type
@@ -81,7 +73,7 @@ struct rule
   self_type& operator=(Expr const& expr)
   {
     typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    rule_impl_ = karma::detail::bind_generator<mpl::false_>(giop::compile<Domain>(expr));
+    rule_impl_ = giop::compile<Domain>(expr);
     return *this;
   }
 
@@ -89,7 +81,7 @@ struct rule
   self_type& operator%=(Expr const& expr)
   {
     typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    rule_impl_ %= karma::detail::bind_generator<mpl::true_>(giop::compile<Domain>(expr));
+    rule_impl_ %= giop::compile<Domain>(expr);
     return *this;
   }
 
