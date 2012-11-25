@@ -12,12 +12,6 @@
 
 #include <morbid/iiop/endianness.hpp>
 
-// namespace morbid { namespace iiop {
-
-// struct endianness_attribute;
-
-// } }
-
 namespace morbid { namespace giop { namespace grammars {
 
 template <typename Domain, typename Iterator, typename Attr>

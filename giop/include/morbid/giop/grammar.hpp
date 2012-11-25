@@ -10,6 +10,15 @@
 
 #include <morbid/giop/common_terminals.hpp>
 #include <morbid/giop/rule.hpp>
+#include <morbid/giop/compile.hpp>
+#include <morbid/giop/detail/parameterized_nonterminal.hpp>
+#include <morbid/giop/detail/max_args.hpp>
+
+#include <boost/spirit/home/karma.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/preprocessor/iterate.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 
 namespace morbid { namespace giop {
 
@@ -17,7 +26,8 @@ namespace spirit = boost::spirit;
 namespace proto = boost::proto;
 namespace fusion = boost::fusion;
 
-template <typename Domain, typename Iterator, typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void>
+template <typename Domain, typename Iterator, typename T1, typename T2 = spirit::unused_type
+          , typename T3 = spirit::unused_type, typename T4 = spirit::unused_type>
 struct grammar
   : proto::extends
   <
@@ -26,32 +36,27 @@ struct grammar
     , grammar<Domain, Iterator, T1, T2, T3, T4>
   >
 {
-  typedef typename proto::terminal
-  <boost::reference_wrapper<rule<Domain, Iterator, T1, T2, T3, T4> const> >::type terminal_type;
-  typedef grammar<Domain, Iterator, T1, T2, T3, T4> self_type;
-
-  typedef self_type base_type;
   typedef rule<Domain, Iterator, T1, T2, T3, T4> start_type;
+  typedef typename proto::terminal
+    <boost::reference_wrapper<start_type const> >::type
+    terminal_type;
+  typedef grammar<Domain, Iterator, T1, T2, T3, T4> self_type;
+  typedef self_type base_type;
 
-  grammar(start_type& rule)
+  static size_t const params_size = start_type::params_size;
+
+  grammar(start_type const& rule)
     : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule)))
   {
   }
 
-  static size_t const params_size = start_type::params_size;
+  typedef Domain domain_type;
 
-  // bring in the operator() overloads
   start_type const& get_parameterized_subject() const
-  { return boost::unwrap_ref(this->proto_base().child0); }
+  { return this->proto_base().child0.get(); }
   typedef start_type parameterized_subject_type;
-#define lazy_enable_if_c boost::lazy_enable_if_c
-#include <boost/spirit/home/karma/nonterminal/detail/fcall.hpp>
-#undef lazy_enable_if_c
-
-//   // bring in the operator() overloads
-//   rule const& get_parameterized_subject() const { return *this; }
-//   typedef rule parameterized_subject_type;
-// #include <boost/spirit/home/karma/nonterminal/detail/fcall.hpp>
+#define BOOST_PP_ITERATION_PARAMS_1 (3, (1, MORBID_GIOP_MAX_ARGS, "morbid/giop/detail/nonterminal_fcall.hpp"))
+#include BOOST_PP_ITERATE()
 
 private:
   grammar(grammar const&);

@@ -10,69 +10,96 @@
 
 #include <morbid/giop/common_terminals.hpp>
 #include <morbid/giop/compile.hpp>
+#include <morbid/giop/detail/parameterized_nonterminal.hpp>
+#include <morbid/giop/detail/max_args.hpp>
 
 #include <boost/spirit/home/karma.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/preprocessor/iterate.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
 
 namespace morbid { namespace giop {
 
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
 namespace mpl = boost::mpl;
+namespace proto = boost::proto;
+namespace fusion = boost::fusion;
 
-template <typename Domain, typename Iterator, typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void>
+template <typename Domain, typename I, typename T1, typename T2, typename T3
+          , typename T4>
+struct rule_impl;
+
+template <typename Domain, typename Iterator, typename T1, typename T2 = spirit::unused_type
+          , typename T3 = spirit::unused_type, typename T4 = spirit::unused_type>
 struct rule
+  : proto::extends
+    <typename proto::terminal
+     <boost::reference_wrapper<rule<Domain, Iterator, T1, T2, T3, T4> const> >::type
+     , rule<Domain, Iterator, T1, T2, T3, T4>
+    >
 {
   typedef rule<Domain, Iterator, T1, T2, T3, T4> self_type;
+  typedef typename proto::terminal<boost::reference_wrapper<self_type const> >::type terminal_type;
 
-  static size_t const params_size = 1u;
-    // fusion::result_of::size<parameter_types>::type::value;
+  typedef mpl::vector<T1, T2, T3, T4> template_params;
 
-  rule() {}
+  typedef typename
+    spirit::detail::extract_locals<template_params>::type
+  locals_type;
+
+  typedef typename
+    spirit::detail::extract_sig<template_params>::type
+  sig_type;
+
+  typedef typename
+    spirit::detail::attr_from_sig<sig_type>::type
+  attr_type;
+
+  typedef typename boost::add_reference<
+    typename boost::add_const<attr_type>::type>::type
+  attr_reference_type;
+
+  typedef typename
+    spirit::detail::params_from_sig<sig_type>::type
+  parameter_types;
+
+  static size_t const params_size = fusion::result_of::size<parameter_types>::type::value;
+
+  rule()
+    : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(*this)))
+  {}
   ~rule()
   {
     std::cout << "~rule " << this << std::endl;
   }
 
   template <typename Expr>
-  void define(Expr const& expr, mpl::false_)
-  {
-    // Report invalid expression error as early as possible.
-    // If you got an error_invalid_expression error message here,
-    // then the expression (expr) is not a valid spirit karma expression.
-    BOOST_SPIRIT_ASSERT_MATCH(karma::domain, Expr);
-  }
-
-  template <typename Expr>
   self_type& operator=(Expr const& expr)
   {
-    std::cout << "rule operator= this: " << this << std::endl;
     typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    std::cout << "compilation result " << typeid(compilation_result).name() << std::endl;
-    BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>)); 
-    f = karma::detail::bind_generator<mpl::false_>(giop::compile<Domain>(expr));
-    // assert(!!rule_.f);
+    r = karma::detail::bind_generator<mpl::false_>(giop::compile<Domain>(expr));
     return *this;
   }
 
   template <typename Expr>
   self_type& operator%=(Expr const& expr)
   {
-    std::cout << "rule operator%= this: " << this << std::endl;
     typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    std::cout << "compilation result " << typeid(compilation_result).name() << std::endl;
-    BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>)); 
-    f = karma::detail::bind_generator<mpl::true_>(giop::compile<Domain>(expr));
-    // assert(!!rule_.f);
+    r %= karma::detail::bind_generator<mpl::true_>(giop::compile<Domain>(expr));
     return *this;
   }
 
-  typedef typename Domain::template rule<Iterator, T1, T2, T3, T4>::type rule_type;
-  rule_type rule_;
-  typedef boost::function<
-    bool(typename rule_type::output_iterator&, typename rule_type::context_type&
-         , typename rule_type::delimiter_type const&)>
-  function_type;
-  function_type f;
+  typedef Domain domain_type;
+
+  self_type const& get_parameterized_subject() const { return *this; }
+  typedef self_type parameterized_subject_type;
+#define BOOST_PP_ITERATION_PARAMS_1 (3, (1, MORBID_GIOP_MAX_ARGS, "morbid/giop/detail/nonterminal_fcall.hpp"))
+#include BOOST_PP_ITERATE()
+
+  typedef typename rule_impl<Domain, Iterator, T1, T2, T3, T4>::type rule_type;
+  rule_type r;
 private:
   rule(self_type const&);
   self_type& operator=(self_type const&);
