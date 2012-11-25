@@ -16,8 +16,80 @@
 namespace morbid { namespace iiop {
 
 namespace fusion = boost::fusion;
+namespace mpl = boost::mpl;
 
 namespace generator {
+
+template <typename I, typename T1, typename T2, typename T3, typename T4>
+struct rule
+{
+  typedef I param_iterator;
+
+  typedef mpl::vector<T1, T2, T3, T4> template_params;
+
+  typedef typename
+    spirit::detail::extract_locals<template_params>::type
+  locals_type;
+
+  typedef typename
+    spirit::detail::extract_sig<template_params>::type
+  sig_type;
+
+  typedef typename
+    spirit::detail::attr_from_sig<sig_type>::type
+  attr_type;
+
+  typedef typename boost::add_reference<
+    typename boost::add_const<attr_type>::type>::type
+  attr_reference_type;
+
+  typedef typename
+    spirit::detail::params_from_sig<sig_type>::type
+  parameter_types;
+
+  typedef spirit::context<
+    fusion::cons<attr_reference_type, parameter_types>
+    , locals_type>
+  context_type;
+
+  typedef mpl::int_<karma::generator_properties::all_properties> properties;
+  typedef karma::detail::output_iterator
+    <param_iterator, properties> output_iterator;
+
+  typedef boost::function
+    <bool(output_iterator&, context_type&, /*delimiter_type*/spirit::unused_type const&)>
+  function_type;
+
+  template <typename Expr>
+  rule& operator=(Expr const& expr)
+  {
+    f = karma::detail::bind_generator<mpl::false_>(expr);
+    return *this;
+  }
+
+  template <typename Expr>
+  rule& operator%=(Expr const& expr)
+  {
+    f = karma::detail::bind_generator<mpl::true_>(expr);
+    return *this;
+  }
+
+  function_type f;
+};
+
+} }
+
+namespace giop {
+
+template <typename I, typename T1, typename T2, typename T3, typename T4>
+struct rule_impl< iiop::generator_domain, I, T1, T2, T3, T4>
+{
+  typedef iiop::generator::rule<I, T1, T2, T3, T4> type;
+};
+
+}
+
+namespace iiop { namespace generator {
 
 template <typename R, typename Params>
 struct rule_generator
@@ -30,7 +102,8 @@ struct rule_generator
               << " this rule " << this->rule << std::endl;
   }
 
-  typedef typename R::rule_type::properties properties;
+  typedef R rule_type;
+  typedef mpl::int_<karma::generator_properties::all_properties> properties;
 
   template <typename Context, typename Iterator>
   struct attributes
@@ -38,11 +111,13 @@ struct rule_generator
     typedef spirit::unused_type type;
   };
 
+  typedef typename rule_type::output_iterator output_iterator;
+
   template <typename Context, typename Delimiter, typename Attr>
-  bool generate(typename R::rule_type::output_iterator& sink, Context& caller_context
+  bool generate(output_iterator& sink, Context& caller_context
                 , Delimiter const& d, Attr const& attr) const
   {
-    typedef typename R::rule_type::attr_type attr_type;
+    typedef typename rule_type::attr_type attr_type;
     BOOST_MPL_ASSERT((boost::is_same<Attr, attr_type>));
     // Create an attribute if none is supplied.
     typedef spirit::traits::make_attribute<attr_type, Attr>
@@ -55,7 +130,8 @@ struct rule_generator
       spirit::traits::pre_transform<karma::domain, attr_type>
       (make_attribute::call(attr));
 
-    typedef typename R::rule_type::context_type context_type;
+    typedef typename rule_type::context_type context_type;
+
     // If you are seeing a compilation error here, you are probably
     // trying to use a rule or a grammar which has inherited
     // attributes, without passing values for them.
@@ -70,10 +146,10 @@ struct rule_generator
     // an incompatible delimiter type.
     if (rule->f(sink, context, d))
     {
-      typedef typename R::rule_type::delimiter_type delimiter_type;
-      // do a post-delimit if this is an implied verbatim
-      if (boost::is_same<delimiter_type, spirit::unused_type>::value)
-        karma::delimit_out(sink, d);
+      // typedef typename rule_type::delimiter_type delimiter_type;
+      // // do a post-delimit if this is an implied verbatim
+      // if (boost::is_same<delimiter_type, spirit::unused_type>::value)
+      //   karma::delimit_out(sink, d);
 
       return true;
     }
@@ -98,16 +174,14 @@ struct make_primitive<boost::reference_wrapper
   }
 };
 
-template <typename Iterator, typename T1, typename T2, typename T3, typename T4, typename Modifiers, typename V, typename Enable>
-struct make_primitive<karma::parameterized_nonterminal
-                      <
-                        giop::rule< generator_domain, Iterator, T1, T2, T3, T4>
-                        , V
-                      >
-                      , Modifiers, Enable>
+template <typename D, typename Iterator, typename T1, typename T2, typename T3, typename T4
+          , typename Params, typename Modifiers, typename Enable>
+struct make_primitive<giop::parameterized_nonterminal
+                      <D, rule<Iterator, T1, T2, T3, T4>, Params>, Modifiers, Enable>
 {
-  typedef giop::rule< generator_domain, Iterator, T1, T2, T3, T4> rule_type;
-  typedef rule_generator<rule_type, V> result_type;
+  BOOST_MPL_ASSERT((boost::is_same<D, generator_domain>));
+  typedef rule<Iterator, T1, T2, T3, T4> rule_type;
+  typedef rule_generator<rule_type, Params> result_type;
 
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const
@@ -124,25 +198,13 @@ namespace boost { namespace spirit {
 template <typename Iterator, typename T1, typename T2, typename T3, typename T4, typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain
                      , boost::reference_wrapper
-                     < ::morbid::giop::rule
-                       < ::morbid::iiop::generator_domain, Iterator, T1, T2, T3, T4>const>
-                     , Enable> : mpl::true_ {};
-template <typename Iterator, typename T1, typename T2, typename T3, typename T4
-          , typename V, typename Enable>
-struct use_terminal< ::morbid::iiop::generator_domain
-                     , karma::parameterized_nonterminal
-                     < ::morbid::giop::rule
-                       < ::morbid::iiop::generator_domain, Iterator, T1, T2, T3, T4>
-                       , V>
-                     , Enable> : mpl::true_ {};
+                     < ::morbid::iiop::generator::rule<Iterator, T1, T2, T3, T4>const>, Enable> : mpl::true_ {};
 
-template <typename Iterator, typename T1, typename T2, typename T3, typename T4>
-struct use_lazy_directive< ::morbid::iiop::generator_domain
-                           , boost::reference_wrapper
-                           < ::morbid::giop::rule
-                             < ::morbid::iiop::generator_domain, Iterator, T1, T2, T3, T4>const>
-                           , 1>
-  : mpl::true_ {};
+template <typename D, typename Iterator, typename T1, typename T2, typename T3, typename T4
+          , typename Params, typename Enable>
+struct use_terminal< ::morbid::iiop::generator_domain
+                     , ::morbid::giop::parameterized_nonterminal
+                     <D, ::morbid::iiop::generator::rule< Iterator, T1, T2, T3, T4>, Params>, Enable> : mpl::true_ {};
 
 } }
 

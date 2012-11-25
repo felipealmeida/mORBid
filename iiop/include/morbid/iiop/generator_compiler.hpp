@@ -12,26 +12,28 @@
 
 #include <morbid/iiop/alignment.hpp>
 
-namespace morbid { namespace iiop {
+namespace morbid { namespace giop {
 
 namespace spirit = boost::spirit;
 
-struct generator_compiler
+template <>
+struct compile_impl< iiop::generator_domain>
 {
   template <typename T>
   struct result;
   template <typename This, typename Expr>
   struct result<This(Expr)>
   {
-    typedef typename boost::proto::subscript<spirit::terminal<tag::aligned>
+    typedef typename boost::proto::subscript<spirit::terminal< iiop::tag::aligned>
                                              , Expr>::type new_expr;
-    typedef typename spirit::result_of::compile<generator_domain, new_expr>::type type;
+    typedef typename spirit::result_of::compile< iiop::generator_domain, new_expr>::type type;
   };
 
   template <typename Expr>
-  typename result<generator_compiler(Expr)>::type operator()(Expr const& expr) const
+  typename result<compile_impl< iiop::generator_domain>(Expr)>::type
+  operator()(Expr const& expr) const
   {
-    return spirit::compile< generator_domain>(iiop::aligned[expr]);
+    return spirit::compile< iiop::generator_domain>(iiop::aligned[expr]);
   }
 };
 

@@ -32,7 +32,8 @@ void unroll_copy(OutputIterator& sink, Value const& v, unroll_tag<E>, unroll_tag
 template <typename OutputIterator, typename Value, std::size_t N, std::size_t E>
 void unroll_copy(OutputIterator& sink, Value const& v, unroll_tag<N>, unroll_tag<E> e)
 {
-  sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
+  *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
+  ++sink;
   unroll_copy(sink, v, unroll_tag<N+1>(), e);
 }
 
@@ -42,7 +43,8 @@ void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<0>) {
 template <typename OutputIterator, typename Value, std::size_t N>
 void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<N>)
 {
-  sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
+  *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
+  ++sink;
   unroll_copy_backward(sink, v, unroll_tag<N-1>());
 }
 
@@ -84,6 +86,8 @@ struct unsigned_generator : karma::primitive_generator<unsigned_generator<N> >
   template <typename OutputIterator, typename Context, typename Delimiter, typename U>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, U& attr) const
   {
+    BOOST_MPL_ASSERT_RELATION(sizeof(U), ==, N/CHAR_BIT);
+
     alignment_padding<N>(sink, ctx.attributes);
     typedef typename attribute<Context, OutputIterator>::type attribute_type;
 
