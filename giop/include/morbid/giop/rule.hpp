@@ -45,21 +45,7 @@ struct rule
   typedef typename giop::rule_impl<Domain, Iterator, T1, T2, T3, T4>::type rule_impl;
   typedef typename proto::terminal<boost::reference_wrapper<rule_impl const> >::type terminal_type;
 
-  typedef mpl::vector<T1, T2, T3, T4> template_params;
-
-  typedef typename
-    spirit::detail::extract_sig<template_params>::type
-  sig_type;
-
-  typedef typename
-    spirit::detail::attr_from_sig<sig_type>::type
-  attr_type;
-
-  typedef typename
-    spirit::detail::params_from_sig<sig_type>::type
-  parameter_types;
-
-  static size_t const params_size = fusion::result_of::size<parameter_types>::type::value;
+  static size_t const params_size = fusion::result_of::size<typename rule_impl::parameter_types>::type::value;
 
   rule()
     : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule_impl_)))

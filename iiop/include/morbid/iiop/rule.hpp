@@ -9,6 +9,7 @@
 #define MORBID_IIOP_RULE_HPP
 
 #include <morbid/giop/rule.hpp>
+#include <morbid/iiop/endianness.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/support.hpp>
@@ -26,32 +27,21 @@ template <typename I, typename T1, typename T2, typename T3, typename T4>
 struct rule_base
 {
   typedef I param_iterator;
-
   typedef mpl::vector<T1, T2, T3, T4> template_params;
-
   typedef typename
     spirit::detail::extract_locals<template_params>::type
   locals_type;
-
   typedef typename
     spirit::detail::extract_sig<template_params>::type
   sig_type;
-
   typedef typename
     spirit::detail::attr_from_sig<sig_type>::type
   attr_type;
-
   typedef typename boost::add_reference<
     typename boost::add_const<attr_type>::type>::type
   attr_const_reference_type;
-
   typedef typename boost::add_reference<attr_type>::type
     attr_reference_type;
-
-  typedef typename
-    spirit::detail::params_from_sig<sig_type>::type
-  parameter_types;
-
 };
 
 namespace parser {
@@ -63,7 +53,11 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   typedef typename rule_base::locals_type locals_type;
   typedef typename rule_base::attr_type attr_type;
   typedef typename rule_base::attr_reference_type attr_reference_type;
-  typedef typename rule_base::parameter_types parameter_types;
+  typedef typename rule_base::sig_type sig_type;
+
+  typedef typename
+    spirit::detail::params_from_sig<sig_type>::type
+  parameter_types;
 
   typedef spirit::context<
     fusion::cons<attr_reference_type, parameter_types>
@@ -109,7 +103,13 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   typedef typename rule_base::locals_type locals_type;
   typedef typename rule_base::attr_type attr_type;
   typedef typename rule_base::attr_const_reference_type attr_const_reference_type;
-  typedef typename rule_base::parameter_types parameter_types;
+  typedef typename rule_base::sig_type sig_type;
+
+  typedef typename fusion::result_of::as_list
+  <typename fusion::result_of::push_back
+  <typename spirit::detail::params_from_sig<sig_type>::type
+   , iiop::endianness_attribute>::type>::type
+  parameter_types;
 
   typedef spirit::context<
     fusion::cons<attr_const_reference_type, parameter_types>
