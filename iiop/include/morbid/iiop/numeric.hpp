@@ -21,7 +21,129 @@ namespace morbid { namespace iiop {
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
 
+namespace parser {
+
+template <std::size_t N>
+struct unroll_tag {};
+
+template <typename Iterator, typename Value, std::size_t E>
+bool unroll_copy(Iterator& first, Iterator last, Value& v, unroll_tag<E>, unroll_tag<E>) { return true; }
+
+template <typename Iterator, typename Value, std::size_t N, std::size_t E>
+bool unroll_copy(Iterator& first, Iterator last, Value& v, unroll_tag<N>, unroll_tag<E> e)
+{
+  if(first != last)
+  {
+    static_cast<unsigned char*>(static_cast<void*>(&v))[N] = *first;
+    ++first;
+    return unroll_copy(first, last, v, unroll_tag<N+1>(), e);
+  }
+  else
+    return false;
+}
+
+template <typename Iterator, typename Value>
+bool unroll_copy_backward(Iterator& first, Iterator last, Value& v, unroll_tag<0>) { return true; }
+
+template <typename Iterator, typename Value, std::size_t N>
+bool unroll_copy_backward(Iterator& first, Iterator last, Value& v, unroll_tag<N>)
+{
+  if(first != last)
+  {
+    static_cast<unsigned char*>(static_cast<void*>(&v))[N] = *first;
+    ++first;
+    return unroll_copy_backward(first, last, v, unroll_tag<N-1>());
+  }
+  else
+    return false;
+}
+
+template <std::size_t N, typename Iterator>
+bool reverse_unsigned_parse(Iterator& first, Iterator last, typename boost::uint_t<N>::exact& value)
+{
+  BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
+  return unroll_copy_backward(first, last, value, unroll_tag<N/CHAR_BIT>());
+}
+
+template <std::size_t N, typename Iterator>
+bool normal_unsigned_parse(Iterator& first, Iterator last, typename boost::uint_t<N>::exact& value)
+{
+  BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
+  return unroll_copy(first, last, value, unroll_tag<0u>(), unroll_tag<N/CHAR_BIT>());
+}
+
+template <std::size_t N>
+struct unsigned_parser : qi::primitive_parser<unsigned_parser<N> >
+{
+  template <typename Context, typename Unused>
+  struct attribute
+  {
+    typedef typename boost::uint_t<N>::least type;
+  };
+  
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    // Should align
+
+    bool endianness = generator_endianness<typename Context::attributes_type>
+      ::call(ctx.attributes);
+    
+#ifdef BOOST_BIG_ENDIAN
+    if(endianness)
+#elif defined(BOOST_LITTLE_ENDIAN)
+    if(!endianness)
+#else
+#error No native endianness found
+#endif
+      return reverse_unsigned_parse<N>(first, last, attr);
+    else
+      return normal_unsigned_parse<N>(first, last, attr);
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::ushort_, Modifiers, Enable>
+{
+  typedef unsigned_parser<16u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::ulong_, Modifiers, Enable>
+{
+  typedef unsigned_parser<32u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::ulong_long, Modifiers, Enable>
+{
+  typedef unsigned_parser<64u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+}
+
 namespace generator {
+
 
 template <std::size_t N>
 struct unroll_tag {};
@@ -161,6 +283,20 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::long_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::long_long, Enable> : mpl::true_ {};
+
+// Parser
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::ushort_, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::ulong_, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::ulong_long, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::short_, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::long_, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::long_long, Enable> : mpl::true_ {};
 
 } }
 

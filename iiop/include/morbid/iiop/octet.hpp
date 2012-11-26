@@ -16,6 +16,9 @@
 namespace morbid { namespace iiop {
 
 namespace fusion = boost::fusion;
+namespace spirit = boost::spirit;
+namespace qi = spirit::qi;
+namespace karma = spirit::karma;
 
 struct octet_encoding
 {
@@ -42,6 +45,44 @@ struct octet_encoding
 
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
+
+namespace parser {
+
+
+
+}
+
+namespace parser {
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<giop::tag::octet, Modifiers, Enable>
+{
+  typedef qi::char_class<spirit::tag::char_code
+                         <spirit::tag::char_, octet_encoding> > result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename T, typename Modifiers>
+struct make_primitive<T, Modifiers, typename boost::enable_if
+                      <spirit::traits::is_string<T>, void>::type>
+{
+  typedef typename boost::add_const<T>::type const_string;
+  typedef qi::literal_string<const_string, true>
+    result_type;
+
+  result_type operator()(typename boost::add_reference<const_string>::type val
+                         , boost::spirit::unused_type) const
+  {
+    return result_type(val);
+  }
+};
+
+}
 
 namespace generator {
 
@@ -76,14 +117,19 @@ struct make_primitive<T, Modifiers, typename boost::enable_if
 
 namespace boost { namespace spirit {
 
+// Generator
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::octet, Enable> : mpl::true_ {};
 template <typename T>
 struct use_terminal< ::morbid::iiop::generator_domain
                      , T, typename enable_if<traits::is_string<T>, void>::type> : mpl::true_ {};
-// template <std::size_t N, typename Enable>
-// struct use_terminal< ::morbid::iiop::generator_domain
-//                      , terminal_ex<tag::lit, fusion::vector1<const char (&)[N]> >, Enable> : mpl::true_ {};
+
+// Parser
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, morbid::giop::tag::octet, Enable> : mpl::true_ {};
+template <typename T>
+struct use_terminal< ::morbid::iiop::parser_domain
+                     , T, typename enable_if<traits::is_string<T>, void>::type> : mpl::true_ {};
 
 } }
 

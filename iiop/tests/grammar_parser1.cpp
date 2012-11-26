@@ -19,6 +19,7 @@ int main()
   namespace fusion = boost::fusion;
   namespace spirit = boost::spirit;
   namespace karma = spirit::karma;
+  namespace qi = spirit::qi;
   namespace phoenix = boost::phoenix;
 
   typedef fusion::vector2<unsigned char, unsigned int> something;
@@ -26,21 +27,23 @@ int main()
 
   attribute_type attribute('\1', '\0', something('\0', 32u));
 
-  typedef giop::forward_back_insert_iterator<std::vector<char> > iterator_type;
-  typedef morbid::giop::grammars::message_header_1_0<iiop::generator_domain
+  const char output[] = "GIOP\x01\x00\x01\x00\x20\x00\x00\x00";
+  typedef const char* iterator_type;
+  typedef morbid::giop::grammars::message_header_1_0<iiop::parser_domain
                                                      , iterator_type
-                                                     , attribute_type> message_header_grammar;
-  message_header_grammar message_header;
-  std::vector<char> output;
-  iterator_type iterator(output);
-  iiop::endianness_attribute e = {true};
-  if(karma::generate(iterator
-                     , giop::compile<iiop::generator_domain>(message_header(phoenix::val(e)))
-                     , attribute))
+                                                     , attribute_type>
+    parser_message_header_grammar;
+  parser_message_header_grammar parser_message_header;
+  attribute_type attribute_read;
+  iterator_type first = &output[0], last = &output[sizeof(output)-1];
+  if(qi::parse(first, last, giop::compile<iiop::parser_domain>
+               (parser_message_header), attribute_read))
   {
-    std::cout << "Success" << std::endl;
-    boost::algorithm::hex(output.begin(), output.end(), std::ostream_iterator<char>(std::cout));
-    std::endl(std::cout);
+    std::cout << "Major " << (unsigned int)fusion::at_c<0>(attribute_read) << std::endl;
+    std::cout << "Minor " << (unsigned int)fusion::at_c<1>(attribute_read) << std::endl;
+    std::cout << "Flags " << (unsigned int)fusion::at_c<0>(fusion::at_c<2>(attribute_read)) << std::endl;
+    std::cout << "Size " << fusion::at_c<1>(fusion::at_c<2>(attribute_read)) << std::endl;
+    assert(attribute == attribute_read);
   }
   else
   {

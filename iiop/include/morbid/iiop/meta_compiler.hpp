@@ -159,6 +159,114 @@ struct make_component< ::morbid::iiop::generator_domain, tag::directive>
   }
 };
 
+template <>
+struct make_component< ::morbid::iiop::parser_domain, proto::tag::terminal>
+{
+  template <typename Sig>
+  struct result;
+
+  template <typename This, typename Elements, typename Modifiers>
+  struct result<This(Elements, Modifiers)>
+  {
+    typedef typename ::morbid::iiop::parser::make_primitive<
+      typename remove_const<typename Elements::car_type>::type
+      , typename remove_reference<Modifiers>::type
+      >::result_type type;
+  };
+
+  template <typename Elements, typename Modifiers>
+  typename result<make_component(Elements, Modifiers)>::type
+  operator()(Elements const& elements, Modifiers const& modifiers) const
+  {
+    typedef typename remove_const<typename Elements::car_type>::type term;
+    return ::morbid::iiop::parser::make_primitive<term, Modifiers>()
+      (elements.car, modifiers);
+  }
+};
+
+template <typename Tag>
+struct make_component< ::morbid::iiop::parser_domain, Tag>
+{
+  template <typename Sig>
+  struct result;
+
+  template <typename This, typename Elements, typename Modifiers>
+  struct result<This(Elements, Modifiers)>
+  {
+    typedef typename
+    ::morbid::iiop::parser::make_composite
+      <Tag, Elements, typename remove_reference<Modifiers>::type>::result_type
+    type;
+  };
+
+  template <typename Elements, typename Modifiers>
+  typename result<make_component(Elements, Modifiers)>::type
+  operator()(Elements const& elements, Modifiers const& modifiers) const
+  {
+    return ::morbid::iiop::parser::make_composite<Tag, Elements, Modifiers>()
+      (elements, modifiers);
+  }
+};
+
+template <>
+struct make_component< ::morbid::iiop::parser_domain, tag::action>
+{
+  template <typename Sig>
+  struct result;
+
+  template <typename This, typename Elements, typename Modifiers>
+  struct result<This(Elements, Modifiers)>
+  {
+    typedef typename
+      boost::remove_const<typename Elements::car_type>::type
+    subject_type;
+
+    typedef typename
+      boost::remove_const<typename Elements::cdr_type::car_type>::type
+    action_type;
+
+    typedef karma::action<subject_type, action_type> type;
+  };
+
+  template <typename Elements>
+  typename result<make_component(Elements, unused_type)>::type
+  operator()(Elements const& elements, unused_type) const
+  {
+    typename result<make_component(Elements, unused_type)>::type
+      result(elements.car, elements.cdr.car);
+    return result;
+  }
+};
+
+template <>
+struct make_component< ::morbid::iiop::parser_domain, tag::directive>
+{
+  template <typename Sig>
+  struct result;
+
+  template <typename This, typename Elements, typename Modifiers>
+  struct result<This(Elements, Modifiers)>
+  {
+    typedef typename
+    ::morbid::iiop::parser::make_directive<
+      typename boost::remove_const<typename Elements::car_type>::type,
+      typename boost::remove_const<typename Elements::cdr_type::car_type>::type,
+      typename boost::remove_reference<Modifiers>::type
+      >::result_type
+    type;
+  };
+
+  template <typename Elements, typename Modifiers>
+  typename result<make_component(Elements, Modifiers)>::type
+  operator()(Elements const& elements, Modifiers const& modifiers) const
+  {
+    return ::morbid::iiop::parser::make_directive<
+      typename boost::remove_const<typename Elements::car_type>::type,
+      typename boost::remove_const<typename Elements::cdr_type::car_type>::type,
+      Modifiers>()(elements.car, elements.cdr.car, modifiers);
+  }
+};
+
 } }
 
 namespace morbid { namespace iiop {

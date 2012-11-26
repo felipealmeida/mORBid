@@ -15,7 +15,7 @@
 namespace morbid { namespace giop { namespace grammars {
 
 template <typename Domain, typename Iterator, typename Attr>
-struct message_header_1_0 : grammar<Domain, Iterator, Attr(iiop::generator::endianness_attribute/**/)>
+struct message_header_1_0 : grammar<Domain, Iterator, Attr()>
 {
   message_header_1_0() : message_header_1_0::base_type(start)
   {
@@ -31,7 +31,7 @@ struct message_header_1_0 : grammar<Domain, Iterator, Attr(iiop::generator::endi
       ;
   }
 
-  rule<Domain, Iterator, Attr(iiop::generator::endianness_attribute)> start;
+  rule<Domain, Iterator, Attr()> start;
 };
 
 } } }

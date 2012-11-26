@@ -26,6 +26,20 @@ template <>
 struct flatten_tree< ::morbid::iiop::generator_domain, proto::tag::logical_and>
   : mpl::true_ {};
 
+template <typename Enable>
+struct use_operator< ::morbid::iiop::parser_domain, proto::tag::bitwise_and, Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_operator< ::morbid::iiop::parser_domain, proto::tag::logical_and, Enable> : mpl::true_ {};
+
+template <>
+struct flatten_tree< ::morbid::iiop::parser_domain, proto::tag::bitwise_and>
+  : mpl::true_ {};
+
+template <>
+struct flatten_tree< ::morbid::iiop::parser_domain, proto::tag::logical_and>
+  : mpl::true_ {};
+
 } }
 
 namespace morbid { namespace iiop {
@@ -41,6 +55,20 @@ template <typename Elements, typename Modifiers>
 struct make_composite<boost::proto::tag::logical_and, Elements, Modifiers>
   : boost::spirit::make_nary_composite<Elements, boost::spirit::karma::strict_sequence>
 {};
+
+}
+
+namespace parser {
+
+template <typename Elements, typename Modifiers>
+struct make_composite<boost::proto::tag::bitwise_and, Elements, Modifiers>
+  : boost::spirit::make_nary_composite<Elements, boost::spirit::qi::sequence>
+{};
+
+// template <typename Elements, typename Modifiers>
+// struct make_composite<boost::proto::tag::logical_and, Elements, Modifiers>
+//   : boost::spirit::make_nary_composite<Elements, boost::spirit::qi::strict_sequence>
+// {};
 
 }
 

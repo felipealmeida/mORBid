@@ -13,4 +13,6 @@ path-constant install : ../../install ;
 
 run compile_to_karma.cpp /morbid//iiop ;
 run grammar_test1.cpp /morbid//iiop ;
+run grammar_test2.cpp /morbid//iiop ;
+run grammar_parser1.cpp /morbid//iiop ;
 

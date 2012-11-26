@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef MORBID_IIOP_GENERATOR_COMPILER_HPP
-#define MORBID_IIOP_GENERATOR_COMPILER_HPP
+#ifndef MORBID_IIOP_COMPILER_HPP
+#define MORBID_IIOP_COMPILER_HPP
 
 #include <morbid/iiop/domain.hpp>
 
@@ -34,6 +34,27 @@ struct compile_impl< iiop::generator_domain>
   operator()(Expr const& expr) const
   {
     return spirit::compile< iiop::generator_domain>(iiop::aligned[expr]);
+  }
+};
+
+template <>
+struct compile_impl< iiop::parser_domain>
+{
+  template <typename T>
+  struct result;
+  template <typename This, typename Expr>
+  struct result<This(Expr)>
+  {
+    // typedef typename boost::proto::subscript<spirit::terminal< iiop::tag::aligned>
+    //                                          , Expr>::type new_expr;
+    typedef typename spirit::result_of::compile< iiop::parser_domain, Expr>::type type;
+  };
+
+  template <typename Expr>
+  typename result<compile_impl< iiop::parser_domain>(Expr)>::type
+  operator()(Expr const& expr) const
+  {
+    return spirit::compile< iiop::parser_domain>(expr);
   }
 };
 
