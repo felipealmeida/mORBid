@@ -10,12 +10,10 @@
 
 #include <morbid/giop/grammar.hpp>
 
-#include <morbid/iiop/endianness.hpp>
-
 namespace morbid { namespace giop { namespace grammars {
 
 template <typename Domain, typename Iterator, typename Attr>
-struct service_context : grammar<Domain, Iterator, Attr(iiop::generator::endianness_attribute)>
+struct service_context : grammar<Domain, Iterator, Attr()>
 {
   service_context() : service_context::base_type(start)
   {
@@ -23,7 +21,7 @@ struct service_context : grammar<Domain, Iterator, Attr(iiop::generator::endiann
       ;
   }
 
-  rule<Domain, Iterator, Attr(iiop::generator::endianness_attribute)> start;
+  rule<Domain, Iterator, Attr()> start;
 };
 
 } } }

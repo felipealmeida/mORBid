@@ -6,6 +6,7 @@
  */
 
 #include <morbid/giop/compile.hpp>
+#include <morbid/giop/rule.hpp>
 
 namespace test_compile {
 
@@ -51,6 +52,8 @@ namespace test_compile {
 
 struct rule
 {
+  typedef boost::fusion::cons<int, boost::fusion::nil> parameter_types;
+
   rule() {}
 
   template <typename C>
