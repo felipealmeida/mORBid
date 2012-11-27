@@ -343,15 +343,15 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
 
 template <typename Iterator, typename T1, typename T2, typename T3, typename T4, typename Modifiers, typename Enable>
 struct make_primitive<boost::reference_wrapper
-                      <giop::rule< generator_domain, Iterator, T1, T2, T3, T4>const>
+                      < rule<Iterator, T1, T2, T3, T4>const>
                        , Modifiers, Enable>
 {
-  typedef giop::rule< generator_domain, Iterator, T1, T2, T3, T4> rule_type;
+  typedef rule<Iterator, T1, T2, T3, T4> rule_type;
   typedef rule_generator<rule_type, fusion::vector0<> > result_type;
 
-  result_type operator()(rule_type const& val, boost::spirit::unused_type) const
+  result_type operator()(boost::spirit::unused_type, boost::spirit::unused_type) const
   {
-    return result_type(val);
+    return result_type();
   }
 };
 

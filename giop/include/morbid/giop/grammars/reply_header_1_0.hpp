@@ -26,8 +26,7 @@ struct reply_header_1_0 : grammar<Domain, Iterator, Attr()>
   }
 
   grammars::service_context<Domain, Iterator
-                            , typename fusion::result_of::at_c<0u, Attr>::type
-                            ()>
+                            , typename fusion::result_of::at_c<Attr, 0u>::type>
     service_context;
   rule<Domain, Iterator, Attr()> start;
 };

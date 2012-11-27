@@ -14,3 +14,4 @@
 #include <morbid/iiop/numeric.hpp>
 #include <morbid/iiop/sequence.hpp>
 #include <morbid/iiop/rule.hpp>
+#include <morbid/iiop/auxiliary.hpp>

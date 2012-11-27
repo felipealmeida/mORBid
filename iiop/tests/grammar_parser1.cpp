@@ -22,10 +22,10 @@ int main()
   namespace qi = spirit::qi;
   namespace phoenix = boost::phoenix;
 
-  typedef fusion::vector2<unsigned char, unsigned int> something;
-  typedef fusion::vector3<unsigned char, unsigned char, fusion::vector2<unsigned char, unsigned int> > attribute_type;
+  typedef fusion::vector2<unsigned char, unsigned int> rest;
+  typedef fusion::vector3<unsigned char, unsigned char, rest> attribute_type;
 
-  attribute_type attribute('\1', '\0', something('\0', 32u));
+  attribute_type attribute('\1', '\0', rest('\0', 32u));
 
   const char output[] = "GIOP\x01\x00\x01\x00\x20\x00\x00\x00";
   typedef const char* iterator_type;

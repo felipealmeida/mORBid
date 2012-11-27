@@ -17,6 +17,53 @@ namespace morbid { namespace iiop {
 
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
+namespace qi = spirit::qi;
+
+namespace parser {
+
+template <typename Subject>
+struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
+{
+  template <typename Context, typename Iterator>
+  struct attribute
+  {
+    typedef typename
+    spirit::traits::build_std_vector<
+      typename spirit::traits::attribute_of<
+        Subject, Context, Iterator>::type
+      >::type
+    type;
+  };
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& caller_context, Skipper const& skipper
+             , Attribute& attr_param) const
+  {
+    std::cout << "sequence_parser::parse" << std::endl;
+    return false;
+  }
+
+  sequence_parser(Subject const& subject)
+    : subject(subject) 
+  {
+  }
+
+  Subject subject;
+};
+
+template <typename Subject, typename Modifiers>
+struct make_directive<giop::tag::sequence, Subject, Modifiers>
+{
+  typedef sequence_parser<Subject> result_type;
+
+  result_type operator()(spirit::unused_type, Subject const& subject, boost::spirit::unused_type) const
+  {
+    return result_type(subject);
+  }
+};
+
+}
 
 namespace generator {
 
@@ -76,11 +123,14 @@ struct make_directive<giop::tag::sequence, Subject, Modifiers>
 
 namespace boost { namespace spirit {
 
-template <typename Enable>
-struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::sequence, Enable> : mpl::true_ {};
+// template <typename Enable>
+// struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::sequence, Enable> : mpl::true_ {};
 
 template <typename Enable>
 struct use_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::sequence, Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_directive< ::morbid::iiop::parser_domain, morbid::giop::tag::sequence, Enable> : mpl::true_ {};
 
 } }
 

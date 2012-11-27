@@ -66,12 +66,70 @@ struct make_primitive<giop::tag::string, Modifiers, Enable>
 
 }
 
+namespace parser {
+
+struct string_parser : qi::primitive_parser<string_parser>
+{
+  template <typename Context, typename Unused>
+  struct attribute
+  {
+    typedef std::string type;
+  };
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    std::cout << "string_parser::parse" << std::endl;
+
+    unsigned_parser<32u> unsigned_;
+    boost::uint_t<32u>::least size;
+    bool r = unsigned_.parse(first, last, ctx, skipper, size);
+    std::cout << "string size " << size << std::endl;
+
+    if(!r)
+      return false;
+
+    qi::char_class<spirit::tag::char_code
+                   <spirit::tag::char_, octet_encoding> > octet_parser;
+    octet_encoding::char_type c;
+    for(;size > 1 && r;--size)
+    {
+      r = octet_parser.parse(first, last, ctx, skipper, c);
+      spirit::traits::push_back(attr, c);
+    }
+    if(size != 1 || !r)
+      return false;
+    r = octet_parser.parse(first, last, ctx, skipper, c);
+    return r && c == 0;
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<giop::tag::string, Modifiers, Enable>
+{
+  typedef string_parser result_type;
+
+  result_type operator()(spirit::unused_type val, spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+}
+
 } }
 
 namespace boost { namespace spirit {
 
 template <typename Enable>
-struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::string, Enable> : mpl::true_ {};
+struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::string, Enable>
+  : mpl::true_ {};
+
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, morbid::giop::tag::string, Enable>
+  : mpl::true_ {};
 
 } }
 

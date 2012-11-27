@@ -17,7 +17,21 @@ namespace morbid { namespace giop { namespace grammars {
 template <typename Domain, typename Iterator, typename Attr>
 struct message_header_1_0 : grammar<Domain, Iterator, Attr()>
 {
-  message_header_1_0() : message_header_1_0::base_type(start)
+  template <typename Body>
+  message_header_1_0(Body const& body)
+    : message_header_1_0::base_type(start)
+  {
+    init(body);
+  }
+
+  message_header_1_0()
+    : message_header_1_0::base_type(start)
+  {
+    init(boost::spirit::eps);
+  }
+
+  template <typename Body>
+  void init(Body const& body)
   {
     start =
       "GIOP"
@@ -27,6 +41,7 @@ struct message_header_1_0 : grammar<Domain, Iterator, Attr()>
       [
        octet            /* flags */
        & ulong_         /*  message size */
+       & body
       ]
       ;
   }
