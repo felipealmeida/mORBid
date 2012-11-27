@@ -73,8 +73,7 @@ struct rule
   template <typename Expr>
   self_type& operator=(Expr const& expr)
   {
-    typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    rule_impl_ = giop::compile<Domain>(expr);
+    rule_impl_ = expr;
     return *this;
   }
 
@@ -82,7 +81,7 @@ struct rule
   self_type& operator%=(Expr const& expr)
   {
     typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    rule_impl_ %= giop::compile<Domain>(expr);
+    rule_impl_ %= expr;
     return *this;
   }
 
