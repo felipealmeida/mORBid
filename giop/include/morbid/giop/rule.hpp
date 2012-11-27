@@ -23,17 +23,51 @@ namespace morbid { namespace giop {
 
 struct little_endian_type {};
 struct big_endian_type {};
+struct native_endian_type {};
 
 little_endian_type const little_endian = {};
 big_endian_type const big_endian = {};
+native_endian_type const native_endian = {};
 
 struct endian
 {
   endian(little_endian_type) : b(true) {}
   endian(big_endian_type) : b(false) {}
+  endian(native_endian_type)
+#ifdef BOOST_LITTLE_ENDIAN
+    : b(true)
+#else
+    : b(false)
+#endif
+  {}
 
   bool b;
 };
+
+} }
+
+namespace boost {
+
+template <>
+struct is_scalar< ::morbid::giop::little_endian_type> : mpl::true_ {};
+template <>
+struct is_scalar< ::morbid::giop::big_endian_type> : mpl::true_ {};
+template <>
+struct is_scalar< ::morbid::giop::native_endian_type> : mpl::true_ {};
+template <>
+struct is_scalar< ::morbid::giop::endian> : mpl::true_ {};
+template <>
+struct is_scalar< ::morbid::giop::little_endian_type const> : mpl::true_ {};
+template <>
+struct is_scalar< ::morbid::giop::big_endian_type const> : mpl::true_ {};
+template <>
+struct is_scalar< ::morbid::giop::native_endian_type const> : mpl::true_ {};
+template <>
+struct is_scalar< ::morbid::giop::endian const> : mpl::true_ {};
+
+}
+
+namespace morbid { namespace giop {
 
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;

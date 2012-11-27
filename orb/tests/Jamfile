@@ -9,7 +9,7 @@ import testing ;
 project morbid/tests ;
 
 path-constant current : . ;
-path-constant install : ../install ;
+path-constant install : ../../install ;
 
 make allprimitives.h : allprimitives.idl : @compileidl : <dependency>/morbid//install ;
 make allprimitives.cpp : allprimitives.h : @donothing ;

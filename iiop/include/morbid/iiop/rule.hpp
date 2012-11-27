@@ -185,6 +185,7 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   rule& operator=(Expr const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
+    std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
     BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
     f = karma::detail::bind_generator<mpl::false_>(spirit::compile< iiop::generator_domain>(expr));
     return *this;
@@ -194,6 +195,7 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   rule& operator%=(Expr const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
+    std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
     BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
     f = karma::detail::bind_generator<mpl::true_>(spirit::compile< iiop::generator_domain>(expr));
     return *this;

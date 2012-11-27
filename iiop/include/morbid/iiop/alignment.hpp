@@ -146,17 +146,19 @@ namespace generator {
 template <std::size_t N, typename OutputIterator, typename Attributes>
 void alignment_padding(OutputIterator& sink, Attributes const& attributes)
 {
+  std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes of alignment" << std::endl;
   typedef typename output_iterator<OutputIterator>::type output_iterator;
   alignment_attribute<output_iterator> align_from
     = get_alignment_attribute<Attributes
                                     , output_iterator>::call(attributes);
 
   std::size_t distance = std::distance(align_from.first, sink.base());
-
+  std::cout << "alignment_padding distance from start " << distance << std::endl;
   const std::size_t alignment = N/CHAR_BIT;
 
   int remainder = distance % alignment;
   int padding = remainder? alignment - remainder : 0;
+  std::cout << "padding bytes " << padding << std::endl;
   for(;padding != 0; --padding)
   {
     std::cout << "padding byte" << std::endl;

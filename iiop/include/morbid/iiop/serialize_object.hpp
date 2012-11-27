@@ -125,7 +125,7 @@ void serialize_object(OutputIterator& iterator, bool little_endian, T object
                       , void*>::type = 0)
 {
   typename T::template _morbid_generator<OutputIterator> generator;
-  if(!karma::generate(iterator, generator, object))
+  if(!karma::generate(iterator, generator(0u), object))
     throw MARSHALL();
 }
 

@@ -49,13 +49,13 @@ install install : morbid_idl morbid ;
 
 install demos : demo/simple//simple_server demo/simple//simple_client ;
 
-alias allprimitives : tests//allprimitives ;
-alias out_allprimitives : tests//out_allprimitives ;
-alias inout_allprimitives : tests//inout_allprimitives ;
-alias return_allprimitives : tests//return_allprimitives ;
-alias modules_allprimitives : tests//modules_allprimitives ;
-alias struct : tests//struct ;
-alias reference : tests//reference ;
+alias allprimitives : orb/tests//allprimitives ;
+alias out_allprimitives : orb/tests//out_allprimitives ;
+alias inout_allprimitives : orb/tests//inout_allprimitives ;
+alias return_allprimitives : orb/tests//return_allprimitives ;
+alias modules_allprimitives : orb/tests//modules_allprimitives ;
+alias struct : orb/tests//struct ;
+alias reference : orb/tests//reference ;
 
 alias tests : install allprimitives out_allprimitives inout_allprimitives
  return_allprimitives modules_allprimitives struct reference ;

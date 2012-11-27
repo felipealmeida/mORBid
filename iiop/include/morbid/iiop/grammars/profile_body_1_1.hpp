@@ -5,22 +5,23 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef MORBID_IOR_GRAMMAR_TAGGED_PROFILE_HPP
-#define MORBID_IOR_GRAMMAR_TAGGED_PROFILE_HPP
+#ifndef MORBID_IOR_GRAMMAR_PROFILE_BODY_1_1_HPP
+#define MORBID_IOR_GRAMMAR_PROFILE_BODY_1_1_HPP
 
 #include <morbid/giop/grammar.hpp>
 
 #include <iostream>
 
-namespace morbid { namespace ior { namespace grammar {
+namespace morbid { namespace iiop { namespace grammar {
 
 template <typename Domain, typename Iterator, typename Attr>
-struct tagged_profile : giop::grammar<Domain, Iterator, Attr(giop::endian)>
+struct profile_body_1_1 : giop::grammar<Domain, Iterator, Attr(giop::endian)>
 {
-  tagged_profile() : tagged_profile::base_type(start)
+  profile_body_1_1() : profile_body_1_1::base_type(start)
   {
     start =
-      giop::ulong_
+      giop::string
+      & giop::ushort_
       & giop::sequence[giop::octet]
       ;
   }

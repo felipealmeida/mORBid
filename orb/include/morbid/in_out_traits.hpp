@@ -40,7 +40,7 @@ struct in_traits<T, typename boost::enable_if
                  <boost::is_same<typename T::_morbid_type_kind, struct_tag>
                  , void>::type>
 {
-  typedef T type;
+  typedef T const& type;
 };
 
 template <typename T>
@@ -57,6 +57,14 @@ struct inout_traits<T, typename boost::enable_if
                     , void>::type>
 {
   typedef T& type;
+};
+
+template <typename T>
+struct return_traits<T, typename boost::enable_if
+                     <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+                      , void>::type>
+{
+  typedef T type;
 };
 
 template <typename T>
