@@ -67,6 +67,7 @@ void alignment_padding(OutputIterator& sink, Attributes const& attributes)
   int padding = remainder? alignment - remainder : 0;
   for(;padding != 0; --padding)
   {
+    std::cout << "padding byte" << std::endl;
     *sink = '\0';
     ++sink;
   }

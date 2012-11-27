@@ -41,6 +41,10 @@ template <>
 struct is_scalar< ::morbid::iiop::endianness_attribute> : mpl::true_
 {};
 
+template <>
+struct is_scalar< ::morbid::iiop::endianness_attribute const> : mpl::true_
+{};
+
 }
 
 namespace morbid { namespace iiop { namespace parser {
@@ -138,6 +142,7 @@ struct generator_endianness
 
   static bool call(Attributes const& attributes)
   {
+    std::cout << "reading endianness " << fusion::at_c<index_type::value>(attributes).endianness << std::endl;
     return fusion::at_c<index_type::value>(attributes).endianness;
   }
 };

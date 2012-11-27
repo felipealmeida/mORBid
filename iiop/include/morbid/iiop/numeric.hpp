@@ -27,7 +27,11 @@ template <std::size_t N>
 struct unroll_tag {};
 
 template <typename Iterator, typename Value, std::size_t E>
-bool unroll_copy(Iterator& first, Iterator last, Value& v, unroll_tag<E>, unroll_tag<E>) { return true; }
+bool unroll_copy(Iterator& first, Iterator last, Value& v, unroll_tag<E>, unroll_tag<E>)
+{
+  std::cout << "All copied, value " << v << std::endl;
+  return true; 
+}
 
 template <typename Iterator, typename Value, std::size_t N, std::size_t E>
 bool unroll_copy(Iterator& first, Iterator last, Value& v, unroll_tag<N>, unroll_tag<E> e)
@@ -50,7 +54,7 @@ bool unroll_copy_backward(Iterator& first, Iterator last, Value& v, unroll_tag<N
 {
   if(first != last)
   {
-    static_cast<unsigned char*>(static_cast<void*>(&v))[N] = *first;
+    static_cast<unsigned char*>(static_cast<void*>(&v))[N-1] = *first;
     ++first;
     return unroll_copy_backward(first, last, v, unroll_tag<N-1>());
   }
@@ -155,17 +159,30 @@ template <typename OutputIterator, typename Value, std::size_t N, std::size_t E>
 void unroll_copy(OutputIterator& sink, Value const& v, unroll_tag<N>, unroll_tag<E> e)
 {
   *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
+  std::cout << "copied byte (" << N << ")"
+            << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[N]
+            << std::endl;
   ++sink;
   unroll_copy(sink, v, unroll_tag<N+1>(), e);
 }
 
 template <typename OutputIterator, typename Value>
-void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<0>) {}
+void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<0>)
+{
+  *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[0];
+  std::cout << "copied byte (0) (switched endianness) "
+            << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[0]
+            << std::endl;
+  ++sink;
+}
 
 template <typename OutputIterator, typename Value, std::size_t N>
 void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<N>)
 {
   *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
+  std::cout << "copied byte (" << N <<  ") (switched endianness) "
+            << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[N]
+            << std::endl;
   ++sink;
   unroll_copy_backward(sink, v, unroll_tag<N-1>());
 }
@@ -174,7 +191,7 @@ template <std::size_t N, typename OutputIterator>
 void reverse_unsigned_generate(OutputIterator& sink, typename boost::uint_t<N>::exact value)
 {
   BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
-  unroll_copy_backward(sink, value, unroll_tag<N/CHAR_BIT>());
+  unroll_copy_backward(sink, value, unroll_tag<N/CHAR_BIT - 1>());
 }
 
 template <std::size_t N, typename OutputIterator>
@@ -209,6 +226,8 @@ struct unsigned_generator : karma::primitive_generator<unsigned_generator<N> >
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, U& attr) const
   {
     BOOST_MPL_ASSERT_RELATION(sizeof(U), ==, N/CHAR_BIT);
+
+    std::cout << "generating unsigned of value " << attr << std::endl;
 
     alignment_padding<N>(sink, ctx.attributes);
     typedef typename attribute<Context, OutputIterator>::type attribute_type;

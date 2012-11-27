@@ -245,14 +245,19 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
       <typename fusion::result_of::begin<Params>::type
        , attribute_index_type>::type params_insert_iterator;
 
-    typedef typename fusion::result_of::insert
-      <Params, params_insert_iterator, endianness_attribute>::type
+    typedef typename fusion::result_of::as_list
+      <typename fusion::result_of::insert
+       <Params, params_insert_iterator, endianness_attribute>::type>::type
       params_with_endianness_type;
+
+    std::cout << "inheriting endianness "
+              << fusion::at_c<attribute_index_type::value+1>(caller_context.attributes).endianness
+              << std::endl;
 
     params_with_endianness_type
       params_with_endianness
-      = fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
-                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes));
+      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
+                                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes)));
 
     typedef typename R::context_type context_type;
 
@@ -429,14 +434,21 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
       <typename fusion::result_of::begin<Params>::type
        , attribute_index_type>::type params_insert_iterator;
 
-    typedef typename fusion::result_of::insert
-      <Params, params_insert_iterator, endianness_attribute>::type
+    typedef typename fusion::result_of::as_list
+      <typename fusion::result_of::insert
+       <Params, params_insert_iterator, endianness_attribute>::type>::type
       params_with_endianness_type;
+
+    std::cout << "inheriting endianness "
+              << fusion::at_c<attribute_index_type::value+1>(caller_context.attributes).endianness
+              << std::endl;
+
+    std::cout << "params_with_endianness_type " << typeid(params_with_endianness_type).name() << std::endl;
 
     params_with_endianness_type
       params_with_endianness
-      = fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
-                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes));
+      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
+                                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes)));
 
     // If you are seeing a compilation error here, you are probably
     // trying to use a rule or a grammar which has inherited

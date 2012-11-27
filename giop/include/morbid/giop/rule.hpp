@@ -21,7 +21,19 @@
 
 namespace morbid { namespace giop {
 
-struct endian {};
+struct little_endian_type {};
+struct big_endian_type {};
+
+little_endian_type const little_endian = {};
+big_endian_type const big_endian = {};
+
+struct endian
+{
+  endian(little_endian_type) : b(true) {}
+  endian(big_endian_type) : b(false) {}
+
+  bool b;
+};
 
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
