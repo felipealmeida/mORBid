@@ -1,0 +1,49 @@
+# (c) Copyright 2012 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import path ;
+
+make struct.h : ../struct.idl : @mico.compileidl : <test-orb>mico ;
+make struct.cpp : struct.h : @donothing : <test-orb>mico ;
+
+path-constant mico-bin : [ modules.peek : MICO_BIN ] ;
+path-constant mico-lib : [ modules.peek : MICO_LIB ] ;
+
+rule mico.compileidl ( target + : sources * : properties * )
+{
+  local source-path = [ on $(sources[1]) return $(SEARCH) ] ;
+  source-path = [ path.root $(source-path) [ path.pwd ] ] ;
+  local target-path = [ on $(target[1]) return $(LOCATE) ] ;
+  if $(source-path:G=)
+  {
+    ROOTED_SOURCE on $(target) = [ path.root $(sources:G=) $(source-path:G=) ] ;
+  }
+  else
+  {
+    ROOTED_SOURCE on $(target) = $(sources:G=) ;
+  }
+}
+
+actions mico.compileidl
+{
+  cd "$(<[0]:D)"
+  PATH=$(mico-lib:G=):$(mico-bin:G=):$PATH LD_LIBRARY_PATH=$(mico-lib:G=) DYLD_LIBRARY_PATH=$(mico-lib:G=) $(mico-bin:G=)/idl --c++-suffix cpp "$(ROOTED_SOURCE)"
+}
+actions donothing
+{
+}
+
+exe mico_client : ../client.cpp /mico//mico struct.cpp
+ : <implicit-dependency>struct.h
+   <implicit-dependency>struct.cpp
+   <test-orb>mico
+ ;
+exe mico_server : ../server.cpp /mico//mico struct.cpp
+ : <implicit-dependency>struct.h
+   <implicit-dependency>struct.cpp
+   <test-orb>mico
+ ;
+
