@@ -10,8 +10,6 @@
 
 #include <morbid/giop/grammar.hpp>
 
-#include <morbid/iiop/endianness.hpp>
-
 namespace morbid { namespace giop { namespace grammars {
 
 template <typename Domain, typename Iterator, typename Attr>
