@@ -92,9 +92,9 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
     <mpl::contains<parameter_types, endianness_attribute>
      , mpl::prior<fusion::result_of::size<parameter_types> >
      , fusion::result_of::size<parameter_types>
-     >::type::value;
+     >::type::value-1;
   static size_t const params_max_size
-  = fusion::result_of::size<parameter_types>::value;
+  = fusion::result_of::size<parameter_types>::value-1;
 
   typedef spirit::context<
     fusion::cons<attr_reference_type, parameter_types>
@@ -162,7 +162,7 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
    >::type>::type
   parameter_types;
 
-  static size_t const params_min_size = fusion::result_of::size<parameter_types>::value;
+  static size_t const params_min_size = fusion::result_of::size<parameter_types>::value-1;
   static size_t const params_max_size = params_min_size;
 
   BOOST_MPL_ASSERT_RELATION(params_min_size, >=, 1);
