@@ -8,6 +8,7 @@
 #ifndef MORBID_IIOP_ENDIANNESS_HPP
 #define MORBID_IIOP_ENDIANNESS_HPP
 
+#include <morbid/giop/rule.hpp>
 #include <morbid/iiop/meta_compiler.hpp>
 #include <morbid/iiop/octet.hpp>
 
@@ -21,10 +22,28 @@ namespace fusion = boost::fusion;
 
 struct endianness_attribute
 {
+  endianness_attribute() : endianness(0) {}
+  endianness_attribute(giop::little_endian_type)
+    : endianness(true) {}
+  endianness_attribute(giop::big_endian_type)
+    : endianness(false) {}
+  endianness_attribute(giop::endian e)
+    : endianness(e.b) {}
+
   bool endianness;
 };
 
-namespace parser {
+} }
+
+namespace boost {
+
+template <>
+struct is_scalar< ::morbid::iiop::endianness_attribute> : mpl::true_
+{};
+
+}
+
+namespace morbid { namespace iiop { namespace parser {
 
 template <typename Subject>
 struct endianness_parser : qi::unary_parser<endianness_parser<Subject> >
@@ -57,8 +76,8 @@ struct endianness_parser : qi::unary_parser<endianness_parser<Subject> >
     if(!octet_parser.parse(first, last, ctx, skipper, endianness))
       return false;
 
-    bool b = endianness;
-    endianness_attribute e = {b};
+    endianness_attribute e;
+    e.endianness = endianness;
     endianness_attributes_type attributes
       = fusion::as_list(fusion::push_back(ctx.attributes, e));
     context_type context(attributes);
@@ -167,7 +186,7 @@ struct specific_endianness_generator : endianness_generator<Subject>
       endianness_attributes_type;
     typedef spirit::context
       <endianness_attributes_type, typename Context::locals_type> context_type;
-    endianness_attribute e = {endianness};
+    endianness_attribute e(endianness);
     endianness_attributes_type attributes
       = fusion::as_list(fusion::push_back(ctx.attributes, e));
     context_type context(attributes);
@@ -177,12 +196,12 @@ struct specific_endianness_generator : endianness_generator<Subject>
     return r;
   }
 
-  specific_endianness_generator(Subject const& subject, bool endianness)
+  specific_endianness_generator(Subject const& subject, giop::endian endianness)
     : endianness_type(subject), endianness(endianness)
   {
   }
 
-  bool endianness;
+  giop::endian endianness;
 };
 
 template <typename Subject, typename Modifiers>
@@ -197,7 +216,7 @@ struct make_directive<giop::tag::endianness, Subject, Modifiers>
 };
 
 template <typename Subject, typename Modifiers>
-struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<bool> >
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
                       , Subject, Modifiers>
 {
   typedef specific_endianness_generator<Subject> result_type;
@@ -208,6 +227,20 @@ struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::
     return result_type(subject, fusion::at_c<0>(term.args));
   }
 };
+
+template <typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::little_endian_type> >
+                      , Subject, Modifiers>
+  : make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
+                   , Subject, Modifiers>
+{};
+
+template <typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::big_endian_type> >
+                      , Subject, Modifiers>
+  : make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
+                   , Subject, Modifiers>
+{};
 
 }
 
@@ -234,7 +267,17 @@ struct use_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::endia
 
 template <typename Enable>
 struct use_directive< ::morbid::iiop::generator_domain
-                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1<bool> >
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::little_endian_type> >
+                      , Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_directive< ::morbid::iiop::generator_domain
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::endian> >
+                      , Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_directive< ::morbid::iiop::generator_domain
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::big_endian_type> >
                       , Enable> : mpl::true_ {};
 
 template <>

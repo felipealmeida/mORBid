@@ -35,10 +35,9 @@ int main()
   generator_message_header_grammar generator_message_header;
   std::vector<char> output;
   output_iterator_type iterator(output);
-  iiop::endianness_attribute e = {true};
   if(karma::generate(iterator
                      , giop::compile<iiop::generator_domain>
-                     (generator_message_header(phoenix::val(e)))
+                     (generator_message_header(phoenix::val(giop::little_endian)))
                      , attribute))
   {
     std::cout << "Success" << std::endl;

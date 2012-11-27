@@ -35,7 +35,7 @@ int main()
   if(karma::generate(iterator
                      , giop::compile<iiop::generator_domain>
                      (
-                      giop::endianness(true)
+                      giop::endianness(giop::little_endian)
                       [
                        giop::octet                      // IIOP major version
                        & giop::octet                    // IIOP minor version

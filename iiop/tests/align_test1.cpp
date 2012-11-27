@@ -44,13 +44,17 @@ int main()
   generator_reply_header_grammar generator_reply_header;
   std::vector<char> output;
   output_iterator_type iterator(output);
-  iiop::endianness_attribute e = {true};
+  iiop::endianness_attribute e(giop::endian(giop::little_endian));
   if(karma::generate(iterator
                      , giop::compile<iiop::generator_domain>
                      (generator_reply_header(phoenix::val(e)))
                      , attribute))
   {
     std::cout << "Success" << std::endl;
+    
+    boost::algorithm::hex(output.begin(), output.end(), std::ostream_iterator<char>(std::cout));
+    std::endl(std::cout);
+
     typedef std::vector<char>::const_iterator iterator_type;
     typedef morbid::giop::grammars::reply_header_1_0<iiop::parser_domain
                                                        , iterator_type
@@ -60,7 +64,7 @@ int main()
     attribute_type attribute_read;
     iterator_type first = output.begin(), last = output.end();
     if(qi::parse(first, last, giop::compile<iiop::parser_domain>
-                 (parser_reply_header)
+                 (parser_reply_header(phoenix::val(giop::little_endian)))
                  , attribute_read))
     {
       assert(attribute == attribute_read);

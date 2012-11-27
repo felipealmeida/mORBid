@@ -226,6 +226,86 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
     typedef typename R::attr_type type;
   };
 
+  template <typename Iterator, typename Context, typename Skipper, typename AttributeParam, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& caller_context, Skipper const& skipper
+             , AttributeParam& attr_param, Attribute& attr_
+             , mpl::true_) const
+  {
+    typedef typename Context::attributes_type caller_attributes_type;
+    typedef typename caller_attributes_type::cdr_type
+      caller_argument_types;
+
+    typedef typename mpl::find<caller_argument_types
+                               , endianness_attribute>::type
+      endianness_attribute_iter;
+    typedef typename mpl::distance<typename mpl::begin<caller_argument_types>::type
+                                   , endianness_attribute_iter>::type attribute_index_type;
+    typedef typename fusion::result_of::advance
+      <typename fusion::result_of::begin<Params>::type
+       , attribute_index_type>::type params_insert_iterator;
+
+    typedef typename fusion::result_of::insert
+      <Params, params_insert_iterator, endianness_attribute>::type
+      params_with_endianness_type;
+
+    params_with_endianness_type
+      params_with_endianness
+      = fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
+                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes));
+
+    typedef typename R::context_type context_type;
+
+    // If you are seeing a compilation error here, you are probably
+    // trying to use a rule or a grammar which has inherited
+    // attributes, without passing values for them.
+    context_type context(attr_, params_with_endianness, caller_context);
+
+    // If you are seeing a compilation error here stating that the
+    // fourth parameter can't be converted to a required target type
+    // then you are probably trying to use a rule or a grammar with
+    // an incompatible skipper type.
+    if (rule->f(first, last, context, skipper))
+    {
+      // do up-stream transformation, this integrates the results
+      // back into the original attribute value, if appropriate
+      spirit::traits::post_transform(attr_param, attr_);
+      return true;
+    }
+    // inform attribute transformation of failed rhs
+    spirit::traits::fail_transform(attr_param, attr_);
+    return false;
+  }
+
+  template <typename Iterator, typename Context, typename Skipper, typename AttributeParam, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& caller_context, Skipper const& skipper
+             , AttributeParam& attr_param, Attribute& attr_
+             , mpl::false_) const
+  {
+    typedef typename R::context_type context_type;
+
+    // If you are seeing a compilation error here, you are probably
+    // trying to use a rule or a grammar which has inherited
+    // attributes, without passing values for them.
+    context_type context(attr_, params, caller_context);
+
+    // If you are seeing a compilation error here stating that the
+    // fourth parameter can't be converted to a required target type
+    // then you are probably trying to use a rule or a grammar with
+    // an incompatible skipper type.
+    if (rule->f(first, last, context, skipper))
+    {
+      // do up-stream transformation, this integrates the results
+      // back into the original attribute value, if appropriate
+      spirit::traits::post_transform(attr_param, attr_);
+      return true;
+    }
+    // inform attribute transformation of failed rhs
+    spirit::traits::fail_transform(attr_param, attr_);
+    return false;
+  }
+
   template <typename Iterator, typename Context, typename Skipper, typename Attribute>
   bool parse(Iterator& first, Iterator const& last
              , Context& caller_context, Skipper const& skipper
@@ -239,7 +319,6 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
       //   qi::skip_over(first, last, skipper);
 
       typedef typename R::attr_type attr_type;
-      typedef typename R::context_type context_type;
 
       typedef spirit::traits::make_attribute<attr_type, Attribute> make_attribute;
 
@@ -252,25 +331,19 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
       typename make_attribute::type made_attr = make_attribute::call(attr_param);
       typename transform::type attr_ = transform::pre(made_attr);
 
-      // If you are seeing a compilation error here, you are probably
-      // trying to use a rule or a grammar which has inherited
-      // attributes, without passing values for them.
-      context_type context(attr_, params, caller_context);
+      typedef typename Context::attributes_type caller_attributes_type;
+      typedef typename mpl::if_
+        <fusion::result_of::empty<caller_attributes_type>
+         , fusion::nil
+         , typename caller_attributes_type::cdr_type>::type
+        caller_argument_types;
 
-      // If you are seeing a compilation error here stating that the
-      // fourth parameter can't be converted to a required target type
-      // then you are probably trying to use a rule or a grammar with
-      // an incompatible skipper type.
-      if (rule->f(first, last, context, skipper))
-      {
-        // do up-stream transformation, this integrates the results
-        // back into the original attribute value, if appropriate
-        spirit::traits::post_transform(attr_param, attr_);
-        return true;
-      }
+      typedef typename mpl::contains<caller_argument_types
+                                     , endianness_attribute>::type
+        endianness_by_inherited_arguments;
 
-      // inform attribute transformation of failed rhs
-      spirit::traits::fail_transform(attr_param, attr_);
+      return parse(first, last, caller_context, skipper, attr_param, attr_
+                   , endianness_by_inherited_arguments());
     }
     return false;
   }  
@@ -285,7 +358,7 @@ struct make_primitive<boost::reference_wrapper
                        , Modifiers, Enable>
 {
   typedef parser::rule<Iterator, T1, T2, T3, T4> rule_type;
-  typedef rule_parser<rule_type, fusion::vector0<> > result_type;
+  typedef rule_parser<rule_type, const fusion::vector0<> > result_type;
 
   result_type operator()(rule_type const& val, boost::spirit::unused_type) const
   {
@@ -300,7 +373,7 @@ struct make_primitive<giop::parameterized_nonterminal
 {
   BOOST_MPL_ASSERT((boost::is_same<D, parser_domain>));
   typedef rule<Iterator, T1, T2, T3, T4> rule_type;
-  typedef rule_parser<rule_type, Params> result_type;
+  typedef rule_parser<rule_type, typename boost::add_const<Params>::type> result_type;
 
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const
@@ -338,6 +411,92 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
 
   template <typename Context, typename Delimiter, typename Attr>
   bool generate(output_iterator& sink, Context& caller_context
+                , Delimiter const& d, Attr const& attr_
+                , mpl::true_) const
+  {
+    typedef typename rule_type::context_type context_type;
+ 
+    typedef typename Context::attributes_type caller_attributes_type;
+    typedef typename caller_attributes_type::cdr_type
+      caller_argument_types;
+
+    typedef typename mpl::find<caller_argument_types
+                               , endianness_attribute>::type
+      endianness_attribute_iter;
+    typedef typename mpl::distance<typename mpl::begin<caller_argument_types>::type
+                                   , endianness_attribute_iter>::type attribute_index_type;
+    typedef typename fusion::result_of::advance
+      <typename fusion::result_of::begin<Params>::type
+       , attribute_index_type>::type params_insert_iterator;
+
+    typedef typename fusion::result_of::insert
+      <Params, params_insert_iterator, endianness_attribute>::type
+      params_with_endianness_type;
+
+    params_with_endianness_type
+      params_with_endianness
+      = fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
+                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes));
+
+    // If you are seeing a compilation error here, you are probably
+    // trying to use a rule or a grammar which has inherited
+    // attributes, without passing values for them.
+    context_type context(attr_, params_with_endianness, caller_context);
+
+    std::cout << "generate for rule " << rule << std::endl;
+    std::cout << "generate this " << this << std::endl;
+
+    // If you are seeing a compilation error here stating that the
+    // third parameter can't be converted to a karma::reference
+    // then you are probably trying to use a rule or a grammar with
+    // an incompatible delimiter type.
+    if (rule->f(sink, context, d))
+    {
+      // typedef typename rule_type::delimiter_type delimiter_type;
+      // // do a post-delimit if this is an implied verbatim
+      // if (boost::is_same<delimiter_type, spirit::unused_type>::value)
+      //   karma::delimit_out(sink, d);
+
+      return true;
+    }
+    else
+      return false;
+  }
+
+  template <typename Context, typename Delimiter, typename Attr>
+  bool generate(output_iterator& sink, Context& caller_context
+                , Delimiter const& d, Attr const& attr_
+                , mpl::false_) const
+  {
+    typedef typename rule_type::context_type context_type;
+
+    // If you are seeing a compilation error here, you are probably
+    // trying to use a rule or a grammar which has inherited
+    // attributes, without passing values for them.
+    context_type context(attr_, params, caller_context);
+
+    std::cout << "generate for rule " << rule << std::endl;
+    std::cout << "generate this " << this << std::endl;
+
+    // If you are seeing a compilation error here stating that the
+    // third parameter can't be converted to a karma::reference
+    // then you are probably trying to use a rule or a grammar with
+    // an incompatible delimiter type.
+    if (rule->f(sink, context, d))
+    {
+      // typedef typename rule_type::delimiter_type delimiter_type;
+      // // do a post-delimit if this is an implied verbatim
+      // if (boost::is_same<delimiter_type, spirit::unused_type>::value)
+      //   karma::delimit_out(sink, d);
+
+      return true;
+    }
+    else
+      return false;
+  }
+
+  template <typename Context, typename Delimiter, typename Attr>
+  bool generate(output_iterator& sink, Context& caller_context
                 , Delimiter const& d, Attr const& attr) const
   {
     std::cout << "rule_generator::generate " << rule->f << std::endl;
@@ -358,27 +517,19 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
       typedef typename rule_type::context_type context_type;
       BOOST_MPL_ASSERT((mpl::not_<boost::is_const<context_type> >));
 
-      // If you are seeing a compilation error here, you are probably
-      // trying to use a rule or a grammar which has inherited
-      // attributes, without passing values for them.
-      context_type context(attr_, params, caller_context);
+      typedef typename Context::attributes_type caller_attributes_type;
+      typedef typename mpl::if_
+        <fusion::result_of::empty<caller_attributes_type>
+         , fusion::nil
+         , typename caller_attributes_type::cdr_type>::type
+        caller_argument_types;
 
-      std::cout << "generate for rule " << rule << std::endl;
-      std::cout << "generate this " << this << std::endl;
+      typedef typename mpl::contains<caller_argument_types
+                                     , endianness_attribute>::type
+        endianness_by_inherited_arguments;
 
-      // If you are seeing a compilation error here stating that the
-      // third parameter can't be converted to a karma::reference
-      // then you are probably trying to use a rule or a grammar with
-      // an incompatible delimiter type.
-      if (rule->f(sink, context, d))
-      {
-        // typedef typename rule_type::delimiter_type delimiter_type;
-        // // do a post-delimit if this is an implied verbatim
-        // if (boost::is_same<delimiter_type, spirit::unused_type>::value)
-        //   karma::delimit_out(sink, d);
-
-        return true;
-      }
+      return generate(sink, caller_context, d, attr_
+                      , endianness_by_inherited_arguments());
     }
     return false;
   }  
@@ -393,11 +544,11 @@ struct make_primitive<boost::reference_wrapper
                        , Modifiers, Enable>
 {
   typedef rule<Iterator, T1, T2, T3, T4> rule_type;
-  typedef rule_generator<rule_type, fusion::vector0<> > result_type;
+  typedef rule_generator<rule_type, const fusion::vector0<> > result_type;
 
-  result_type operator()(boost::spirit::unused_type, boost::spirit::unused_type) const
+  result_type operator()(rule_type const& rule, boost::spirit::unused_type) const
   {
-    return result_type();
+    return result_type(rule, fusion::vector0<>());
   }
 };
 
@@ -408,7 +559,7 @@ struct make_primitive<giop::parameterized_nonterminal
 {
   BOOST_MPL_ASSERT((boost::is_same<D, generator_domain>));
   typedef rule<Iterator, T1, T2, T3, T4> rule_type;
-  typedef rule_generator<rule_type, Params> result_type;
+  typedef rule_generator<rule_type, typename boost::add_const<Params>::type> result_type;
 
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const

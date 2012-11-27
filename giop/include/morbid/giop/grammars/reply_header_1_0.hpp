@@ -26,8 +26,9 @@ struct reply_header_1_0 : grammar<Domain, Iterator, Attr(endian)>
   }
 
   grammars::service_context<Domain, Iterator
-                            , typename boost::remove_reference
-                            <typename fusion::result_of::at_c<Attr, 0u>::type>::type>
+                            , typename spirit::traits::container_value<
+                                typename boost::remove_reference
+                                <typename fusion::result_of::at_c<Attr, 0u>::type>::type>::type>
     service_context;
   rule<Domain, Iterator, Attr(endian)> start;
 };
