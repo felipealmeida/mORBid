@@ -238,12 +238,21 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
 
     typedef typename mpl::find<caller_argument_types
                                , endianness_attribute>::type
-      endianness_attribute_iter;
+      endianness_argument_attribute_iter;
     typedef typename mpl::distance<typename mpl::begin<caller_argument_types>::type
-                                   , endianness_attribute_iter>::type attribute_index_type;
+                                   , endianness_argument_attribute_iter>::type attribute_argument_index_type;
+    typedef typename R::context_type context_type;
+
+    typedef typename context_type::attributes_type::cdr_type parameter_types;
+    typedef typename mpl::find<parameter_types
+                               , endianness_attribute>::type
+      endianness_parameter_attribute_iter;
+    typedef typename mpl::distance<typename mpl::begin<parameter_types>::type
+                                   , endianness_parameter_attribute_iter>::type attribute_parameter_index_type;
+
     typedef typename fusion::result_of::advance
       <typename fusion::result_of::begin<Params>::type
-       , attribute_index_type>::type params_insert_iterator;
+       , attribute_parameter_index_type>::type params_insert_iterator;
 
     typedef typename fusion::result_of::as_list
       <typename fusion::result_of::insert
@@ -251,15 +260,15 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
       params_with_endianness_type;
 
     std::cout << "inheriting endianness "
-              << fusion::at_c<attribute_index_type::value+1>(caller_context.attributes).endianness
+              << fusion::at_c<attribute_argument_index_type::value+1>
+      (caller_context.attributes).endianness
               << std::endl;
 
     params_with_endianness_type
       params_with_endianness
-      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
-                                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes)));
+      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_parameter_index_type>(fusion::begin(params))
+                                       , fusion::at_c<attribute_argument_index_type::value+1>(caller_context.attributes)));
 
-    typedef typename R::context_type context_type;
 
     // If you are seeing a compilation error here, you are probably
     // trying to use a rule or a grammar which has inherited
@@ -427,28 +436,51 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
 
     typedef typename mpl::find<caller_argument_types
                                , endianness_attribute>::type
-      endianness_attribute_iter;
+      endianness_argument_attribute_iter;
     typedef typename mpl::distance<typename mpl::begin<caller_argument_types>::type
-                                   , endianness_attribute_iter>::type attribute_index_type;
+                                   , endianness_argument_attribute_iter>::type attribute_argument_index_type;
+    typedef typename R::context_type context_type;
+
+    typedef typename context_type::attributes_type::cdr_type parameter_types;
+    typedef typename mpl::find<parameter_types
+                               , endianness_attribute>::type
+      endianness_parameter_attribute_iter;
+    typedef typename mpl::distance<typename mpl::begin<parameter_types>::type
+                                   , endianness_parameter_attribute_iter>::type attribute_parameter_index_type;
+
     typedef typename fusion::result_of::advance
       <typename fusion::result_of::begin<Params>::type
-       , attribute_index_type>::type params_insert_iterator;
+       , attribute_parameter_index_type>::type params_insert_iterator;
 
     typedef typename fusion::result_of::as_list
       <typename fusion::result_of::insert
        <Params, params_insert_iterator, endianness_attribute>::type>::type
       params_with_endianness_type;
+    // typedef typename mpl::find<caller_argument_types
+    //                            , endianness_attribute>::type
+    //   endianness_attribute_iter;
+    // typedef typename mpl::distance<typename mpl::begin<caller_argument_types>::type
+    //                                , endianness_attribute_iter>::type attribute_index_type;
+    // typedef typename fusion::result_of::advance
+    //   <typename fusion::result_of::begin<Params>::type
+    //    , attribute_index_type>::type params_insert_iterator;
+
+    // typedef typename fusion::result_of::as_list
+    //   <typename fusion::result_of::insert
+    //    <Params, params_insert_iterator, endianness_attribute>::type>::type
+    //   params_with_endianness_type;
 
     std::cout << "inheriting endianness "
-              << fusion::at_c<attribute_index_type::value+1>(caller_context.attributes).endianness
+              << fusion::at_c<attribute_argument_index_type::value+1>
+      (caller_context.attributes).endianness
               << std::endl;
 
     std::cout << "params_with_endianness_type " << typeid(params_with_endianness_type).name() << std::endl;
 
     params_with_endianness_type
       params_with_endianness
-      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_index_type>(fusion::begin(params))
-                                       , fusion::at_c<attribute_index_type::value+1>(caller_context.attributes)));
+      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_parameter_index_type>(fusion::begin(params))
+                                       , fusion::at_c<attribute_argument_index_type::value+1>(caller_context.attributes)));
 
     // If you are seeing a compilation error here, you are probably
     // trying to use a rule or a grammar which has inherited

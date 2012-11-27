@@ -17,4 +17,5 @@ run grammar_generator1.cpp /morbid//iiop ;
 run grammar_generate_and_parse1.cpp /morbid//iiop ;
 run grammar_parser1.cpp /morbid//iiop ;
 run align_test1.cpp /morbid//iiop ;
+run nested_rules_align_test.cpp /morbid//iiop ;
 

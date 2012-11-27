@@ -157,6 +157,8 @@ struct endianness_generator : karma::unary_generator<endianness_generator<Subjec
   {
   };
 
+  typedef typename Subject::properties properties;
+
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
