@@ -37,11 +37,26 @@ struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
 
   template <typename Iterator, typename Context, typename Skipper, typename Attribute>
   bool parse(Iterator& first, Iterator const& last
-             , Context& caller_context, Skipper const& skipper
-             , Attribute& attr_param) const
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
   {
     std::cout << "sequence_parser::parse" << std::endl;
-    return false;
+
+    unsigned_parser<32u> unsigned_;
+    boost::uint_t<32u>::least size;
+    bool r = unsigned_.parse(first, last, ctx, skipper, size);
+    std::cout << "sequence size " << size << std::endl;
+
+    if(!r)
+      return false;
+
+    for(;size && r;--size)
+    {
+      typename spirit::traits::container_value<Attribute>::type value;
+      r = subject.parse(first, last, ctx, skipper, value);
+      spirit::traits::push_back(attr, value);
+    }
+    return r;
   }
 
   sequence_parser(Subject const& subject)
