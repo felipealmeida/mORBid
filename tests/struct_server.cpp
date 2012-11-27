@@ -18,7 +18,7 @@ struct struct_interface_impl : POA_struct_interface
     , orb(orb)
   {}
 
-  void foo1(some_struct s)
+  void foo1(some_struct const& s)
   {
     std::cout << "struct_interface_impl::foo1 called" << std::endl;
     assert(!foo1_ && !foo2_ && !foo3_ && !foo4_);
