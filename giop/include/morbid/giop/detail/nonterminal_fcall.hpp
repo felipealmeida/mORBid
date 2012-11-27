@@ -21,7 +21,8 @@
   >::type
   operator()(BOOST_PP_ENUM_BINARY_PARAMS(N, A, const& f)) const
   {
-    BOOST_MPL_ASSERT_RELATION(params_size, ==, N);
+    BOOST_MPL_ASSERT_RELATION(params_min_size, <=, N);
+    BOOST_MPL_ASSERT_RELATION(params_max_size, >=, N);
 
     typedef BOOST_PP_CAT(boost::fusion::vector, N)<BOOST_PP_ENUM_PARAMS(N, A)> vector_type;
     typedef parameterized_nonterminal

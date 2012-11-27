@@ -13,7 +13,7 @@
 namespace morbid { namespace giop { namespace grammars {
 
 template <typename Domain, typename Iterator, typename Attr>
-struct service_context : grammar<Domain, Iterator, Attr()>
+struct service_context : grammar<Domain, Iterator, Attr(endian)>
 {
   service_context() : service_context::base_type(start)
   {
@@ -21,7 +21,7 @@ struct service_context : grammar<Domain, Iterator, Attr()>
       ;
   }
 
-  rule<Domain, Iterator, Attr()> start;
+  rule<Domain, Iterator, Attr(endian)> start;
 };
 
 } } }

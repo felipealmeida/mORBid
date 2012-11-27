@@ -42,6 +42,30 @@ struct rule_base
   attr_const_reference_type;
   typedef typename boost::add_reference<attr_type>::type
     attr_reference_type;
+  struct convert_attributes
+  {
+    template <typename Sig>
+    struct result;
+    template <typename This, typename T>
+    struct result<This(T)>
+    {
+      typedef T type;
+    };
+    template <typename This>
+    struct result<This(giop::endian)>
+    {
+      typedef endianness_attribute type;
+    };
+  };
+
+  typedef typename fusion::result_of::as_list
+  <typename fusion::result_of::transform
+  <
+    typename spirit::detail::params_from_sig<sig_type>::type
+     , convert_attributes
+  >::type>::type
+  converted_parameter_types;
+
 };
 
 namespace parser {
@@ -55,9 +79,17 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   typedef typename rule_base::attr_reference_type attr_reference_type;
   typedef typename rule_base::sig_type sig_type;
 
-  typedef typename
-    spirit::detail::params_from_sig<sig_type>::type
-  parameter_types;
+  typedef typename rule_base::converted_parameter_types converted_parameter_types;
+  typedef converted_parameter_types parameter_types;
+
+  static size_t const params_min_size
+  = mpl::eval_if
+    <mpl::contains<parameter_types, endianness_attribute>
+     , mpl::prior<fusion::result_of::size<parameter_types> >
+     , fusion::result_of::size<parameter_types>
+     >::type::value;
+  static size_t const params_max_size
+  = fusion::result_of::size<parameter_types>::value;
 
   typedef spirit::context<
     fusion::cons<attr_reference_type, parameter_types>
@@ -104,12 +136,20 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   typedef typename rule_base::attr_type attr_type;
   typedef typename rule_base::attr_const_reference_type attr_const_reference_type;
   typedef typename rule_base::sig_type sig_type;
+  typedef typename rule_base::converted_parameter_types converted_parameter_types;
 
-  typedef typename fusion::result_of::as_list
-  <typename fusion::result_of::push_back
-  <typename spirit::detail::params_from_sig<sig_type>::type
-   , iiop::endianness_attribute>::type>::type
+  typedef typename mpl::if_
+    <mpl::contains<converted_parameter_types, endianness_attribute>
+     , converted_parameter_types
+     , typename fusion::result_of::as_list
+       <typename mpl::push_front<converted_parameter_types, endianness_attribute>::type>::type
+     >::type
   parameter_types;
+
+  static size_t const params_min_size = fusion::result_of::size<parameter_types>::value;
+  static size_t const params_max_size = params_min_size;
+
+  BOOST_MPL_ASSERT_RELATION(params_min_size, >=, 1);
 
   typedef spirit::context<
     fusion::cons<attr_const_reference_type, parameter_types>
@@ -179,6 +219,12 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
     : rule(&rule), params(params)
   {
   }
+
+  template <typename Context, typename Iterator>
+  struct attribute
+  {
+    typedef typename R::attr_type type;
+  };
 
   template <typename Iterator, typename Context, typename Skipper, typename Attribute>
   bool parse(Iterator& first, Iterator const& last
@@ -283,9 +329,9 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
   typedef mpl::int_<karma::generator_properties::all_properties> properties;
 
   template <typename Context, typename Iterator>
-  struct attributes
+  struct attribute
   {
-    typedef spirit::unused_type type;
+    typedef typename rule_type::attr_type type;
   };
 
   typedef typename rule_type::output_iterator output_iterator;
@@ -390,18 +436,13 @@ struct use_terminal< ::morbid::iiop::generator_domain
 template <typename Iterator, typename T1, typename T2, typename T3, typename T4, typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain
                      , boost::reference_wrapper
-                     < ::morbid::iiop::generator::rule<Iterator, T1, T2, T3, T4>const>, Enable> : mpl::true_ {};
+                     < ::morbid::iiop::parser::rule<Iterator, T1, T2, T3, T4>const>, Enable> : mpl::true_ {};
 
 template <typename D, typename Iterator, typename T1, typename T2, typename T3, typename T4
           , typename Params, typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain
                      , ::morbid::giop::parameterized_nonterminal
-                     <D, ::morbid::iiop::generator::rule< Iterator, T1, T2, T3, T4>, Params>, Enable> : mpl::true_ {};
-
-// template <typename R, typename Params, typename Enable>
-// struct use_terminal< qi::domain
-//                      , ::morbid::iiop::parser::rule_parser<R, Params>, Enable>
-//  : mpl::true_ {};
+                     <D, ::morbid::iiop::parser::rule< Iterator, T1, T2, T3, T4>, Params>, Enable> : mpl::true_ {};
 
 } }
 

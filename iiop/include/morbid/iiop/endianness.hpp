@@ -24,8 +24,6 @@ struct endianness_attribute
   bool endianness;
 };
 
-
-
 namespace parser {
 
 template <typename Subject>

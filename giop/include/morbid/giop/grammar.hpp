@@ -45,7 +45,8 @@ struct grammar
   typedef grammar<Domain, Iterator, T1, T2, T3, T4> self_type;
   typedef self_type base_type;
 
-  static size_t const params_size = start_type::params_size;
+  static size_t const params_min_size = start_type::params_min_size;
+  static size_t const params_max_size = start_type::params_max_size;
 
   grammar(start_type const& rule)
     : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule.rule_impl_)))

@@ -14,7 +14,7 @@
 namespace morbid { namespace giop { namespace grammars {
 
 template <typename Domain, typename Iterator, typename Attr>
-struct reply_header_1_0 : grammar<Domain, Iterator, Attr()>
+struct reply_header_1_0 : grammar<Domain, Iterator, Attr(endian)>
 {
   reply_header_1_0() : reply_header_1_0::base_type(start)
   {
@@ -26,9 +26,10 @@ struct reply_header_1_0 : grammar<Domain, Iterator, Attr()>
   }
 
   grammars::service_context<Domain, Iterator
-                            , typename fusion::result_of::at_c<Attr, 0u>::type>
+                            , typename boost::remove_reference
+                            <typename fusion::result_of::at_c<Attr, 0u>::type>::type>
     service_context;
-  rule<Domain, Iterator, Attr()> start;
+  rule<Domain, Iterator, Attr(endian)> start;
 };
 
 } } }

@@ -21,6 +21,8 @@
 
 namespace morbid { namespace giop {
 
+struct endian {};
+
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
 namespace mpl = boost::mpl;
@@ -45,7 +47,8 @@ struct rule
   typedef typename giop::rule_impl<Domain, Iterator, T1, T2, T3, T4>::type rule_impl;
   typedef typename proto::terminal<boost::reference_wrapper<rule_impl const> >::type terminal_type;
 
-  static size_t const params_size = fusion::result_of::size<typename rule_impl::parameter_types>::type::value;
+  static size_t const params_min_size = rule_impl::params_min_size;
+  static size_t const params_max_size = rule_impl::params_max_size;
 
   rule()
     : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule_impl_)))
