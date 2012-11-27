@@ -79,8 +79,13 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   typedef typename rule_base::attr_reference_type attr_reference_type;
   typedef typename rule_base::sig_type sig_type;
 
+  typedef I param_iterator;
+
   typedef typename rule_base::converted_parameter_types converted_parameter_types;
-  typedef converted_parameter_types parameter_types;
+  typedef typename fusion::result_of::as_list
+  <typename mpl::push_back
+   <converted_parameter_types, alignment_attribute<I> >::type>::type
+   parameter_types;
 
   static size_t const params_min_size
   = mpl::eval_if
@@ -106,18 +111,18 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   template <typename Expr>
   rule& operator=(Expr const& expr)
   {
-    BOOST_MPL_ASSERT((spirit::traits::is_parser<Expr>));
-    // BOOST_MPL_ASSERT((boost::is_same<Expr, void>));
-    f = qi::detail::bind_parser<mpl::false_>(expr);
+    typedef typename spirit::result_of::compile<iiop::parser_domain, Expr>::type compilation_result; 
+    BOOST_MPL_ASSERT((spirit::traits::is_parser<compilation_result>));
+    f = qi::detail::bind_parser<mpl::false_>(spirit::compile< iiop::parser_domain>(expr));
     return *this;
   }
 
   template <typename Expr>
   rule& operator%=(Expr const& expr)
   {
-    BOOST_MPL_ASSERT((spirit::traits::is_parser<Expr>));
-    BOOST_MPL_ASSERT((boost::is_same<Expr, void>));
-    f = qi::detail::bind_parser<mpl::true_>(expr);
+    typedef typename spirit::result_of::compile<iiop::parser_domain, Expr>::type compilation_result; 
+    BOOST_MPL_ASSERT((spirit::traits::is_parser<compilation_result>));
+    f = qi::detail::bind_parser<mpl::true_>(spirit::compile< iiop::parser_domain>(expr));
     return *this;
   }
 
@@ -138,12 +143,23 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   typedef typename rule_base::sig_type sig_type;
   typedef typename rule_base::converted_parameter_types converted_parameter_types;
 
-  typedef typename mpl::if_
+  typedef mpl::int_<karma::generator_properties::all_properties> properties;
+
+  typedef I param_iterator;
+  
+  typedef karma::detail::output_iterator
+    <param_iterator, properties> output_iterator;
+
+  typedef typename fusion::result_of::as_list
+  <typename mpl::push_back
+  <typename mpl::if_
     <mpl::contains<converted_parameter_types, endianness_attribute>
      , converted_parameter_types
      , typename fusion::result_of::as_list
        <typename mpl::push_front<converted_parameter_types, endianness_attribute>::type>::type
      >::type
+   , alignment_attribute<param_iterator>
+   >::type>::type
   parameter_types;
 
   static size_t const params_min_size = fusion::result_of::size<parameter_types>::value;
@@ -156,12 +172,6 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
     , locals_type>
   context_type;
 
-  typedef mpl::int_<karma::generator_properties::all_properties> properties;
-
-  typedef I param_iterator;
-  
-  typedef karma::detail::output_iterator
-    <param_iterator, properties> output_iterator;
 
   typedef boost::function
     <bool(output_iterator&, context_type&, /*delimiter_type*/spirit::unused_type const&)>
@@ -174,16 +184,18 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   template <typename Expr>
   rule& operator=(Expr const& expr)
   {
-    BOOST_MPL_ASSERT((spirit::traits::is_generator<Expr>));
-    f = karma::detail::bind_generator<mpl::false_>(expr);
+    typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
+    BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
+    f = karma::detail::bind_generator<mpl::false_>(spirit::compile< iiop::generator_domain>(expr));
     return *this;
   }
 
   template <typename Expr>
   rule& operator%=(Expr const& expr)
   {
-    BOOST_MPL_ASSERT((spirit::traits::is_generator<Expr>));
-    f = karma::detail::bind_generator<mpl::true_>(expr);
+    typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
+    BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
+    f = karma::detail::bind_generator<mpl::true_>(spirit::compile< iiop::generator_domain>(expr));
     return *this;
   }
 
@@ -226,11 +238,12 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
     typedef typename R::attr_type type;
   };
 
-  template <typename Iterator, typename Context, typename Skipper, typename AttributeParam, typename Attribute>
+  template <typename Iterator, typename Context, typename Skipper, typename AttributeParam, typename Attribute
+            , typename Params_>
   bool parse(Iterator& first, Iterator const& last
              , Context& caller_context, Skipper const& skipper
              , AttributeParam& attr_param, Attribute& attr_
-             , mpl::true_) const
+             , mpl::true_, Params_ const& params_) const
   {
     typedef typename Context::attributes_type caller_attributes_type;
     typedef typename caller_attributes_type::cdr_type
@@ -251,12 +264,12 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
                                    , endianness_parameter_attribute_iter>::type attribute_parameter_index_type;
 
     typedef typename fusion::result_of::advance
-      <typename fusion::result_of::begin<Params>::type
+      <typename fusion::result_of::begin<Params_>::type
        , attribute_parameter_index_type>::type params_insert_iterator;
 
     typedef typename fusion::result_of::as_list
       <typename fusion::result_of::insert
-       <Params, params_insert_iterator, endianness_attribute>::type>::type
+       <Params_, params_insert_iterator, endianness_attribute>::type>::type
       params_with_endianness_type;
 
     std::cout << "inheriting endianness "
@@ -266,7 +279,7 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
 
     params_with_endianness_type
       params_with_endianness
-      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_parameter_index_type>(fusion::begin(params))
+      = fusion::as_list(fusion::insert(params_, fusion::advance<attribute_parameter_index_type>(fusion::begin(params_))
                                        , fusion::at_c<attribute_argument_index_type::value+1>(caller_context.attributes)));
 
 
@@ -291,18 +304,19 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
     return false;
   }
 
-  template <typename Iterator, typename Context, typename Skipper, typename AttributeParam, typename Attribute>
+  template <typename Iterator, typename Context, typename Skipper, typename AttributeParam, typename Attribute
+            , typename Params_>
   bool parse(Iterator& first, Iterator const& last
              , Context& caller_context, Skipper const& skipper
              , AttributeParam& attr_param, Attribute& attr_
-             , mpl::false_) const
+             , mpl::false_, Params_ const& params_) const
   {
     typedef typename R::context_type context_type;
 
     // If you are seeing a compilation error here, you are probably
     // trying to use a rule or a grammar which has inherited
     // attributes, without passing values for them.
-    context_type context(attr_, params, caller_context);
+    context_type context(attr_, params_, caller_context);
 
     // If you are seeing a compilation error here stating that the
     // fourth parameter can't be converted to a required target type
@@ -356,8 +370,13 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
                                      , endianness_attribute>::type
         endianness_by_inherited_arguments;
 
+      typedef typename R::param_iterator param_iterator;
       return parse(first, last, caller_context, skipper, attr_param, attr_
-                   , endianness_by_inherited_arguments());
+                   , endianness_by_inherited_arguments()
+                   , fusion::as_list(fusion::push_back
+                                     (params, get_alignment_attribute
+                                      <typename Context::attributes_type, param_iterator>::call
+                                      (caller_context.attributes))));
     }
     return false;
   }  
@@ -423,10 +442,11 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
 
   typedef typename rule_type::output_iterator output_iterator;
 
-  template <typename Context, typename Delimiter, typename Attr>
+  template <typename Context, typename Delimiter, typename Attr
+            , typename Params_>
   bool generate(output_iterator& sink, Context& caller_context
                 , Delimiter const& d, Attr const& attr_
-                , mpl::true_) const
+                , mpl::true_, Params_ const& params_) const
   {
     typedef typename rule_type::context_type context_type;
  
@@ -449,12 +469,12 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
                                    , endianness_parameter_attribute_iter>::type attribute_parameter_index_type;
 
     typedef typename fusion::result_of::advance
-      <typename fusion::result_of::begin<Params>::type
+      <typename fusion::result_of::begin<Params_>::type
        , attribute_parameter_index_type>::type params_insert_iterator;
 
     typedef typename fusion::result_of::as_list
       <typename fusion::result_of::insert
-       <Params, params_insert_iterator, endianness_attribute>::type>::type
+       <Params_, params_insert_iterator, endianness_attribute>::type>::type
       params_with_endianness_type;
     // typedef typename mpl::find<caller_argument_types
     //                            , endianness_attribute>::type
@@ -479,7 +499,7 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
 
     params_with_endianness_type
       params_with_endianness
-      = fusion::as_list(fusion::insert(params, fusion::advance<attribute_parameter_index_type>(fusion::begin(params))
+      = fusion::as_list(fusion::insert(params_, fusion::advance<attribute_parameter_index_type>(fusion::begin(params_))
                                        , fusion::at_c<attribute_argument_index_type::value+1>(caller_context.attributes)));
 
     // If you are seeing a compilation error here, you are probably
@@ -507,17 +527,17 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
       return false;
   }
 
-  template <typename Context, typename Delimiter, typename Attr>
+  template <typename Context, typename Delimiter, typename Attr, typename Params_>
   bool generate(output_iterator& sink, Context& caller_context
                 , Delimiter const& d, Attr const& attr_
-                , mpl::false_) const
+                , mpl::false_, Params_ const& params_) const
   {
     typedef typename rule_type::context_type context_type;
 
     // If you are seeing a compilation error here, you are probably
     // trying to use a rule or a grammar which has inherited
     // attributes, without passing values for them.
-    context_type context(attr_, params, caller_context);
+    context_type context(attr_, params_, caller_context);
 
     std::cout << "generate for rule " << rule << std::endl;
     std::cout << "generate this " << this << std::endl;
@@ -572,8 +592,13 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
                                      , endianness_attribute>::type
         endianness_by_inherited_arguments;
 
+      typedef typename R::param_iterator param_iterator;
       return generate(sink, caller_context, d, attr_
-                      , endianness_by_inherited_arguments());
+                      , endianness_by_inherited_arguments()
+                      , fusion::as_list(fusion::push_back
+                                        (params, get_alignment_attribute
+                                         <typename Context::attributes_type, param_iterator>::call
+                                         (caller_context.attributes))));
     }
     return false;
   }  

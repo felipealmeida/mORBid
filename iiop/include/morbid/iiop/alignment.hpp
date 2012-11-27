@@ -28,6 +28,22 @@ struct alignment_attribute
   OutputIterator first;
 };
 
+} }
+
+namespace boost {
+
+template <typename I>
+struct is_scalar< ::morbid::iiop::alignment_attribute<I> > : mpl::true_
+{};
+
+template <typename I>
+struct is_scalar< ::morbid::iiop::alignment_attribute<I> const> : mpl::true_
+{};
+
+}
+
+namespace morbid { namespace iiop {
+
 template <typename Attributes, typename OutputIterator>
 struct get_alignment_attribute
 {
