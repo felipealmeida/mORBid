@@ -45,9 +45,9 @@ struct compile_impl< iiop::parser_domain>
   template <typename This, typename Expr>
   struct result<This(Expr)>
   {
-    // typedef typename boost::proto::subscript<spirit::terminal< iiop::tag::aligned>
-    //                                          , Expr>::type new_expr;
-    typedef typename spirit::result_of::compile< iiop::parser_domain, Expr>::type type;
+    typedef typename boost::proto::subscript<spirit::terminal< iiop::tag::aligned>
+                                             , Expr>::type new_expr;
+    typedef typename spirit::result_of::compile< iiop::parser_domain, new_expr>::type type;
   };
 
   template <typename Expr>

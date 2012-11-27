@@ -91,6 +91,8 @@ struct unsigned_parser : qi::primitive_parser<unsigned_parser<N> >
              , Attribute& attr) const
   {
     // Should align
+    if(!alignment_padding<N>(first, last, ctx.attributes))
+      return false;
 
     bool endianness = generator_endianness<typename Context::attributes_type>
       ::call(ctx.attributes);

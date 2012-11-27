@@ -44,10 +44,9 @@ int main()
   generator_reply_header_grammar generator_reply_header;
   std::vector<char> output;
   output_iterator_type iterator(output);
-  iiop::endianness_attribute e(giop::endian(giop::little_endian));
   if(karma::generate(iterator
                      , giop::compile<iiop::generator_domain>
-                     (generator_reply_header(phoenix::val(e)))
+                     (generator_reply_header(phoenix::val(giop::little_endian)))
                      , attribute))
   {
     std::cout << "Success" << std::endl;
