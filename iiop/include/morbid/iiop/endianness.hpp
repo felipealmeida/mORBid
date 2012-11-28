@@ -47,7 +47,28 @@ struct is_scalar< ::morbid::iiop::endianness_attribute const> : mpl::true_
 
 }
 
-namespace morbid { namespace iiop { namespace parser {
+namespace morbid { namespace iiop {
+
+template <typename Attributes>
+struct generator_endianness
+{
+  typedef Attributes attributes_type;
+  typedef typename fusion::result_of::find<attributes_type, iiop::endianness_attribute>::type index_iterator_type;
+  typedef typename fusion::result_of::distance
+    <index_iterator_type, typename fusion::result_of::end<attributes_type>::type>::type distance_to_end;
+  BOOST_MPL_ASSERT_RELATION(distance_to_end::value, !=, 0);
+  typedef typename fusion::result_of::distance
+    <typename fusion::result_of::begin<attributes_type>::type, index_iterator_type>::type index_type;
+
+
+  static bool& call(Attributes& attributes)
+  {
+    std::cout << "reading endianness " << fusion::at_c<index_type::value>(attributes).endianness << std::endl;
+    return fusion::at_c<index_type::value>(attributes).endianness;
+  }
+};
+
+namespace parser {
 
 template <typename Subject>
 struct endianness_parser : qi::unary_parser<endianness_parser<Subject> >
@@ -62,7 +83,7 @@ struct endianness_parser : qi::unary_parser<endianness_parser<Subject> >
   template <typename Iterator, typename Context, typename Skipper, typename Attribute>
   bool parse(Iterator& first, Iterator const& last
              , Context& ctx, Skipper const& skipper
-             , Attribute& attr) const
+             , Attribute& attr, boost::mpl::true_) const
   {
     qi::char_class<spirit::tag::char_code
                    <spirit::tag::char_, octet_encoding> > octet_parser;
@@ -90,6 +111,39 @@ struct endianness_parser : qi::unary_parser<endianness_parser<Subject> >
     ctx.locals = context.locals;
     return r;
   }  
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr, boost::mpl::false_) const
+  {
+    std::cout << "endianness_parser::parse already has this attribute" << std::endl;
+    qi::char_class<spirit::tag::char_code
+                   <spirit::tag::char_, octet_encoding> > octet_parser;
+    unsigned char endianness;
+    if(!octet_parser.parse(first, last, ctx, skipper, endianness))
+      return false;
+    std::cout << "endianness read from stream " << (unsigned int)endianness << std::endl;
+    typedef generator_endianness<typename Context::attributes_type> getter_endianness;
+    bool old_endianness = getter_endianness::call(ctx.attributes);
+    getter_endianness::call(ctx.attributes) = endianness;
+    bool r = subject.parse(first, last, ctx, skipper, attr);
+    getter_endianness::call(ctx.attributes) = old_endianness;
+    return r;
+  }
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    typedef typename Context::attributes_type attributes_type;
+    typedef typename fusion::result_of::find<attributes_type, iiop::endianness_attribute>::type index_iterator_type;
+    typedef typename fusion::result_of::distance
+      <index_iterator_type, typename fusion::result_of::end<attributes_type>::type>::type distance_to_end;
+    return parse(first, last, ctx, skipper, attr
+                 , typename mpl::equal_to<distance_to_end, mpl::int_<0> >::type());
+  }
 
   typedef Subject subject_type;
   Subject subject;
@@ -127,25 +181,6 @@ struct make_directive<spirit::terminal_ex<giop::tag::endianness
 };
 
 }
-
-template <typename Attributes>
-struct generator_endianness
-{
-  typedef Attributes attributes_type;
-  typedef typename fusion::result_of::find<attributes_type, iiop::endianness_attribute>::type index_iterator_type;
-  typedef typename fusion::result_of::distance
-    <index_iterator_type, typename fusion::result_of::end<attributes_type>::type>::type distance_to_end;
-  BOOST_MPL_ASSERT_RELATION(distance_to_end::value, !=, 0);
-  typedef typename fusion::result_of::distance
-    <typename fusion::result_of::begin<attributes_type>::type, index_iterator_type>::type index_type;
-
-
-  static bool call(Attributes const& attributes)
-  {
-    std::cout << "reading endianness " << fusion::at_c<index_type::value>(attributes).endianness << std::endl;
-    return fusion::at_c<index_type::value>(attributes).endianness;
-  }
-};
 
 namespace generator {
 

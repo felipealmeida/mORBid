@@ -19,9 +19,21 @@ struct tagged_profile : giop::grammar<Domain, Iterator, Attr(giop::endian)>
 {
   tagged_profile() : tagged_profile::base_type(start)
   {
+    init(giop::sequence[giop::octet]);
+  }
+
+  template <typename Profile>
+  tagged_profile(Profile const& profile) : tagged_profile::base_type(start)
+  {
+    init(profile);
+  }
+
+  template <typename Profile>
+  void init(Profile const& profile)
+  {
     start =
       giop::ulong_
-      & giop::sequence[giop::octet]
+      & profile
       ;
   }
 

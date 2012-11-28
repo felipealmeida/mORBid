@@ -15,3 +15,4 @@
 #include <morbid/iiop/sequence.hpp>
 #include <morbid/iiop/rule.hpp>
 #include <morbid/iiop/auxiliary.hpp>
+#include <morbid/iiop/raw_size.hpp>

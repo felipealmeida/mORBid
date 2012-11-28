@@ -20,7 +20,9 @@ struct profile_body_1_1 : giop::grammar<Domain, Iterator, Attr(giop::endian)>
   profile_body_1_1() : profile_body_1_1::base_type(start)
   {
     start =
-      giop::string
+      // giop::octet
+      // & giop::octet
+      /*&*/ giop::string
       & giop::ushort_
       & giop::sequence[giop::octet]
       ;

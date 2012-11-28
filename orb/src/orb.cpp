@@ -9,6 +9,8 @@
 #include <morbid/giop/forward_back_insert_iterator.hpp>
 #include <morbid/ior/grammar/corbaloc.hpp>
 #include <morbid/ior/grammar/ior.hpp>
+#include <morbid/ior/grammar/tagged_profile.hpp>
+#include <morbid/ior/grammar/generic_tagged_profile.hpp>
 #include <morbid/ior/hex_directive.hpp>
 #include <morbid/iiop/all.hpp>
 #include <morbid/iiop/grammars/profile_body_1_1.hpp>
@@ -113,8 +115,12 @@ Object_ptr ORB::string_to_object(const char* ref)
                                , ior::tagged_profile> tagged_profile;
   iiop::grammar::profile_body_1_1<iiop::parser_domain, hex_iterator
                                   , iiop::profile_body> profile_body;
+  ior::grammar::generic_tagged_profile<iiop::parser_domain, hex_iterator
+                                       , iiop::profile_body, 0u
+                                       > tagged_profile_body
+    (giop::endianness[profile_body]);
 
-  ior_grammar_type ior_grammar(tagged_profile | profile_body);
+  ior_grammar_type ior_grammar(tagged_profile_body | tagged_profile);
   namespace qi = boost::spirit::qi;
   iterator_type first_tmp = first;
   if(qi::parse(first_tmp, last

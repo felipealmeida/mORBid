@@ -110,6 +110,54 @@ struct unsigned_parser : qi::primitive_parser<unsigned_parser<N> >
   }
 };
 
+template <std::size_t N>
+struct specific_unsigned_parser : qi::primitive_parser<unsigned_parser<N> >
+{
+  template <typename Context, typename Unused>
+  struct attribute
+  {
+    typedef spirit::unused_type type;
+  };
+
+  specific_unsigned_parser(typename boost::uint_t<N>::least value)
+    : value(value) {}
+  
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    std::cout << "specific_unsigned_parser::parse" << std::endl;
+    // Should align
+    if(!alignment_padding<N>(first, last, ctx.attributes))
+      return false;
+
+    bool endianness = generator_endianness<typename Context::attributes_type>
+      ::call(ctx.attributes);
+
+    typename boost::uint_t<N>::least v;
+    bool r;
+#ifdef BOOST_BIG_ENDIAN
+    if(endianness)
+#elif defined(BOOST_LITTLE_ENDIAN)
+    if(!endianness)
+#else
+#error No native endianness found
+#endif
+    {
+      r = reverse_unsigned_parse<N>(first, last, v);
+    }
+    else
+    {
+      r = normal_unsigned_parse<N>(first, last, v);
+    }
+    std::cout << "Value read " << v << " expecting value " << value << std::endl;
+    return r && v == value;
+  }
+
+  typename boost::uint_t<N>::least value;
+};
+
 template <typename Modifiers, typename Enable>
 struct make_primitive<spirit::tag::ushort_, Modifiers, Enable>
 {
@@ -131,6 +179,19 @@ struct make_primitive<spirit::tag::ulong_, Modifiers, Enable>
   result_type operator()(T_& val, boost::spirit::unused_type) const
   {
     return result_type();
+  }
+};
+
+template <typename U, typename Modifiers, typename Enable>
+struct make_primitive<spirit::terminal_ex<spirit::tag::ulong_, fusion::vector1<U> >
+                      , Modifiers, Enable>
+{
+  typedef specific_unsigned_parser<32u> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, boost::spirit::unused_type) const
+  {
+    return result_type(fusion::at_c<0>(term.args));
   }
 };
 
@@ -310,6 +371,11 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, tag::ushort_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, tag::ulong_, Enable> : mpl::true_ {};
+template <typename U, typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain
+                     , terminal_ex<tag::ulong_, fusion::vector1<U> >, Enable> : mpl::true_ {};
+template <>
+struct use_lazy_terminal< ::morbid::iiop::parser_domain, tag::ulong_, 1> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, tag::ulong_long, Enable> : mpl::true_ {};
 template <typename Enable>

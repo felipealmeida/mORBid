@@ -8,7 +8,7 @@ import testing ;
 import feature ;
 
 path-constant current : . ;
-path-constant install : ../../../../install ;
+path-constant install : ../../../../../install ;
 
 project morbid/tests/interop/mico/simple1 ;
 
