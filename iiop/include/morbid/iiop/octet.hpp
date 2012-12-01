@@ -67,6 +67,20 @@ struct make_primitive<giop::tag::octet, Modifiers, Enable>
   }
 };
 
+template <typename U, typename Modifiers, typename Enable>
+struct make_primitive<spirit::terminal_ex<giop::tag::octet, fusion::vector1<U> >
+                      , Modifiers, Enable>
+{
+  typedef qi::literal_char<octet_encoding, true> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, boost::spirit::unused_type) const
+  {
+    return result_type(fusion::at_c<0>(term.args));
+  }
+};
+
+
 template <typename T, typename Modifiers>
 struct make_primitive<T, Modifiers, typename boost::enable_if
                       <spirit::traits::is_string<T>, void>::type>
@@ -95,6 +109,19 @@ struct make_primitive<giop::tag::octet, Modifiers, Enable>
   result_type operator()(T_& val, boost::spirit::unused_type) const
   {
     return result_type();
+  }
+};
+
+template <typename U, typename Modifiers, typename Enable>
+struct make_primitive<spirit::terminal_ex<giop::tag::octet, fusion::vector1<U> >
+                      , Modifiers, Enable>
+{
+  typedef karma::literal_char<octet_encoding, spirit::unused_type, true> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, boost::spirit::unused_type) const
+  {
+    return result_type(fusion::at_c<0>(term.args));
   }
 };
 
@@ -134,6 +161,9 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::bool_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::octet, Enable> : mpl::true_ {};
+template <typename U, typename Enable>
+struct use_terminal< ::morbid::iiop::generator_domain
+                     , terminal_ex< ::morbid::giop::tag::octet, fusion::vector1<U> >, Enable> : mpl::true_ {};
 template <typename T>
 struct use_terminal< ::morbid::iiop::generator_domain
                      , T, typename enable_if<traits::is_string<T>, void>::type> : mpl::true_ {};
@@ -143,6 +173,9 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, tag::bool_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, morbid::giop::tag::octet, Enable> : mpl::true_ {};
+template <typename U, typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain
+                     , terminal_ex< ::morbid::giop::tag::octet, fusion::vector1<U> >, Enable> : mpl::true_ {};
 template <typename T>
 struct use_terminal< ::morbid::iiop::parser_domain
                      , T, typename enable_if<traits::is_string<T>, void>::type> : mpl::true_ {};

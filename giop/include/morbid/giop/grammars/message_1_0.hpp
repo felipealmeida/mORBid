@@ -12,7 +12,7 @@
 
 namespace morbid { namespace giop { namespace grammars {
 
-template <typename Domain, typename Iterator, typename Attr>
+template <typename Domain, typename Iterator, typename Attr, std::size_t MessageType>
 struct message_1_0 : grammar<Domain, Iterator, Attr()>
 {
   template <typename Body>
@@ -33,11 +33,11 @@ struct message_1_0 : grammar<Domain, Iterator, Attr()>
   {
     start =
       "GIOP"
-      & octet           /* GIOP major version */
-      & octet           /* GIOP minor version */
+      & octet('\1')                  /* GIOP major version */
+      & octet('\0')                  /* GIOP minor version */
       & endianness
       [
-       octet            /* flags */
+       octet(MessageType)            /* message_type */
        & raw_size(ulong_)[body]
       ]
       ;

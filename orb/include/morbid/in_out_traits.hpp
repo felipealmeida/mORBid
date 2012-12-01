@@ -98,6 +98,12 @@ struct in_traits<String>
 };
 
 template <>
+struct in_traits<std::string>
+{
+  typedef std::string type;
+};
+
+template <>
 struct in_traits<Boolean>
 {
   typedef Boolean type;
@@ -176,6 +182,12 @@ struct out_traits<String>
 };
 
 template <>
+struct out_traits<std::string>
+{
+  typedef std::string& type;
+};
+
+template <>
 struct out_traits<Boolean>
 {
   typedef Boolean& type;
@@ -251,6 +263,12 @@ template <>
 struct inout_traits<String>
 {
   typedef String_out type;
+};
+
+template <>
+struct inout_traits<std::string>
+{
+  typedef std::string& type;
 };
 
 template <>

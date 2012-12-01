@@ -22,17 +22,22 @@ struct forward_back_insert_iterator
   typedef typename base_iterator_traits::reference reference;
   typedef typename std::random_access_iterator_tag iterator_category;
 
-  Vector& c;
+  Vector* c;
   mutable difference_type pos;
 
   typedef forward_back_insert_iterator<Vector> self_type;
 
   forward_back_insert_iterator(Vector& c)
-    : c(c), pos(c.size()) {}
+    : c(&c), pos(c.size()) {}
 
   self_type& operator++()
   {
     ++pos; 
+    return *this;
+  }
+  self_type& operator+=(int s)
+  {
+    pos += s;
     return *this;
   }
   self_type operator++(int)
@@ -43,10 +48,10 @@ struct forward_back_insert_iterator
   }
   value_type& operator*() const
   {
-    difference_type size = c.size();
+    difference_type size = c->size();
     if(pos == size)
-      c.push_back(value_type());
-    return c[pos];
+      c->push_back(value_type());
+    return (*c)[pos];
   }
 };
 

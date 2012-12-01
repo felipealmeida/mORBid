@@ -8,6 +8,10 @@
 #ifndef MORBID_IIOP_AUXILIARY_HPP
 #define MORBID_IIOP_AUXILIARY_HPP
 
+#include <boost/spirit/home/qi.hpp>
+#include <boost/spirit/home/karma.hpp>
+#include <boost/spirit/home/support.hpp>
+
 namespace morbid { namespace iiop {
 
 namespace spirit = boost::spirit;
@@ -36,6 +40,17 @@ struct make_primitive<
   result_type operator()(Terminal const& term, spirit::unused_type) const
   {
     return result_type(fusion::at_c<0>(term.args) ? true : false);
+  }
+};
+
+template <typename Terminal, typename Actor, int Arity, typename Modifiers>
+struct make_primitive<spirit::lazy_terminal<Terminal, Actor, Arity>, Modifiers>
+{
+  typedef qi::lazy_parser<Actor, Modifiers> result_type;
+  result_type operator()(spirit::lazy_terminal<Terminal, Actor, Arity> const& lt
+                         , Modifiers const& modifiers) const
+  {
+    return result_type(lt.actor, modifiers);
   }
 };
 
