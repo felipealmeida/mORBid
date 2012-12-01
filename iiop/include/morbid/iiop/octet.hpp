@@ -98,6 +98,18 @@ struct make_primitive<giop::tag::octet, Modifiers, Enable>
   }
 };
 
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::bool_, Modifiers, Enable>
+{
+  typedef karma::any_char<octet_encoding, spirit::unused_type> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
 template <typename T, typename Modifiers>
 struct make_primitive<T, Modifiers, typename boost::enable_if
                       <spirit::traits::is_string<T>, void>::type>
@@ -119,12 +131,16 @@ namespace boost { namespace spirit {
 
 // Generator
 template <typename Enable>
+struct use_terminal< ::morbid::iiop::generator_domain, tag::bool_, Enable> : mpl::true_ {};
+template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::octet, Enable> : mpl::true_ {};
 template <typename T>
 struct use_terminal< ::morbid::iiop::generator_domain
                      , T, typename enable_if<traits::is_string<T>, void>::type> : mpl::true_ {};
 
 // Parser
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::bool_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, morbid::giop::tag::octet, Enable> : mpl::true_ {};
 template <typename T>

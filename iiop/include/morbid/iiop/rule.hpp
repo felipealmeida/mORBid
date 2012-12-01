@@ -565,7 +565,8 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
   bool generate(output_iterator& sink, Context& caller_context
                 , Delimiter const& d, Attr const& attr) const
   {
-    std::cout << "rule_generator::generate " << rule->f << std::endl;
+    std::cout << "rule_generator::generate " << rule->f
+              << " R " << typeid(R).name() << std::endl;
     if(rule->f)
     {
       typedef typename rule_type::attr_type attr_type;

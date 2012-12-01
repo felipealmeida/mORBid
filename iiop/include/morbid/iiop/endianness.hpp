@@ -197,6 +197,7 @@ struct endianness_generator : karma::unary_generator<endianness_generator<Subjec
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
+    std::cout << "endianness_generator::generate" << std::endl;
     bool endianness = generator_endianness<typename Context::attributes_type>
       ::call(ctx.attributes);
     karma::any_char<octet_encoding, spirit::unused_type> octet_generator;
@@ -220,6 +221,7 @@ struct specific_endianness_generator : endianness_generator<Subject>
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
+    std::cout << "specific_endianness_generator::generate" << std::endl;
     typedef typename Context::attributes_type attributes_type;
     typedef typename fusion::result_of::as_list
       <typename fusion::result_of::push_back

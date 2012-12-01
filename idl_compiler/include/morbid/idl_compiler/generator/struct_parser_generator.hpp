@@ -49,11 +49,11 @@ struct struct_parser_generator : karma::grammar
     floating_point_parser = 
       (
        karma::eps(at_c<0>(_val) == types::floating_point::float_)
-       << "float_(true/*little_endian*/)"
+       << "::morbid::iiop::grammar::align(_r1, 4u) >> float_(_r2)"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::double_)
-       << "double_(true/*little_endian*/)"
+       << "::morbid::iiop::grammar::align(_r1, 8u) >> double_(_r2)"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::long_double_)
@@ -63,27 +63,27 @@ struct struct_parser_generator : karma::grammar
     integer_parser =
       (
        karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
-       << "qi::as< ::morbid::Short>()[ word(true/*little_endian*/)]"
+       << "::morbid::iiop::grammar::align(_r1, 2u) >> qi::as< ::morbid::Short>()[ word(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
-       << "qi::as< ::morbid::Long>()[ dword(true/*little_endian*/)]"
+       << "::morbid::iiop::grammar::align(_r1, 4u) >> qi::as< ::morbid::Long>()[ dword(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
-       << "qi::as< ::morbid::LongLong>()[ qword(true/*little_endian*/)]"
+       << "::morbid::iiop::grammar::align(_r1, 8u) >> qi::as< ::morbid::LongLong>()[ qword(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
-       << "qi::as< ::morbid::UShort>()[ word(true/*little_endian*/)]"
+       << "::morbid::iiop::grammar::align(_r1, 2u) >> qi::as< ::morbid::UShort>()[ word(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
-       << "qi::as< ::morbid::ULong>()[ dword(true/*little_endian*/)]"
+       << "::morbid::iiop::grammar::align(_r1, 4u) >> qi::as< ::morbid::ULong>()[ dword(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
-       << "qi::as< ::morbid::ULongLong>()[ qword(true/*little_endian*/)]"
+       << "::morbid::iiop::grammar::align(_r1, 8u) >> qi::as< ::morbid::ULongLong>()[ qword(_r2)]"
       )
       ;
     char_parser = karma::string[_1 = "qi::char_"];
@@ -118,11 +118,12 @@ struct struct_parser_generator : karma::grammar
       eol
       << "template <typename Iterator>" << eol
       << "struct _morbid_parser : ::boost::spirit::qi::grammar<Iterator" << eol
-      << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "()>" << eol
+      << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "(Iterator, bool)>" << eol
       << '{' << eol
       << indent << "_morbid_parser() : _morbid_parser::base_type(start)" << eol
       << indent << '{' << eol
       << indent << indent << "namespace qi = boost::spirit::qi;" << eol
+      << indent << indent << "using qi::_r1; using qi::_r2;" << eol
       << indent << indent << "start %= " << eol
       << indent << indent << indent
       << (
@@ -131,7 +132,7 @@ struct struct_parser_generator : karma::grammar
          ) << indent << indent << indent << ';' << eol
       << indent << '}' << eol
       << indent << "::boost::spirit::qi::rule<Iterator" << eol
-      << indent << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "()> start;" << eol
+      << indent << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "(Iterator, bool)> start;" << eol
       << indent << "::morbid::iiop::grammar::float_<Iterator> float_;" << eol
       << indent << "::morbid::iiop::grammar::double_<Iterator> double_;" << eol
       << indent << "::morbid::iiop::grammar::word<Iterator> word;" << eol

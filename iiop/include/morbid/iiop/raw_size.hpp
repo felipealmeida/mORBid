@@ -20,6 +20,66 @@ namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
 namespace qi = spirit::qi;
 
+namespace generator {
+
+template <typename Size, typename Subject>
+struct raw_size_generator : karma::unary_generator<raw_size_generator<Size, Subject> >
+{
+  template <typename Context, typename Iterator>
+  struct attribute : spirit::traits::attribute_of<Subject, Context, Iterator>
+  {};
+
+  raw_size_generator(Size const& size, Subject const& subject)
+    : size(size), subject(subject) {}
+
+  typedef typename Subject::properties properties;
+
+  template <typename OutputIterator, typename Context, typename Delimiter, typename C>
+  bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
+  {
+    std::cout << "raw_size_generator::generate" << std::endl;
+    std::vector<char> value;
+    typedef giop::forward_back_insert_iterator<std::vector<char> > forward_iterator;
+    BOOST_MPL_ASSERT((boost::is_same<typename iiop::output_iterator<OutputIterator>::type, forward_iterator>));
+    typedef karma::detail::output_iterator
+      <forward_iterator, properties> output_iterator;
+    forward_iterator first(value);
+    output_iterator buffered_sink (first);
+    if(subject.generate(buffered_sink, ctx, d, attr))
+    {
+      typedef typename spirit::result_of::compile<generator_domain, Size>::type
+        size_generator_type;
+      size_generator_type size_generator = spirit::compile<generator_domain>(this->size);
+      typedef typename spirit::traits::attribute_of<size_generator_type, Context, OutputIterator>::type size_attribute;
+      size_attribute size = value.size();
+      if(!size_generator.generate(sink, ctx, d, size))
+        return false;
+      
+      sink = std::copy(value.begin(), value.end(), sink);
+      return true;
+    }
+    return false;
+  }
+
+  Size size;
+  Subject subject;
+};
+
+template <typename Size, typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<giop::tag::raw_size, boost::fusion::vector1<Size> >
+                      , Subject, Modifiers>
+{
+  typedef raw_size_generator<Size, Subject> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, Subject const& subject, spirit::unused_type) const
+  {
+    return result_type(fusion::at_c<0>(term.args), subject);
+  }
+};
+
+}
+
 namespace parser {
 
 template <typename Size, typename Subject>
@@ -80,12 +140,35 @@ struct make_directive<spirit::terminal_ex<giop::tag::raw_size, boost::fusion::ve
 
 namespace boost { namespace spirit {
 
+namespace traits {
+
+template <typename Size, typename Subject>
+struct has_semantic_action< ::morbid::iiop::generator::raw_size_generator<Size, Subject> >
+  : unary_has_semantic_action<Subject> {};
+
+template <typename Size, typename Subject, typename Attribute, typename Context
+          , typename Iterator>
+struct handles_container< ::morbid::iiop::generator::raw_size_generator<Size, Subject>, Attribute
+                          , Context, Iterator>
+  : unary_handles_container<Subject, Attribute, Context, Iterator> {};
+
+}
+
 // Parser
 template <>
 struct use_lazy_directive< ::morbid::iiop::parser_domain, morbid::giop::tag::raw_size, 1>
   : mpl::true_ {};
 template <typename Size, typename Enable>
 struct use_directive< ::morbid::iiop::parser_domain
+                      , terminal_ex<morbid::giop::tag::raw_size, boost::fusion::vector1<Size> >
+                      , Enable> : mpl::true_ {};
+
+// Generator
+template <>
+struct use_lazy_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::raw_size, 1>
+  : mpl::true_ {};
+template <typename Size, typename Enable>
+struct use_directive< ::morbid::iiop::generator_domain
                       , terminal_ex<morbid::giop::tag::raw_size, boost::fusion::vector1<Size> >
                       , Enable> : mpl::true_ {};
 

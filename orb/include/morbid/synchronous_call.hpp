@@ -14,8 +14,10 @@
 #include <morbid/type_tag.hpp>
 #include <morbid/structured_ior.hpp>
 #include <morbid/struct_fusion.hpp>
-// #include <morbid/iiop/message_header.hpp>
-// #include <morbid/iiop/iiop_grammar_builder.hpp>
+#include <morbid/giop/grammars/message_1_0.hpp>
+#include <morbid/giop/grammars/request_1_0.hpp>
+#include <morbid/giop/forward_back_insert_iterator.hpp>
+#include <morbid/iiop/all.hpp>
 
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
@@ -35,6 +37,7 @@
 #include <boost/mpl/end.hpp>
 #include <boost/fusion/include/as_vector.hpp>
 #include <boost/fusion/include/remove_if.hpp>
+#include <boost/algorithm/hex.hpp>
 
 #include <string>
 #include <typeinfo>
@@ -188,6 +191,81 @@ typename return_traits<R>::type call
             << " with repoid: " << repoid << " to method " << method
             << " and args [" << typeid(args).name()
             << ']' << std::endl;
+
+  namespace fusion = boost::fusion;
+  namespace karma = boost::spirit::karma;
+
+  typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
+
+  typedef std::vector<fusion::vector2<unsigned int, std::vector<char> > > service_context_list;
+  typedef fusion::vector7<service_context_list
+                          , unsigned int, bool, std::vector<char>, std::string, std::vector<char>
+                          , ArgsSeq const&>
+    request_attribute_type;
+  typedef fusion::vector3<char, char, fusion::vector2<char, request_attribute_type> >
+    message_attribute_type;
+
+  typedef giop::grammars::request_1_0<iiop::generator_domain
+                                      , output_iterator_type, request_attribute_type>
+    request_header_grammar;
+  typedef giop::grammars::message_1_0<iiop::generator_domain
+                                      , output_iterator_type, message_attribute_type>
+    message_header_grammar;
+
+  request_header_grammar request_header_grammar_;
+  message_header_grammar message_header_grammar_(request_header_grammar_);
+  message_attribute_type attribute ('\1', '\0'
+                                    , fusion::make_vector
+                                    ('\0' 
+                                     , request_attribute_type
+                                     (service_context_list(), 1u, true, std::vector<char>()
+                                      , method, std::vector<char>(), args)));
+  
+  std::vector<char> buffer;
+  output_iterator_type iterator(buffer);
+  if(karma::generate(iterator, giop::compile<iiop::generator_domain>
+                     (message_header_grammar_(giop::native_endian))
+                     , attribute))
+  {
+    std::cout << "Generated" << std::endl;
+    boost::algorithm::hex(buffer.begin(), buffer.end()
+                          , std::ostream_iterator<char>(std::cout));
+    std::cout << std::endl;
+
+    boost::asio::io_service io_service;
+    boost::asio::ip::tcp::resolver resolver(io_service);
+    boost::asio::ip::tcp::resolver::query query
+      (boost::asio::ip::tcp::endpoint::protocol_type::v4(), host, "");
+    boost::asio::ip::tcp::endpoint remote_endpoint = *resolver.resolve(query);
+    remote_endpoint.port(port);
+    boost::asio::ip::tcp::socket socket(io_service, boost::asio::ip::tcp::endpoint());
+    socket.connect(remote_endpoint);
+    boost::asio::write(socket, boost::asio::buffer(buffer)
+                       , boost::asio::transfer_all());
+
+    std::vector<char> reply_buffer(1024u);
+    std::size_t offset = 0;
+    std::vector<char>::iterator first;
+    do
+    {
+      if(reply_buffer.size() - offset < 128u)
+        reply_buffer.resize(reply_buffer.size() + 1024u);
+      boost::system::error_code ec;
+      std::size_t bytes_read
+        = socket.read_some(boost::asio::buffer(&reply_buffer[0], reply_buffer.size() - offset), ec);
+      std::cout << "Read " << bytes_read << " bytes" << std::endl;
+      if(ec)
+        throw ec;
+      else
+      {
+        std::cout << "Should try to parse" << std::endl;
+        break;
+      }
+    }
+    while(true);
+  }
+  else
+    std::cout << "Failed generating" << std::endl;
 
   // std::vector<char> request_body;
   // {
