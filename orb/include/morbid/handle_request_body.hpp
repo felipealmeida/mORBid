@@ -247,7 +247,7 @@ struct reply_arguments_generator
 };
 
 template <typename SeqParam, typename T, typename F>
-void handle_request_body(T* self, F f, const char* first
+void handle_request_body(T* self, F f, std::size_t align_offset
                          , const char* rq_first, const char* rq_last
                          , bool little_endian, reply& r)
 {
@@ -270,7 +270,9 @@ void handle_request_body(T* self, F f, const char* first
   arguments_grammar arguments_grammar_(arguments_traits);
 
   namespace qi = boost::spirit::qi;
-  if(qi::parse(rq_first, rq_last, giop::compile<iiop::parser_domain>(arguments_grammar_(giop::little_endian))
+  if(qi::parse(rq_first, rq_last
+               , giop::compile<iiop::parser_domain>
+               (iiop::aligned(align_offset)[arguments_grammar_(giop::endian(little_endian))])
                , parse_arguments))
   {
     std::cout << "Parsed arguments correctly " << typeid(parse_arguments).name() << std::endl;

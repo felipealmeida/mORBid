@@ -31,6 +31,7 @@ native_endian_type const native_endian = {};
 
 struct endian
 {
+  endian(bool is_little_endian) : b(is_little_endian) {}
   endian(little_endian_type) : b(true) {}
   endian(big_endian_type) : b(false) {}
   endian(native_endian_type)

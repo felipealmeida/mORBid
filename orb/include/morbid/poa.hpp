@@ -41,7 +41,7 @@ struct ServantBase
 
   virtual Object_ptr _construct_local_stub(structured_ior const& ior) = 0;
   virtual void _dispatch(const char* name
-                         , const char* first, const char* request_body_first
+                         , std::size_t align_offset, const char* request_body_first
                          , const char* request_body_last
                          , bool little_endian, reply&) = 0;
   virtual const char* _get_interface() const = 0;

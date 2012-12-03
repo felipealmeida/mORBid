@@ -26,6 +26,7 @@ template <typename OutputIterator>
 struct alignment_attribute
 {
   OutputIterator first;
+  std::size_t offset;
 };
 
 } }
@@ -43,6 +44,23 @@ struct is_scalar< ::morbid::iiop::alignment_attribute<I> const> : mpl::true_
 }
 
 namespace morbid { namespace iiop {
+
+namespace proto = boost::proto;
+
+struct has_align_grammar
+  : proto::or_
+  <
+    proto::subscript<proto::terminal<spirit::terminal_ex<tag::aligned, proto::_> >, proto::_>
+  , proto::subscript<proto::terminal<tag::aligned>, proto::_>
+  >
+{
+};
+
+template <typename T>
+struct is_aligned
+  : proto::matches<T, has_align_grammar>
+{
+};
 
 template <typename Attributes, typename OutputIterator>
 struct get_alignment_attribute
@@ -67,10 +85,12 @@ namespace parser {
 template <std::size_t N, typename Iterator, typename Attributes>
 bool alignment_padding(Iterator& first, Iterator last, Attributes const& attributes)
 {
+  std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes" << std::endl;
   alignment_attribute<Iterator> align_from
     = get_alignment_attribute<Attributes, Iterator>::call(attributes);
 
-  std::size_t distance = std::distance(align_from.first, first);
+  std::size_t distance = std::distance(align_from.first, first) + align_from.offset;
+  std::cout << "position distance " << distance << std::endl;
 
   const std::size_t alignment = N/CHAR_BIT;
 
@@ -97,7 +117,14 @@ struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
+    std::cout << "alignment_enabler::parse " << offset << std::endl;
     typedef typename Context::attributes_type attributes_type;
+    typedef typename fusion::result_of::find<attributes_type, alignment_attribute<Iterator>
+                                             >::type index_iterator_type;
+    typedef typename fusion::result_of::distance
+      <index_iterator_type, typename fusion::result_of::end<attributes_type>::type>::type distance_to_end;
+    BOOST_MPL_ASSERT_RELATION(distance_to_end::value, ==, 0);
+
     typedef typename fusion::result_of::as_list
       <typename fusion::result_of::push_back
        <attributes_type, alignment_attribute<Iterator> >::type
@@ -105,7 +132,7 @@ struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
       alignment_attributes_type;
     typedef spirit::context
       <alignment_attributes_type, typename Context::locals_type> context_type;
-    alignment_attribute<Iterator> e = { first };
+    alignment_attribute<Iterator> e = { first, offset };
     alignment_attributes_type attributes
       = fusion::as_list(fusion::push_back(ctx.attributes, e));
     context_type context(attributes);
@@ -119,12 +146,13 @@ struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
     return false;
   }
 
-  alignment_enabler(Subject const& subject)
-    : subject(subject) 
+  alignment_enabler(Subject const& subject, std::size_t offset = 0)
+    : subject(subject), offset(offset)
   {
   }
 
   Subject subject;
+  std::size_t offset;
 };
 
 template <typename Subject, typename Modifiers>
@@ -134,8 +162,19 @@ struct make_directive<tag::aligned, Subject, Modifiers>
 
   result_type operator()(spirit::unused_type, Subject const& subject, boost::spirit::unused_type) const
   {
-    std::cout << "Modifiers " << typeid(Modifiers).name() << std::endl;
     return result_type(subject);
+  }
+};
+
+template <typename U, typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<tag::aligned, fusion::vector1<U> >, Subject, Modifiers>
+{
+  typedef alignment_enabler<Subject> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, Subject const& subject, boost::spirit::unused_type) const
+  {
+    return result_type(subject, fusion::at_c<0>(term.args));
   }
 };
 
@@ -152,7 +191,7 @@ void alignment_padding(OutputIterator& sink, Attributes const& attributes)
     = get_alignment_attribute<Attributes
                                     , output_iterator>::call(attributes);
 
-  std::size_t distance = std::distance(align_from.first, sink.base());
+  std::size_t distance = std::distance(align_from.first, sink.base()) + align_from.offset;
   std::cout << "alignment_padding distance from start " << distance << std::endl;
   const std::size_t alignment = N/CHAR_BIT;
 
@@ -189,7 +228,7 @@ struct alignment_enabler : karma::unary_generator<alignment_enabler<Subject> >
       alignment_attributes_type;
     typedef spirit::context
       <alignment_attributes_type, typename Context::locals_type> context_type;
-    alignment_attribute<output_iterator> e = { sink.base() };
+    alignment_attribute<output_iterator> e = { sink.base(), offset };
     alignment_attributes_type attributes
       = fusion::as_list(fusion::push_back(ctx.attributes, e));
     context_type context(attributes);
@@ -199,12 +238,13 @@ struct alignment_enabler : karma::unary_generator<alignment_enabler<Subject> >
     return r;
   }
 
-  alignment_enabler(Subject const& subject)
-    : subject(subject) 
+  alignment_enabler(Subject const& subject, std::size_t offset = 0)
+    : subject(subject), offset(offset)
   {
   }
 
   Subject subject;
+  std::size_t offset;
 };
 
 template <typename Subject, typename Modifiers>
@@ -214,9 +254,19 @@ struct make_directive<tag::aligned, Subject, Modifiers>
 
   result_type operator()(spirit::unused_type, Subject const& subject, boost::spirit::unused_type) const
   {
-    std::cout << "Modifiers " << typeid(Modifiers).name() << std::endl;
-
     return result_type(subject);
+  }
+};
+
+template <typename U, typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<tag::aligned, fusion::vector1<U> >, Subject, Modifiers>
+{
+  typedef alignment_enabler<Subject> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, Subject const& subject, boost::spirit::unused_type) const
+  {
+    return result_type(subject, fusion::at_c<0>(term.args));
   }
 };
 
@@ -243,6 +293,16 @@ struct use_directive< ::morbid::iiop::generator_domain, morbid::iiop::tag::align
 
 template <typename Enable>
 struct use_directive< ::morbid::iiop::parser_domain, morbid::iiop::tag::aligned, Enable> : mpl::true_ {};
+
+template <typename U, typename Enable>
+struct use_directive< ::morbid::iiop::generator_domain
+                      , terminal_ex<morbid::iiop::tag::aligned, boost::fusion::vector1<U> >
+                      , Enable> : mpl::true_ {};
+
+template <typename U, typename Enable>
+struct use_directive< ::morbid::iiop::parser_domain
+                      , terminal_ex<morbid::iiop::tag::aligned, boost::fusion::vector1<U> >
+                      , Enable> : mpl::true_ {};
 
 } }
 

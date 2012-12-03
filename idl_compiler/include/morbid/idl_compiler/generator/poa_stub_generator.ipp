@@ -88,7 +88,7 @@ header_poa_stub_generator<OutputIterator, Iterator>::header_poa_stub_generator()
     << indent << "const char* _get_interface() const;" << eol
     ;
   dispatch_function =
-    indent << "void _dispatch(const char*, const char*, const char*, const char*"
+    indent << "void _dispatch(const char*, ::std::size_t, const char*, const char*"
            << ", bool little_endian, ::morbid::reply&);" << eol
     ;
     
@@ -127,7 +127,7 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
     ;
   dispatch_function =
     "void " << class_name(_r1)[_1 = at_c<0>(_val)]
-    << "::_dispatch(const char* name, const char* first" << eol
+    << "::_dispatch(const char* name, ::std::size_t align_offset" << eol
     << indent << indent << ", const char* rq_first, const char* rq_last"
     << ", bool little_endian, ::morbid::reply& reply)" << eol
     << "{" << eol
@@ -148,7 +148,7 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
     << -(synchronous_template_args(_r4) % ", ")[_1 = at_c<2>(_val)]
     << " > >(this, &" << class_name(_r3)[_1 = _r2]
     << "::" << karma::string[_1 = at_c<1>(_val)]
-    << ", first, rq_first, rq_last, little_endian, reply);" << eol
+    << ", align_offset, rq_first, rq_last, little_endian, reply);" << eol
     << var_indent(_r1) << "}" << eol
     ;
   in_tag = karma::string[_1 = "::morbid::type_tag::in_tag"];

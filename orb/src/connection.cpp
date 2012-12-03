@@ -139,6 +139,7 @@ void connection::process_input()
     std::cout << "arguments buffer size: " << fusion::at_c<6u>(attr).size() << std::endl;
     std::cout << "endianness: " << fusion::at_c<7u>(attr) << std::endl;
     std::cout << "arguments offset: " << std::distance(processing_buffer.begin(), iterator) << std::endl;
+    std::size_t align_offset = std::distance(processing_buffer.begin(), iterator);
     processing_buffer.erase(processing_buffer.begin(), iterator);
 
     if(boost::shared_ptr<POA> poa = poa_.lock())
@@ -170,7 +171,7 @@ void connection::process_input()
 
           reply r = {fusion::at_c<1u>(attr)};
           impl->_dispatch(fusion::at_c<4u>(attr).c_str()
-                          , arg_first, arg_first
+                          , align_offset, arg_first
                           , arg_last, fusion::at_c<7u>(attr), r);
 
           if(fusion::at_c<2u>(attr))

@@ -35,7 +35,7 @@ struct allprimitives_impl : POA_allprimitives
   }
   void foo3(double d)
   {
-    std::cout << "== foo3" << std::endl;
+    std::cout << "== foo3 " << d << std::endl;
     assert(!foo3_ && foo2_ && foo1_);
     assert(d == 2.0);
     foo3_ = true;
