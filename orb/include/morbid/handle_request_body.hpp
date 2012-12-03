@@ -15,10 +15,14 @@
 #include <morbid/in_out_traits.hpp>
 #include <morbid/arguments_traits.hpp>
 #include <morbid/giop/grammars/arguments.hpp>
+#include <morbid/giop/grammars/message_1_0.hpp>
+#include <morbid/giop/grammars/reply_1_0.hpp>
 #include <morbid/iiop/all.hpp>
 
 #include <boost/fusion/include/fused.hpp>
 #include <boost/fusion/include/as_vector.hpp>
+#include <boost/fusion/include/make_vector.hpp>
+#include <boost/fusion/include/io.hpp>
 
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/bool.hpp>
@@ -95,6 +99,43 @@ struct create_argument_transform<type_tag::value_type_tag<morbid::string, type_t
 };
 
 template <typename T>
+struct reply_argument_transform;
+
+template <typename T>
+struct reply_argument_transform<type_tag::value_type_tag<T, type_tag::out_tag> >
+{
+  typedef type_tag::value_type_tag<T, type_tag::in_tag> tagged;
+  typedef typename boost::add_reference<typename tagged::type>::type type;
+  typedef type result_type;
+
+  result_type operator()(result_type r) const { return r; }
+};
+
+template <typename T>
+struct reply_argument_transform<type_tag::value_type_tag<T, type_tag::inout_tag> >
+  : reply_argument_transform<type_tag::value_type_tag<T, type_tag::out_tag> >
+{
+};
+
+template <>
+struct reply_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::out_tag> >
+{
+  typedef std::string type;
+  typedef type result_type;
+
+  result_type operator()(const char* str) const
+  {
+    return str;
+  }
+};
+
+template <>
+struct reply_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::inout_tag> >
+  : reply_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::out_tag> >
+{
+};
+
+template <typename T>
 struct tag
 {
 };
@@ -135,13 +176,68 @@ struct initialize_arguments
   call(std::pair<mpl::int_<I>, S> const& s, tag<T>const&, Tag) const
   {
     typedef create_argument_transform<T> transform;
-    typedef typename create_argument_transform<T>::type type;
+    typedef typename transform::type type;
     return std::pair<mpl::int_<I+1>, fusion::cons<type, S> >
       (mpl::int_<I+1>(), fusion::cons<type, S>(transform()(fusion::at_c<I>(parse_arguments)), s.second));
   }
 
   template <int I, typename S, typename T>
   typename result<initialize_arguments<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
+  operator()(std::pair<mpl::int_<I>, S> const& s, tag<T>const& t) const
+  {
+    return call(s, t, typename T::tag());
+  }
+
+  ParseArguments& parse_arguments;
+};
+
+template <typename ParseArguments>
+struct reply_arguments_generator
+{
+  template <typename R>
+  struct result;
+
+  template <typename This, int I, typename S, typename T>
+  struct result<This(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>
+  {
+    template <typename U>
+    struct create_pair
+    {
+      typedef std::pair<mpl::int_<I+1>, fusion::cons<typename reply_argument_transform<U>::type, S> > type;
+    };
+
+    typedef type_tag::is_not_in_type_tag<T> is_not_in;
+    typedef typename mpl::eval_if
+    <is_not_in
+     ,  create_pair<T>
+      , mpl::identity<std::pair<mpl::int_<I>, S> >
+    >::type
+     type;
+  };
+
+  reply_arguments_generator(ParseArguments& parse_arguments)
+    : parse_arguments(parse_arguments)
+  {}
+
+  template <int I, typename S, typename T>
+  typename result<reply_arguments_generator<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
+  call(std::pair<mpl::int_<I>, S> const& s, tag<T>const&, type_tag::in_tag) const
+  {
+    return s;
+  }
+
+  template <int I, typename S, typename T, typename Tag>
+  typename result<reply_arguments_generator<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
+  call(std::pair<mpl::int_<I>, S> const& s, tag<T>const&, Tag) const;
+  // {
+  //   typedef create_argument_transform<T> transform;
+  //   typedef typename transform::type type;
+  //   return std::pair<mpl::int_<I+1>, fusion::cons<type, S> >
+  //     (mpl::int_<I+1>(), fusion::cons<type, S>(transform()(fusion::at_c<I>(parse_arguments)), s.second));
+  // }
+
+  template <int I, typename S, typename T>
+  typename result<reply_arguments_generator<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
   operator()(std::pair<mpl::int_<I>, S> const& s, tag<T>const& t) const
   {
     return call(s, t, typename T::tag());
@@ -177,8 +273,8 @@ void handle_request_body(T* self, F f, const char* first
   if(qi::parse(rq_first, rq_last, giop::compile<iiop::parser_domain>(arguments_grammar_(giop::little_endian))
                , parse_arguments))
   {
-    std::cout << "Parsed arguments correctly" << std::endl;
-
+    std::cout << "Parsed arguments correctly " << typeid(parse_arguments).name() << std::endl;
+    std::cout << "Arguments parsed " << parse_arguments << std::endl;
     std::cout << "handle_request_body not_out_params " << typeid(parse_argument_types).name() << std::endl;
 
     typedef typename mpl::transform<SeqParam, create_argument_transform<mpl::_1> >::type mpl_argument_types;
@@ -201,6 +297,69 @@ void handle_request_body(T* self, F f, const char* first
 
     fusion::fused<F> fused(f);
     fused(fusion::push_front(arguments.second, self));
+
+    typedef typename mpl::lambda<type_tag::is_not_in_type_tag<mpl::_1> >::type is_not_in_lambda;
+    typedef typename mpl::copy_if<SeqParam, is_not_in_lambda>::type not_in_params;
+    // typedef typename mpl::transform<not_in_params, reply_argument_transform<mpl::_1> >::type mpl_reply_argument_types;
+    // typedef typename fusion::result_of::as_vector<mpl_reply_argument_types>::type reply_argument_types;
+
+    typedef typename boost::remove_reference<
+      typename fusion::result_of::fold<identity_argument_types const, std::pair<mpl::int_<0>, fusion::nil>
+                                       , reply_arguments_generator<argument_types> >::type
+      >::type
+      reply_argument_types;
+
+    std::cout << "reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
+
+    typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
+    typedef std::vector<fusion::vector2<unsigned int, std::vector<char> > > service_context_list;
+    typedef fusion::vector4<service_context_list
+                            , unsigned int, unsigned int
+                            , typename reply_argument_types::second_type>
+      reply_attribute_type;
+    typedef fusion::vector1<fusion::vector1<reply_attribute_type> >
+      message_reply_attribute_type;
+
+    typedef giop::grammars::arguments<iiop::generator_domain
+                                      , output_iterator_type, not_in_params
+                                      , typename reply_argument_types::second_type>
+      arguments_grammar;
+    typedef giop::grammars::reply_1_0<iiop::generator_domain
+                                      , output_iterator_type, reply_attribute_type>
+      reply_grammar;
+    typedef giop::grammars::message_1_0<iiop::generator_domain
+                                        , output_iterator_type, message_reply_attribute_type
+                                        , 1u /* reply */>
+      message_reply_grammar;
+
+    arguments_grammar arguments_grammar_(arguments_traits);
+    reply_grammar reply_grammar_(arguments_grammar_);
+    message_reply_grammar message_grammar_(reply_grammar_);
+
+    reply_argument_types reply_arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
+                                                        , reply_arguments_generator<argument_types>(arguments));
+
+    service_context_list l;
+    message_reply_attribute_type message_attribute
+      (fusion::make_vector
+       (reply_attribute_type
+        (l
+         , r.request_id
+         , 0u /* NO_EXCEPTION */
+         , reply_arguments.second)));
+    output_iterator_type iterator(r.reply_body);
+    namespace karma = boost::spirit::karma;
+    if(karma::generate(iterator, giop::compile<iiop::generator_domain>
+                       (message_grammar_(giop::native_endian))
+                       , message_attribute))
+    {
+      std::cout << "reply generated" << std::endl;
+    }
+    else
+    {
+      std::cout << "Failed generating reply" << std::endl;
+      throw morbid::MARSHALL();
+    }
   }
   else
   {

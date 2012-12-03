@@ -173,6 +173,24 @@ void connection::process_input()
                           , arg_first, arg_first
                           , arg_last, fusion::at_c<7u>(attr), r);
 
+          if(fusion::at_c<2u>(attr))
+          {
+            std::cout << "reply_buffer " << r.reply_body.size() << std::endl;
+            boost::system::error_code ec;
+            int rs =
+              boost::asio::write(socket, boost::asio::buffer(r.reply_body)
+                                 , boost::asio::transfer_all(), ec);
+            int size = r.reply_body.size();
+            assert(rs == size);
+            if(!ec)
+            {
+              std::cout << "Successful transfer" << std::endl;
+            }
+            else
+            {
+              std::cout << "Failed transfering" << std::endl;
+            }
+          }
         }
       }
     }
