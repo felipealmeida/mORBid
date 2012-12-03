@@ -144,7 +144,10 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
     << var_indent(_r1+1) << "std::cout << \"" << class_name(_r3)[_1 = _r2]
     << "::" << karma::string[_1 = at_c<1>(_val)] << "\" << std::endl;" << eol
     << var_indent(_r1+1)
-    << "::morbid::handle_request_body< ::boost::mpl::vector< "
+    << "::morbid::handle_request_body< "
+    << type_spec(at_c<1>(_r4)[at_c<0>(_val)])[_1 = at_c<0>(_val)]
+    // << type_spec_select(_r4)[_1 = at_c<0u>(_val)]
+    << ", ::boost::mpl::vector< "
     << -(synchronous_template_args(_r4) % ", ")[_1 = at_c<2>(_val)]
     << " > >(this, &" << class_name(_r3)[_1 = _r2]
     << "::" << karma::string[_1 = at_c<1>(_val)]

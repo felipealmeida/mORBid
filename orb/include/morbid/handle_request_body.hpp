@@ -228,13 +228,13 @@ struct reply_arguments_generator
 
   template <int I, typename S, typename T, typename Tag>
   typename result<reply_arguments_generator<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
-  call(std::pair<mpl::int_<I>, S> const& s, tag<T>const&, Tag) const;
-  // {
-  //   typedef create_argument_transform<T> transform;
-  //   typedef typename transform::type type;
-  //   return std::pair<mpl::int_<I+1>, fusion::cons<type, S> >
-  //     (mpl::int_<I+1>(), fusion::cons<type, S>(transform()(fusion::at_c<I>(parse_arguments)), s.second));
-  // }
+  call(std::pair<mpl::int_<I>, S> const& s, tag<T>const&, Tag) const
+  {
+    typedef reply_argument_transform<T> transform;
+    typedef typename transform::type type;
+    return std::pair<mpl::int_<I+1>, fusion::cons<type, S> >
+      (mpl::int_<I+1>(), fusion::cons<type, S>(transform()(fusion::at_c<I>(parse_arguments)), s.second));
+  }
 
   template <int I, typename S, typename T>
   typename result<reply_arguments_generator<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
@@ -246,14 +246,130 @@ struct reply_arguments_generator
   ParseArguments& parse_arguments;
 };
 
-template <typename SeqParam, typename T, typename F>
+template <typename NotInParams, typename ReplyArguments>
+void make_request_reply(reply& r, ReplyArguments& reply_arguments)
+{
+  typedef ReplyArguments reply_argument_types;
+
+  typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
+  typedef std::vector<fusion::vector2<unsigned int, std::vector<char> > > service_context_list;
+  typedef fusion::vector4<service_context_list
+                          , unsigned int, unsigned int
+                          , typename reply_argument_types::second_type>
+    reply_attribute_type;
+  typedef fusion::vector1<fusion::vector1<reply_attribute_type> >
+    message_reply_attribute_type;
+
+  typedef giop::grammars::arguments<iiop::generator_domain
+                                    , output_iterator_type, NotInParams
+                                    , typename reply_argument_types::second_type>
+    arguments_grammar;
+  typedef giop::grammars::reply_1_0<iiop::generator_domain
+                                    , output_iterator_type, reply_attribute_type>
+    reply_grammar;
+  typedef giop::grammars::message_1_0<iiop::generator_domain
+                                      , output_iterator_type, message_reply_attribute_type
+                                      , 1u /* reply */>
+    message_reply_grammar;
+  
+  morbid::arguments_traits arguments_traits;
+  arguments_grammar arguments_grammar_(arguments_traits);
+  reply_grammar reply_grammar_(arguments_grammar_);
+  message_reply_grammar message_grammar_(reply_grammar_);
+
+  service_context_list l;
+  message_reply_attribute_type message_attribute
+    (fusion::make_vector
+     (reply_attribute_type
+      (l
+       , r.request_id
+       , 0u /* NO_EXCEPTION */
+       , reply_arguments.second)));
+  output_iterator_type iterator(r.reply_body);
+  namespace karma = boost::spirit::karma;
+  if(karma::generate(iterator, giop::compile<iiop::generator_domain>
+                     (message_grammar_(giop::native_endian))
+                     , message_attribute))
+  {
+    std::cout << "reply generated" << std::endl;
+  }
+  else
+  {
+    std::cout << "Failed generating reply" << std::endl;
+    throw morbid::MARSHALL();
+  }
+}
+
+template <typename R, typename SeqParam, typename F, typename T, typename Args>
+void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<void>)
+{
+  f(fusion::push_front(args, self));
+
+  typedef Args argument_types;
+
+  typedef typename mpl::lambda<type_tag::is_not_in_type_tag<mpl::_1> >::type is_not_in_lambda;
+  typedef typename mpl::copy_if<SeqParam, is_not_in_lambda>::type not_in_params;
+
+  typedef typename mpl::transform<SeqParam, create_argument_transform<mpl::_1> >::type mpl_argument_types;
+  typedef typename mpl::transform<SeqParam, tag<mpl::_1> >::type mpl_identity_argument_types;
+  typedef typename fusion::result_of::as_vector<mpl_identity_argument_types>::type identity_argument_types;
+  identity_argument_types const identity_arguments;
+
+  typedef typename boost::remove_reference<
+    typename fusion::result_of::fold<identity_argument_types const, std::pair<mpl::int_<0>, fusion::nil>
+                                     , reply_arguments_generator<argument_types> >::type
+    >::type
+    reply_argument_types;
+
+  std::cout << "reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
+
+  reply_argument_types reply_arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
+                                                      , reply_arguments_generator<argument_types>(args));
+  make_request_reply<not_in_params>(r, reply_arguments);
+}
+
+template <typename R, typename SeqParam, typename F, typename T, typename Args>
+void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<R>)
+{
+  R result = f(fusion::push_front(args, self));
+
+  typedef Args argument_types;
+
+  typedef type_tag::value_type_tag<R, type_tag::out_tag> result_tag;
+  typedef typename mpl::push_front<SeqParam, result_tag>::type sequence_params;
+
+  typedef typename mpl::lambda<type_tag::is_not_in_type_tag<mpl::_1> >::type is_not_in_lambda;
+  typedef typename mpl::copy_if<sequence_params, is_not_in_lambda>::type not_in_params;
+
+  typedef typename mpl::transform<sequence_params, create_argument_transform<mpl::_1> >::type mpl_argument_types;
+  typedef typename mpl::transform<sequence_params, tag<mpl::_1> >::type mpl_identity_argument_types;
+  typedef typename fusion::result_of::as_vector<mpl_identity_argument_types>::type identity_argument_types;
+  identity_argument_types const identity_arguments;
+
+  typedef fusion::cons<R, argument_types> args_with_result_type;
+
+  typedef typename boost::remove_reference<
+    typename fusion::result_of::fold<identity_argument_types const, std::pair<mpl::int_<0>, fusion::nil>
+                                     , reply_arguments_generator<args_with_result_type> >::type
+    >::type
+    reply_argument_types;
+
+  std::cout << "reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
+
+  args_with_result_type args_with_result(result, args);
+  reply_argument_types reply_arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
+                                                      , reply_arguments_generator
+                                                      <args_with_result_type>
+                                                      (args_with_result));
+  make_request_reply<not_in_params>(r, reply_arguments);
+}
+
+template <typename R, typename SeqParam, typename T, typename F>
 void handle_request_body(T* self, F f, std::size_t align_offset
                          , const char* rq_first, const char* rq_last
                          , bool little_endian, reply& r)
 {
   std::cout << "handle_request_body " << typeid(f).name() << std::endl;
-  typedef typename boost::function_types::result_type<F>::type result_type;
-
   typedef typename mpl::lambda<type_tag::is_not_out_type_tag<mpl::_1> >::type is_not_out_lambda;
   typedef typename mpl::copy_if<SeqParam, is_not_out_lambda>::type not_out_params;
 
@@ -296,72 +412,8 @@ void handle_request_body(T* self, F f, std::size_t align_offset
 
     argument_types arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
                                             , initialize_arguments<parse_argument_types>(parse_arguments));
-
     fusion::fused<F> fused(f);
-    fused(fusion::push_front(arguments.second, self));
-
-    typedef typename mpl::lambda<type_tag::is_not_in_type_tag<mpl::_1> >::type is_not_in_lambda;
-    typedef typename mpl::copy_if<SeqParam, is_not_in_lambda>::type not_in_params;
-    // typedef typename mpl::transform<not_in_params, reply_argument_transform<mpl::_1> >::type mpl_reply_argument_types;
-    // typedef typename fusion::result_of::as_vector<mpl_reply_argument_types>::type reply_argument_types;
-
-    typedef typename boost::remove_reference<
-      typename fusion::result_of::fold<identity_argument_types const, std::pair<mpl::int_<0>, fusion::nil>
-                                       , reply_arguments_generator<argument_types> >::type
-      >::type
-      reply_argument_types;
-
-    std::cout << "reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
-
-    typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
-    typedef std::vector<fusion::vector2<unsigned int, std::vector<char> > > service_context_list;
-    typedef fusion::vector4<service_context_list
-                            , unsigned int, unsigned int
-                            , typename reply_argument_types::second_type>
-      reply_attribute_type;
-    typedef fusion::vector1<fusion::vector1<reply_attribute_type> >
-      message_reply_attribute_type;
-
-    typedef giop::grammars::arguments<iiop::generator_domain
-                                      , output_iterator_type, not_in_params
-                                      , typename reply_argument_types::second_type>
-      arguments_grammar;
-    typedef giop::grammars::reply_1_0<iiop::generator_domain
-                                      , output_iterator_type, reply_attribute_type>
-      reply_grammar;
-    typedef giop::grammars::message_1_0<iiop::generator_domain
-                                        , output_iterator_type, message_reply_attribute_type
-                                        , 1u /* reply */>
-      message_reply_grammar;
-
-    arguments_grammar arguments_grammar_(arguments_traits);
-    reply_grammar reply_grammar_(arguments_grammar_);
-    message_reply_grammar message_grammar_(reply_grammar_);
-
-    reply_argument_types reply_arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
-                                                        , reply_arguments_generator<argument_types>(arguments));
-
-    service_context_list l;
-    message_reply_attribute_type message_attribute
-      (fusion::make_vector
-       (reply_attribute_type
-        (l
-         , r.request_id
-         , 0u /* NO_EXCEPTION */
-         , reply_arguments.second)));
-    output_iterator_type iterator(r.reply_body);
-    namespace karma = boost::spirit::karma;
-    if(karma::generate(iterator, giop::compile<iiop::generator_domain>
-                       (message_grammar_(giop::native_endian))
-                       , message_attribute))
-    {
-      std::cout << "reply generated" << std::endl;
-    }
-    else
-    {
-      std::cout << "Failed generating reply" << std::endl;
-      throw morbid::MARSHALL();
-    }
+    handle_request_reply<R, SeqParam>(fused, self, r, arguments.second, mpl::identity<R>());
   }
   else
   {
