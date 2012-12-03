@@ -62,17 +62,17 @@ bool unroll_copy_backward(Iterator& first, Iterator last, Value& v, unroll_tag<N
     return false;
 }
 
-template <std::size_t N, typename Iterator>
-bool reverse_unsigned_parse(Iterator& first, Iterator last, typename boost::uint_t<N>::exact& value)
+template <std::size_t N, typename Iterator, typename T>
+bool reverse_unsigned_parse(Iterator& first, Iterator last, T& value)
 {
-  BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
+  BOOST_MPL_ASSERT_RELATION(sizeof(T), ==, N/CHAR_BIT);
   return unroll_copy_backward(first, last, value, unroll_tag<N/CHAR_BIT>());
 }
 
-template <std::size_t N, typename Iterator>
-bool normal_unsigned_parse(Iterator& first, Iterator last, typename boost::uint_t<N>::exact& value)
+template <std::size_t N, typename Iterator, typename T>
+bool normal_unsigned_parse(Iterator& first, Iterator last, T& value)
 {
-  BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
+  BOOST_MPL_ASSERT_RELATION(sizeof(T), ==, N/CHAR_BIT);
   return unroll_copy(first, last, value, unroll_tag<0u>(), unroll_tag<N/CHAR_BIT>());
 }
 
@@ -111,7 +111,7 @@ struct unsigned_parser : qi::primitive_parser<unsigned_parser<N> >
 };
 
 template <std::size_t N>
-struct specific_unsigned_parser : qi::primitive_parser<unsigned_parser<N> >
+struct specific_unsigned_parser : qi::primitive_parser<specific_unsigned_parser<N> >
 {
   template <typename Context, typename Unused>
   struct attribute
@@ -207,6 +207,66 @@ struct make_primitive<spirit::tag::ulong_long, Modifiers, Enable>
   }
 };
 
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::float_, Modifiers, Enable>
+{
+  typedef unsigned_parser<32u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::double_, Modifiers, Enable>
+{
+  typedef unsigned_parser<64u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::short_, Modifiers, Enable>
+{
+  typedef unsigned_parser<16u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::long_, Modifiers, Enable>
+{
+  typedef unsigned_parser<32u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::long_long, Modifiers, Enable>
+{
+  typedef unsigned_parser<64u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
 }
 
 namespace generator {
@@ -250,17 +310,17 @@ void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<N>)
   unroll_copy_backward(sink, v, unroll_tag<N-1>());
 }
 
-template <std::size_t N, typename OutputIterator>
-void reverse_unsigned_generate(OutputIterator& sink, typename boost::uint_t<N>::exact value)
+template <std::size_t N, typename OutputIterator, typename T>
+void reverse_unsigned_generate(OutputIterator& sink, T value)
 {
-  BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
+  BOOST_MPL_ASSERT_RELATION(sizeof(T), ==, N/CHAR_BIT);
   unroll_copy_backward(sink, value, unroll_tag<N/CHAR_BIT - 1>());
 }
 
-template <std::size_t N, typename OutputIterator>
-void normal_unsigned_generate(OutputIterator& sink, typename boost::uint_t<N>::exact value)
+template <std::size_t N, typename OutputIterator, typename T>
+void normal_unsigned_generate(OutputIterator& sink, T value)
 {
-  BOOST_MPL_ASSERT_RELATION(sizeof(typename boost::uint_t<N>::exact), ==, N/CHAR_BIT);
+  BOOST_MPL_ASSERT_RELATION(sizeof(T), ==, N/CHAR_BIT);
   unroll_copy(sink, value, unroll_tag<0u>(), unroll_tag<N/CHAR_BIT>());
 }
 
@@ -311,10 +371,73 @@ struct unsigned_generator : karma::primitive_generator<unsigned_generator<N> >
   }
 };
 
+template <std::size_t N>
+struct specific_unsigned_generator : karma::primitive_generator<specific_unsigned_generator<N> >
+{
+  template <typename Context, typename Unused>
+  struct attribute
+  {
+    typedef spirit::unused_type type;
+  };
+
+  specific_unsigned_generator(typename boost::uint_t<N>::least value)
+    : value(value) {}
+  
+  template <typename OutputIterator, typename Context, typename Delimiter, typename Attr>
+  bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, Attr const& attr) const
+  {
+    std::cout << "generating unsigned of value (specificied) " << value << std::endl;
+
+    alignment_padding<N>(sink, ctx.attributes);
+    typedef typename attribute<Context, OutputIterator>::type attribute_type;
+
+    bool endianness = generator_endianness<typename Context::attributes_type>
+      ::call(ctx.attributes);
+#ifdef BOOST_BIG_ENDIAN
+    if(endianness)
+#elif defined(BOOST_LITTLE_ENDIAN)
+    if(!endianness)
+#else
+#error No native endianness found
+#endif
+      reverse_unsigned_generate<N>(sink, value);
+    else
+      normal_unsigned_generate<N>(sink, value);
+    return true;
+  }
+
+  typename boost::uint_t<N>::least value;
+};
+
+
 template <typename Modifiers, typename Enable>
 struct make_primitive<spirit::tag::ushort_, Modifiers, Enable>
 {
   typedef unsigned_generator<16u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::float_, Modifiers, Enable>
+{
+  typedef unsigned_generator<32u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::double_, Modifiers, Enable>
+{
+  typedef unsigned_generator<64u> result_type;
 
   template <typename T_>
   result_type operator()(T_& val, boost::spirit::unused_type) const
@@ -332,6 +455,43 @@ struct make_primitive<spirit::tag::ulong_, Modifiers, Enable>
   result_type operator()(T_& val, boost::spirit::unused_type) const
   {
     return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::long_, Modifiers, Enable>
+{
+  typedef unsigned_generator<32u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::short_, Modifiers, Enable>
+{
+  typedef unsigned_generator<16u> result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename U, typename Modifiers, typename Enable>
+struct make_primitive<spirit::terminal_ex<spirit::tag::ulong_, fusion::vector1<U> >
+                      , Modifiers, Enable>
+{
+  typedef specific_unsigned_generator<32u> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, boost::spirit::unused_type) const
+  {
+    return result_type(fusion::at_c<0>(term.args));
   }
 };
 
@@ -357,6 +517,9 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::ushort_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::ulong_, Enable> : mpl::true_ {};
+template <typename U, typename Enable>
+struct use_terminal< ::morbid::iiop::generator_domain
+                     , terminal_ex<tag::ulong_, fusion::vector1<U> >, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::ulong_long, Enable> : mpl::true_ {};
 template <typename Enable>
@@ -365,6 +528,10 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::long_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::generator_domain, tag::long_long, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::generator_domain, tag::double_, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::generator_domain, tag::float_, Enable> : mpl::true_ {};
 
 // Parser
 template <typename Enable>
@@ -384,6 +551,10 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, tag::long_, Enable> : mpl::true_ {};
 template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, tag::long_long, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::double_, Enable> : mpl::true_ {};
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, tag::float_, Enable> : mpl::true_ {};
 
 } }
 

@@ -20,6 +20,8 @@ namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
 namespace fusion = boost::fusion;
 
+BOOST_SPIRIT_TERMINAL_EX(save_endian);
+
 struct endianness_attribute
 {
   endianness_attribute() : endianness(0) {}
@@ -147,6 +149,37 @@ struct endianness_parser : qi::unary_parser<endianness_parser<Subject> >
 
   typedef Subject subject_type;
   Subject subject;
+};
+
+struct save_endian_parser : qi::unary_parser<save_endian_parser>
+{
+  template <typename Context, typename Unused>
+  struct attribute
+  {
+    typedef bool type;
+  };
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    attr = generator_endianness<typename Context::attributes_type>
+      ::call(ctx.attributes);
+    return true;
+  }
+};
+
+template <typename Modifiers, typename Enable>
+struct make_primitive<tag::save_endian, Modifiers, Enable>
+{
+  typedef save_endian_parser result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
 };
 
 template <typename Subject>
@@ -331,6 +364,10 @@ struct use_lazy_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::
 // Parser
 template <typename Enable>
 struct use_directive< ::morbid::iiop::parser_domain, morbid::giop::tag::endianness, Enable> : mpl::true_ {};
+
+// Parser
+template <typename Enable>
+struct use_terminal< ::morbid::iiop::parser_domain, ::morbid::iiop::tag::save_endian, Enable> : mpl::true_ {};
 
 } }
 

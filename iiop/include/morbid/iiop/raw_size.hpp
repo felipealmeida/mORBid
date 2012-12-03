@@ -8,6 +8,8 @@
 #ifndef MORBID_IIOP_RAW_SIZE_HPP
 #define MORBID_IIOP_RAW_SIZE_HPP
 
+#include <morbid/giop/forward_back_insert_iterator.hpp>
+
 #include <boost/spirit/home/support.hpp>
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/karma.hpp>

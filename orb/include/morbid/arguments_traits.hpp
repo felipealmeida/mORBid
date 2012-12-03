@@ -31,6 +31,83 @@ struct argument_giop_grammar<morbid::String>
   result_type operator()() const { return giop::string; }
 };
 
+template <>
+struct argument_giop_grammar<morbid::Char>
+{
+  typedef spirit::terminal<giop::tag::octet>const& result_type;
+  result_type operator()() const { return giop::octet; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::Boolean>
+{
+  typedef spirit::terminal<spirit::tag::bool_>const& result_type;
+  result_type operator()() const { return giop::bool_; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::Double>
+{
+  typedef spirit::terminal<spirit::tag::double_>const& result_type;
+  result_type operator()() const { return giop::double_; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::Float>
+{
+  typedef spirit::terminal<spirit::tag::float_>const& result_type;
+  result_type operator()() const { return giop::float_; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::LongLong>
+{
+  typedef spirit::terminal<spirit::tag::long_long>const& result_type;
+  result_type operator()() const { return giop::long_long; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::ULongLong>
+{
+  typedef spirit::terminal<spirit::tag::ulong_long>const& result_type;
+  result_type operator()() const { return giop::ulong_long; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::Long>
+{
+  typedef spirit::terminal<spirit::tag::long_>const& result_type;
+  result_type operator()() const { return giop::long_; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::ULong>
+{
+  typedef spirit::terminal<spirit::tag::ulong_>const& result_type;
+  result_type operator()() const { return giop::ulong_; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::Short>
+{
+  typedef spirit::terminal<spirit::tag::short_>const& result_type;
+  result_type operator()() const { return giop::short_; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::UShort>
+{
+  typedef spirit::terminal<spirit::tag::ushort_>const& result_type;
+  result_type operator()() const { return giop::ushort_; }
+};
+
+template <>
+struct argument_giop_grammar<morbid::Octet>
+{
+  typedef spirit::terminal<giop::tag::octet>const& result_type;
+  result_type operator()() const { return giop::octet; }
+};
+
 }
 
 struct arguments_traits

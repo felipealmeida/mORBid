@@ -67,6 +67,19 @@ struct make_primitive<giop::tag::octet, Modifiers, Enable>
   }
 };
 
+template <typename Modifiers, typename Enable>
+struct make_primitive<spirit::tag::bool_, Modifiers, Enable>
+{
+  typedef qi::char_class<spirit::tag::char_code
+                         <spirit::tag::char_, octet_encoding> > result_type;
+
+  template <typename T_>
+  result_type operator()(T_& val, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
 template <typename U, typename Modifiers, typename Enable>
 struct make_primitive<spirit::terminal_ex<giop::tag::octet, fusion::vector1<U> >
                       , Modifiers, Enable>

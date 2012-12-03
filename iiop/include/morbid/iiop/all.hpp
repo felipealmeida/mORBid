@@ -16,3 +16,4 @@
 #include <morbid/iiop/rule.hpp>
 #include <morbid/iiop/auxiliary.hpp>
 #include <morbid/iiop/raw_size.hpp>
+#include <morbid/iiop/buffer.hpp>

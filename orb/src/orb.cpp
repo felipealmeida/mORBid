@@ -67,8 +67,12 @@ String_ptr ORB::object_to_string(Object_ptr p)
                                , ior::tagged_profile> tagged_profile;
   iiop::grammar::profile_body_1_1<iiop::generator_domain, output_iterator_type
                                   , iiop::profile_body> profile_body;
+  ior::grammar::generic_tagged_profile<iiop::generator_domain, output_iterator_type
+                                       , iiop::profile_body, 0u
+                                       > tagged_profile_body
+    (giop::endianness[profile_body]);
 
-  ior_grammar_type ior_grammar(tagged_profile | profile_body);
+  ior_grammar_type ior_grammar(tagged_profile | tagged_profile_body);
 
   std::vector<char> ior;
   namespace karma = boost::spirit::karma;

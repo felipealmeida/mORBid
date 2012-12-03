@@ -6,11 +6,9 @@
  */
 
 #include <morbid/poa/connection.hpp>
-#include <morbid/iiop/message_header.hpp>
-// #include <morbid/iiop/grammar/message_header.hpp>
-// #include <morbid/iiop/grammar/request_header_1_1.hpp>
-// #include <morbid/iiop/generator/reply_header.hpp>
-// #include <morbid/iiop/generator/message_header.hpp>
+#include <morbid/giop/grammars/message_1_0.hpp>
+#include <morbid/giop/grammars/request_1_0.hpp>
+#include <morbid/iiop/all.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
@@ -59,8 +57,8 @@ void connection::process_input()
 {
   std::cout << "Should try to understand what is in processing_buffer: " << processing_buffer.size() << std::endl;
 
-  std::vector<char>::const_iterator iterator = processing_buffer.begin()
-    , last = processing_buffer.end();
+  typedef std::vector<char>::iterator iterator_type;
+  iterator_type iterator = processing_buffer.begin(), last = processing_buffer.end();
   while(iterator != last)
   {
     std::cout.fill('0');
@@ -101,59 +99,88 @@ void connection::process_input()
   std::endl(std::cout);
   std::dec(std::cout);
 
-  // namespace qi = boost::spirit::qi;
-  // iterator = processing_buffer.begin();
+  namespace qi = boost::spirit::qi;
+  namespace fusion = boost::fusion;
+  iterator = processing_buffer.begin();
 
-  // iiop::message_header message_header;
-  // iiop::grammar::message_header<std::vector<char>::const_iterator> message_header_grammar;
+  typedef std::vector<fusion::vector2<unsigned int, std::vector<char> > > service_context_list;
+  typedef fusion::vector8<service_context_list
+                          , unsigned int, bool
+                          , std::vector<char>, std::string, std::vector<char>
+                          , std::vector<char>, bool>
+    request_attribute_type;
+  typedef fusion::vector1<fusion::vector1<request_attribute_type> >
+    message_request_attribute_type;
 
-  // if(qi::parse(iterator, last, message_header_grammar, message_header))
-  // {
-  //   std::cout << "message header was parsed" << std::endl;
-  //   unsigned char size_tmp = message_header.message_size;
-  //   int size = size_tmp;
-  //   std::cout << "message is size " << size << std::endl;
-  //   if(std::distance(iterator, last) >= size)
-  //   {
-  //     std::cout << "message was completely read" << std::endl;
-  //     std::vector<char>::const_iterator begin = processing_buffer.begin();
-  //     std::vector<char>::iterator last
-  //       = boost::next(processing_buffer.begin()
-  //                     , std::distance(begin, iterator) + size);
-  //     bool success = false;
-  //     switch(message_header.message_type)
-  //     {
-  //     case 0: // Request
-  //       std::cout << "message is a request" << std::endl;
-  //       success = handle_request(iterator, last, (message_header.flags & 1) == 1);
-  //       break;
-  //     case 1: // Reply
-  //       break;
-  //     case 2: // CancelRequest
-  //       break;
-  //     case 3: // LocateRequest
-  //       break;
-  //     case 4: // LocateReply
-  //       break;
-  //     case 5: // CloseConnection
-  //       break;
-  //     case 6: // MessageError
-  //       break;
-  //     case 7: // Fragment
-  //       break;
-  //     default:
-  //       std::cout << "Unknown message_type" << std::endl;
-  //       return;
-  //     }
-  //     if(success)
-  //       processing_buffer.erase(processing_buffer.begin(), last);
-  //   }    
-  // }
-  // else if(processing_buffer.size() >= 4)
-  // {
-  //   std::cout << "No Magic word!" << std::endl;
-  //   return;
-  // }
+  typedef giop::grammars::message_1_0<iiop::parser_domain
+                                      , iterator_type, message_request_attribute_type
+                                      , 0u /* request */>
+    message_request_grammar;
+  typedef giop::grammars::request_1_0<iiop::parser_domain
+                                      , iterator_type, request_attribute_type>
+    request_grammar;
+  
+  request_grammar request_grammar_(iiop::buffer & iiop::save_endian);
+  message_request_grammar message_request_grammar_(request_grammar_);
+
+  message_request_attribute_type message_request_attribute;
+  if(qi::parse(iterator, last
+               , giop::compile<iiop::parser_domain>(message_request_grammar_)
+               , message_request_attribute))
+  {
+    request_attribute_type& attr = fusion::at_c<0u>(fusion::at_c<0>(message_request_attribute));
+    std::cout << "message header was parsed and it is a request" << std::endl;
+    std::cout << "request id " << fusion::at_c<1u>(attr) << std::endl;
+    std::cout << "expects response " << fusion::at_c<2u>(attr) << std::endl;
+    std::cout << "object key " << boost::make_iterator_range
+      (fusion::at_c<3u>(attr).begin(), fusion::at_c<3u>(attr).end()) << std::endl;
+    std::cout << "method " << fusion::at_c<4u>(attr) << std::endl;
+
+    std::cout << "arguments buffer size: " << fusion::at_c<6u>(attr).size() << std::endl;
+    std::cout << "endianness: " << fusion::at_c<7u>(attr) << std::endl;
+    std::cout << "arguments offset: " << std::distance(processing_buffer.begin(), iterator) << std::endl;
+    processing_buffer.erase(processing_buffer.begin(), iterator);
+
+    if(boost::shared_ptr<POA> poa = poa_.lock())
+    {
+      std::vector<char>& object_key = fusion::at_c<3u>(attr);
+      std::cout << "POA still alive" << std::endl;
+      std::string poa_name;
+      std::size_t impl_;
+      std::vector<char>::iterator object_key_first = object_key.begin();
+      if(qi::parse(object_key_first, object_key.end(), +(qi::char_ - qi::char_('/'))
+                   >> qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
+                   , poa_name, impl_))
+      {
+        std::cout << "POA name " << poa_name << std::endl;
+        ServantBase* impl = 0;
+        std::memcpy(&impl, &impl_, sizeof(impl));
+        std::cout << "ServantBase pointer " << impl << std::endl;
+        if(poa->object_map.find(impl) != poa->object_map.end())
+        {
+          std::cout << "Found servant " << impl << std::endl;
+          std::vector<char>& arguments = fusion::at_c<6u>(attr);
+          const char* arg_first = 0
+            , *arg_last = 0;
+          if(!arguments.empty())
+          {
+            arg_first = &arguments[0];
+            arg_last = arg_first + arguments.size();
+          }
+
+          reply r = {fusion::at_c<1u>(attr)};
+          impl->_dispatch(fusion::at_c<4u>(attr).c_str()
+                          , arg_first, arg_first
+                          , arg_last, fusion::at_c<7u>(attr), r);
+
+        }
+      }
+    }
+  }
+  else
+  {
+    std::cout << "Failed parsing for request" << std::endl;
+  }
   start();
 }
 
