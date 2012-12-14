@@ -106,7 +106,7 @@ Object_ptr ORB::string_to_object(const char* ref)
   std::cout << "string_to_object" << std::endl;
   typedef const char* iterator_type;
   typedef std::vector<char> hex_parser_container;
-  typedef typename hex_parser_container::const_iterator hex_iterator;
+  typedef hex_parser_container::const_iterator hex_iterator;
   iterator_type first = ref, last = ref + std::strlen(ref);
 
   structured_ior sior;
