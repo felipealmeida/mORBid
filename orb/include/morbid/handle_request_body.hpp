@@ -14,6 +14,7 @@
 #include <morbid/type_tag.hpp>
 #include <morbid/in_out_traits.hpp>
 #include <morbid/arguments_traits.hpp>
+#include <morbid/transforms.hpp>
 #include <morbid/giop/grammars/arguments.hpp>
 #include <morbid/giop/grammars/message_1_0.hpp>
 #include <morbid/giop/grammars/reply_1_0.hpp>
@@ -28,22 +29,11 @@
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/copy_if.hpp>
 
+#include <boost/type_traits/is_fundamental.hpp>
+
 namespace morbid {
 
 namespace fusion = boost::fusion;
-
-template <typename T>
-struct create_parse_argument_transform
-{
-  typedef typename boost::remove_const<
-    typename boost::remove_reference<typename T::original_type>::type>::type type;
-};
-
-template <typename Tag>
-struct create_parse_argument_transform<type_tag::value_type_tag<morbid::string, Tag> >
-{
-  typedef std::string type;
-};
 
 template <typename T>
 struct create_argument_transform;
@@ -140,7 +130,7 @@ struct tag
 {
 };
 
-template <typename ParseArguments>
+template <typename ParseArguments, typename Condition, typename ResultLambda>
 struct initialize_arguments
 {
   template <typename R>
@@ -149,13 +139,18 @@ struct initialize_arguments
   template <typename This, int I, typename S, typename T>
   struct result<This(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>
   {
-    typedef type_tag::is_not_out_type_tag<T> is_not_out;
+    typedef typename mpl::apply1<typename mpl::lambda<Condition>::type, T>::type condition;
+    typedef typename mpl::apply1<typename mpl::lambda<ResultLambda>::type, T>::type transform_result;
+
     typedef typename mpl::if_
-    <is_not_out
-     , std::pair<mpl::int_<I+1>, fusion::cons<typename create_argument_transform<T>::type, S> >
-     , std::pair<mpl::int_<I>, fusion::cons<typename create_argument_transform<T>::type, S> >
-    >::type
-     type;
+    <condition
+     , std::pair<mpl::int_<I>
+                 , fusion::cons
+                 <transform_result, S> >
+     , std::pair<mpl::int_<I+1>
+                 , fusion::cons
+                 <transform_result, S> >
+     >::type type;
   };
 
   initialize_arguments(ParseArguments& parse_arguments)
@@ -163,29 +158,38 @@ struct initialize_arguments
   {}
 
   template <int I, typename S, typename T>
-  typename result<initialize_arguments<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
-  call(std::pair<mpl::int_<I>, S> const& s, tag<T>const&, type_tag::out_tag) const
+  typename result<initialize_arguments<ParseArguments, Condition, ResultLambda>
+                  (std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
+  call(std::pair<mpl::int_<I>, S>const& s, tag<T>const&, mpl::true_) const
   {
-    typedef typename create_argument_transform<T>::type type;
+    BOOST_MPL_ASSERT((mpl::not_<boost::is_fundamental<T> >));
+    typedef typename mpl::apply1<typename mpl::lambda<ResultLambda>::type, T>::type type;
     return std::pair<mpl::int_<I>, fusion::cons<type, S> >
       (mpl::int_<I>(), fusion::cons<type, S>(typename T::type(), s.second));
   }
 
-  template <int I, typename S, typename T, typename Tag>
-  typename result<initialize_arguments<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
-  call(std::pair<mpl::int_<I>, S> const& s, tag<T>const&, Tag) const
+  template <int I, typename S, typename T>
+  typename result<initialize_arguments<ParseArguments, Condition, ResultLambda>
+                  (std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
+  call(std::pair<mpl::int_<I>, S>const& s, tag<T>const&, mpl::false_) const
   {
+    BOOST_MPL_ASSERT((mpl::not_<boost::is_fundamental<T> >));
+    typedef typename mpl::apply1<typename mpl::lambda<ResultLambda>::type, T>::type type;
     typedef create_argument_transform<T> transform;
-    typedef typename transform::type type;
     return std::pair<mpl::int_<I+1>, fusion::cons<type, S> >
-      (mpl::int_<I+1>(), fusion::cons<type, S>(transform()(fusion::at_c<I>(parse_arguments)), s.second));
+      (mpl::int_<I+1>(), fusion::cons<type, S>
+       (transform()(fusion::at_c<I>(parse_arguments)), s.second));
   }
 
   template <int I, typename S, typename T>
-  typename result<initialize_arguments<ParseArguments>(std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
-  operator()(std::pair<mpl::int_<I>, S> const& s, tag<T>const& t) const
+  typename result<initialize_arguments<ParseArguments, Condition, ResultLambda>
+                  (std::pair<mpl::int_<I>, S>const&, tag<T>const&)>::type
+  operator()(std::pair<mpl::int_<I>, S>const& s, tag<T>const& t) const
   {
-    return call(s, t, typename T::tag());
+    BOOST_MPL_ASSERT((mpl::not_<boost::is_fundamental<T> >));
+    typedef typename mpl::apply1<typename mpl::lambda<Condition>::type, T>::type condition;
+    BOOST_MPL_ASSERT((mpl::not_<condition>));
+    return call(s, t, condition());
   }
 
   ParseArguments& parse_arguments;
@@ -370,18 +374,23 @@ void handle_request_body(T* self, F f, std::size_t align_offset
                          , bool little_endian, reply& r)
 {
   std::cout << "handle_request_body " << typeid(f).name() << std::endl;
-  typedef typename mpl::lambda<type_tag::is_not_out_type_tag<mpl::_1> >::type is_not_out_lambda;
+  typedef typename mpl::lambda<type_tag::is_not_out_type_tag<mpl::_1> >::type
+    is_not_out_lambda;
   typedef typename mpl::copy_if<SeqParam, is_not_out_lambda>::type not_out_params;
 
-  typedef typename mpl::transform<not_out_params, create_parse_argument_transform<mpl::_1> >::type mpl_parse_argument_types;
+  typedef typename mpl::transform
+    <not_out_params, transforms::from_unmanaged_to_managed<mpl::_1> >::type
+    mpl_parse_argument_types;
 
-  typedef typename fusion::result_of::as_vector<mpl_parse_argument_types>::type parse_argument_types;
+  typedef typename fusion::result_of::as_vector<mpl_parse_argument_types>::type
+    parse_argument_types;
 
   parse_argument_types parse_arguments;
 
   morbid::arguments_traits arguments_traits;
   typedef giop::grammars::arguments<iiop::parser_domain
-                                    , const char*, not_out_params, parse_argument_types>
+                                    , const char*, not_out_params
+                                    , parse_argument_types>
     arguments_grammar;
   arguments_grammar arguments_grammar_(arguments_traits);
 
@@ -402,18 +411,57 @@ void handle_request_body(T* self, F f, std::size_t align_offset
     identity_argument_types const identity_arguments;
 
     typedef typename boost::remove_reference<
-      typename fusion::result_of::fold<identity_argument_types const, std::pair<mpl::int_<0>, fusion::nil>
-                                       , initialize_arguments<parse_argument_types> >::type
+      typename fusion::result_of::fold
+      <identity_argument_types const
+       , std::pair<mpl::int_<0>, fusion::nil>
+       , initialize_arguments
+       <parse_argument_types
+        , type_tag::is_out_type_tag<mpl::_>
+        , 
+        mpl::if_
+        <
+          mpl::and_
+          <type_tag::is_not_out_type_tag<mpl::_1>
+           , mpl::not_<boost::is_same
+                       <mpl::_1, type_tag::value_type_tag<morbid::string, type_tag::in_tag> >
+                       >
+           >
+          , boost::add_reference<type_tag::value_type<mpl::_1> >
+          , mpl::identity<type_tag::value_type<mpl::_1> >
+        >
+       > >::type
       >::type
       argument_types;
 
     std::cout << "handle_request_body not_out_params " << typeid(identity_argument_types).name() << std::endl;
     std::cout << "handle_request_body not_out_params " << typeid(argument_types).name() << std::endl;
 
-    argument_types arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
-                                            , initialize_arguments<parse_argument_types>(parse_arguments));
+    std::pair<mpl::int_<0>, fusion::nil> const pair;
+    argument_types const arguments = fusion::fold
+      (identity_arguments, pair, initialize_arguments
+       <parse_argument_types
+       // Default construct out types
+       , type_tag::is_out_type_tag<mpl::_>
+       // Add reference to not out types (to avoid copying)
+       , 
+        mpl::if_
+        <
+          mpl::and_
+          <type_tag::is_not_out_type_tag<mpl::_1>
+           , mpl::not_<boost::is_same
+                       <mpl::_1, type_tag::value_type_tag<morbid::string, type_tag::in_tag> >
+                       >
+           >
+          , boost::add_reference<type_tag::value_type<mpl::_1> >
+          , mpl::identity<type_tag::value_type<mpl::_1> >
+        >
+       >
+       (parse_arguments));
+    // Calling function with arguments
     fusion::fused<F> fused(f);
-    handle_request_reply<R, SeqParam>(fused, self, r, arguments.second, mpl::identity<R>());
+    // Create reply
+    handle_request_reply<R, SeqParam>(fused, self, r, arguments.second
+                                      , mpl::identity<R>());
   }
   else
   {
