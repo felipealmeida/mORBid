@@ -138,15 +138,44 @@ struct in_args_one_elem_converter<1u, T>
   { return fusion::at_c<0u>(s); }
 };
 
-template <typename R, typename OutSequence>
-typename return_traits<R>::type return_value(mpl::identity<R>, OutSequence const& seq)
+template <typename Src, typename DstSeq>
+void aux_copy(Src const& src, DstSeq const& dst_seq
+              , mpl::identity<fusion::non_fusion_tag>)
 {
+  fusion::at_c<0u>(dst_seq).value = src;
+}
+
+template <typename SrcSeq, typename DstSeq, typename Tag>
+void aux_copy(SrcSeq const& src_seq, DstSeq const& dst_seq
+              , mpl::identity<Tag>)
+{
+  fusion::copy(src_seq, dst_seq);
+}
+
+template <typename R, typename OutResult, typename OutSeq>
+typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& seq
+                                             , OutSeq const& out)
+{
+  // BOOST_MPL_ASSERT((boost::is_same<typename fusion::traits::tag_of<OutResult>::type
+  //                   , fusion::vector_tag>));
+  std::cout << "OutResult " << typeid(OutResult).name()
+            << " OutSeq " << typeid(OutSeq).name()
+            // << " tag " << typeid().name()
+            << std::endl;
+  aux_copy(seq, out, mpl::identity<typename fusion::traits::tag_of<OutResult>::type>());
   return typename return_traits<R>::type();
 }
 
-template <typename R, typename OutSequence>
-void return_value(mpl::identity<void>, OutSequence const& seq)
+template <typename R, typename OutResult, typename OutSeq>
+void return_value(mpl::identity<void>, OutResult const& seq, OutSeq const& out)
 {
+  // BOOST_MPL_ASSERT((boost::is_same<typename fusion::traits::tag_of<OutResult>::type
+  //                   , fusion::vector_tag>));
+  std::cout << "OutResult " << typeid(OutResult).name()
+            << " OutSeq " << typeid(OutSeq).name()
+            // << " tag " << typeid(typename fusion::traits::tag_of<OutResult>::type).name()
+            << std::endl;
+  aux_copy(seq, out, mpl::identity<typename fusion::traits::tag_of<OutResult>::type>());
 }
 
 template <typename R, typename ArgsSeq>
@@ -184,7 +213,9 @@ typename return_traits<R>::type call
   namespace karma = boost::spirit::karma;
 
   typedef typename mpl::lambda<type_tag::is_not_out_type_tag<mpl::_1> >::type is_not_out_lambda;
+  typedef typename mpl::lambda<type_tag::is_not_in_type_tag<mpl::_1> >::type is_not_in_lambda;
   typedef typename mpl::lambda<type_tag::is_out_type_tag<mpl::_1> >::type is_out_lambda;
+  typedef typename mpl::lambda<type_tag::is_in_type_tag<mpl::_1> >::type is_in_lambda;
 
   typedef typename mpl::remove_if
     <ArgsSeq const, is_out_lambda>::type in_args_type_seq_type;
@@ -280,7 +311,28 @@ typename return_traits<R>::type call
           ,  last = boost::next(reply_buffer.begin(), offset);
 
         std::cout << "Should try to parse" << std::endl;
-        typedef fusion::vector0<> arguments_attribute_type;
+
+        typedef typename mpl::remove_if
+          <ArgsSeq const, is_in_lambda>::type out_args_type_seq_type;
+
+        std::cout << "out_args_type_seq_type " << typeid(out_args_type_seq_type).name() << std::endl;
+
+        typedef typename fusion::result_of::as_vector
+          <typename mpl::transform
+           <typename fusion::result_of::transform
+           <typename fusion::result_of::filter_if<ArgsSeq const, is_not_in_lambda>::type
+            , remove_value_type>::type
+            , boost::remove_reference<mpl::_1>
+            , mpl::back_inserter<mpl::vector0<> >
+            >::type
+            >::type
+           out_args_type_;
+
+        typedef typename in_args_one_elem_converter<mpl::size<out_args_type_>::value, out_args_type_>::type out_args_type;
+        
+        std::cout << "out_args_type_ " << typeid(out_args_type_).name() << std::endl;
+
+        typedef out_args_type arguments_attribute_type;
         typedef fusion::vector3<std::string, unsigned int, unsigned int> system_exception_attribute_type;
         typedef boost::variant<system_exception_attribute_type, arguments_attribute_type> variant_attribute_type;
 
@@ -290,7 +342,8 @@ typename return_traits<R>::type call
         typedef fusion::vector1<reply_attribute_type>
           message_attribute_type;
         typedef giop::grammars::arguments
-          <iiop::parser_domain, iterator_type, mpl::vector0<>, arguments_attribute_type>
+          <iiop::parser_domain, iterator_type, out_args_type_seq_type
+           , arguments_attribute_type>
           arguments_grammar;
         typedef giop::grammars::system_exception_reply_body
           <iiop::parser_domain, iterator_type, system_exception_attribute_type>
@@ -343,7 +396,8 @@ typename return_traits<R>::type call
                   = boost::get<arguments_attribute_type>(&result))
           {
             std::cout << "NO EXCEPTION" << std::endl;
-            return return_value<R>(mpl::identity<R>(), *attribute);
+            return return_value<R>(mpl::identity<R>(), *attribute
+                                   , fusion::as_vector(fusion::filter_if<is_not_in_lambda>(args)));
           }
           else
           {
