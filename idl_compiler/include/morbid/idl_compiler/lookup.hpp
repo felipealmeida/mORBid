@@ -53,7 +53,7 @@ struct lookup_type_spec_functional
           , last = boost::prior(current_module.rend());
         do
         {
-          typedef typename boost::property_map<modules_tree_type, module_property_t>
+          typedef boost::property_map<modules_tree_type, module_property_t>
             ::const_type module_map;
           module_map map = get(module_property_t(), modules);
 

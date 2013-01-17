@@ -104,7 +104,7 @@ int main(int argc, char** argv)
         current_module.push_back(primitive_types_module);
         current_module.push_back(global_module);
 
-        typedef typename boost::property_map<modules_tree_type, module_property_t>
+        typedef boost::property_map<modules_tree_type, module_property_t>
           ::type module_map;
         
         do
@@ -316,7 +316,7 @@ int main(int argc, char** argv)
                                   , boost::visitor(header_modules_visitor)
                                   .color_map(color_map));
 
-              typedef typename boost::property_map<modules_tree_type, module_property_t>
+              typedef boost::property_map<modules_tree_type, module_property_t>
                 ::type module_map;
               module_map map = get(module_property_t(), modules_tree);
               for(std::size_t l = header_modules_visitor.state->opened_modules.size() - 1
@@ -366,7 +366,7 @@ int main(int argc, char** argv)
               breadth_first_visit(modules_tree, global_module
                                   , boost::visitor(cpp_modules_visitor)
                                   .color_map(color_map));
-              typedef typename boost::property_map<modules_tree_type, module_property_t>
+              typedef boost::property_map<modules_tree_type, module_property_t>
                 ::type module_map;
               module_map map = get(module_property_t(), modules_tree);
               for(std::size_t l = cpp_modules_visitor.state->opened_modules.size() - 1
