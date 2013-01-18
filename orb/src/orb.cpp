@@ -65,7 +65,7 @@ String_ptr ORB::object_to_string(Object_ptr p)
 
   ior::grammar::tagged_profile<iiop::generator_domain, output_iterator_type
                                , ior::tagged_profile> tagged_profile;
-  iiop::grammar::profile_body_1_1<iiop::generator_domain, output_iterator_type
+  iiop::grammar::profile_body_1_0<iiop::generator_domain, output_iterator_type
                                   , iiop::profile_body> profile_body;
   ior::grammar::generic_tagged_profile<iiop::generator_domain, output_iterator_type
                                        , iiop::profile_body, 0u
@@ -109,20 +109,32 @@ Object_ptr ORB::string_to_object(const char* ref)
   typedef hex_parser_container::const_iterator hex_iterator;
   iterator_type first = ref, last = ref + std::strlen(ref);
 
-  structured_ior sior;
   typedef structured_ior attribute_type;
-  typedef ior::grammar::ior<iiop::parser_domain, hex_iterator
-                            , attribute_type>
-    ior_grammar_type;
+  namespace fusion = boost::fusion;
+  typedef typename fusion::result_of::as_vector
+    <fusion::joint_view<fusion::single_view<char> // minor version
+                        , iiop::profile_body> >::type profile_body_1_1_attr;
 
   ior::grammar::tagged_profile<iiop::parser_domain, hex_iterator
                                , ior::tagged_profile> tagged_profile;
+  iiop::grammar::profile_body_1_0<iiop::parser_domain, hex_iterator
+                                  , iiop::profile_body> profile_body_1_0;
   iiop::grammar::profile_body_1_1<iiop::parser_domain, hex_iterator
-                                  , iiop::profile_body> profile_body;
+                                  , profile_body_1_1_attr> profile_body_1_1;
   ior::grammar::generic_tagged_profile<iiop::parser_domain, hex_iterator
-                                       , iiop::profile_body, 0u
+                                       , boost::variant<iiop::profile_body, profile_body_1_1_attr>, 0u
                                        > tagged_profile_body
-    (giop::endianness[profile_body]);
+    (giop::endianness[profile_body_1_0 | profile_body_1_1]);
+
+  typedef fusion::vector2<std::string
+                  , std::vector
+                   <boost::variant<iiop::profile_body, profile_body_1_1_attr, ior::tagged_profile> >
+                  > result_type;
+  result_type r;
+
+  typedef ior::grammar::ior<iiop::parser_domain, hex_iterator, result_type>
+    ior_grammar_type;
+
 
   ior_grammar_type ior_grammar(tagged_profile_body | tagged_profile);
   namespace qi = boost::spirit::qi;
@@ -133,9 +145,27 @@ Object_ptr ORB::string_to_object(const char* ref)
                [
                    giop::compile<iiop::parser_domain>(ior_grammar)
                ]
-               , sior))
+               , r))
   {
     std::cout << "Success" << std::endl;
+    structured_ior sior = {fusion::at_c<0u>(r)};
+    
+    for(std::vector<boost::variant<iiop::profile_body, profile_body_1_1_attr, ior::tagged_profile> >::const_iterator
+          first = fusion::at_c<1u>(r).begin()
+          , last = fusion::at_c<1u>(r).end(); first != last; ++first)
+    {
+      if(iiop::profile_body const* p = boost::get<iiop::profile_body>(&*first))
+        sior.structured_profiles.push_back(*p);
+      else if(ior::tagged_profile const* p = boost::get<ior::tagged_profile>(&*first))
+        sior.structured_profiles.push_back(*p);
+      else if(profile_body_1_1_attr const* p = boost::get<profile_body_1_1_attr>(&*first))
+      {
+        iiop::profile_body b;
+        fusion::copy(fusion::pop_front(*p), b);
+        sior.structured_profiles.push_back(b);
+      }
+    }
+
     return Object_ptr(new ::morbid::remote_stub::Object(sior));
   }
   throw morbid::INVALID_PARAM();

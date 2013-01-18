@@ -15,16 +15,34 @@
 namespace morbid { namespace iiop { namespace grammar {
 
 template <typename Domain, typename Iterator, typename Attr>
+struct profile_body_1_0 : giop::grammar<Domain, Iterator, Attr(giop::endian)>
+{
+  profile_body_1_0() : profile_body_1_0::base_type(start)
+  {
+    start =
+      giop::octet('\1')
+      & giop::octet('\0')
+      & giop::string                // host
+      & giop::ushort_               // port
+      & giop::sequence[giop::octet] // object_key
+      ;
+  }
+
+  giop::rule<Domain, Iterator, Attr(giop::endian)> start;
+};
+
+template <typename Domain, typename Iterator, typename Attr>
 struct profile_body_1_1 : giop::grammar<Domain, Iterator, Attr(giop::endian)>
 {
   profile_body_1_1() : profile_body_1_1::base_type(start)
   {
     start =
-      // giop::octet
-      // & giop::octet
-      /*&*/ giop::string
-      & giop::ushort_
-      & giop::sequence[giop::octet]
+      giop::octet('\1')
+      & giop::octet                 // minor
+      & giop::string                // host
+      & giop::ushort_               // port
+      & giop::sequence[giop::octet] // object_key
+      // & giop::sequence[tagged_component]
       ;
   }
 
