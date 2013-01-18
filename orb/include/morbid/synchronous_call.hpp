@@ -142,6 +142,7 @@ template <typename Src, typename DstSeq>
 void aux_copy(Src const& src, DstSeq const& dst_seq
               , mpl::identity<fusion::non_fusion_tag>)
 {
+  std::cout << "Copying from out arg (with type " << typeid(src).name() << ") " << src << std::endl;
   fusion::at_c<0u>(dst_seq).value = src;
 }
 
@@ -152,30 +153,28 @@ void aux_copy(SrcSeq const& src_seq, DstSeq const& dst_seq
   fusion::copy(src_seq, dst_seq);
 }
 
-template <typename R, typename OutResult, typename OutSeq>
-typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& seq
-                                             , OutSeq const& out)
+template <typename R, typename OutResult, typename OutSeq, typename Tag>
+typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& seq, OutSeq const& out
+                                             , mpl::identity<Tag> tag
+                                             , typename boost::disable_if<boost::is_same<void, R> >::type* = 0)
 {
-  // BOOST_MPL_ASSERT((boost::is_same<typename fusion::traits::tag_of<OutResult>::type
-  //                   , fusion::vector_tag>));
-  std::cout << "OutResult " << typeid(OutResult).name()
-            << " OutSeq " << typeid(OutSeq).name()
-            // << " tag " << typeid().name()
-            << std::endl;
-  aux_copy(seq, out, mpl::identity<typename fusion::traits::tag_of<OutResult>::type>());
-  return typename return_traits<R>::type();
+  aux_copy(fusion::pop_front(seq), out, tag);
+  return fusion::front(seq);
 }
 
 template <typename R, typename OutResult, typename OutSeq>
-void return_value(mpl::identity<void>, OutResult const& seq, OutSeq const& out)
+typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& r, OutSeq const&
+                                             , mpl::identity<fusion::non_fusion_tag>
+                                             , typename boost::disable_if<boost::is_same<void, R> >::type* = 0)
 {
-  // BOOST_MPL_ASSERT((boost::is_same<typename fusion::traits::tag_of<OutResult>::type
-  //                   , fusion::vector_tag>));
-  std::cout << "OutResult " << typeid(OutResult).name()
-            << " OutSeq " << typeid(OutSeq).name()
-            // << " tag " << typeid(typename fusion::traits::tag_of<OutResult>::type).name()
-            << std::endl;
-  aux_copy(seq, out, mpl::identity<typename fusion::traits::tag_of<OutResult>::type>());
+  return r;
+}
+
+template <typename OutResult, typename OutSeq, typename Tag>
+void return_value(mpl::identity<void>, OutResult const& seq, OutSeq const& out
+                  , mpl::identity<Tag> tag)
+{
+  aux_copy(seq, out, tag);
 }
 
 template <typename R, typename ArgsSeq>
@@ -317,22 +316,36 @@ typename return_traits<R>::type call
 
         std::cout << "out_args_type_seq_type " << typeid(out_args_type_seq_type).name() << std::endl;
 
-        typedef typename fusion::result_of::as_vector
-          <typename mpl::transform
+        typedef typename mpl::transform
            <typename fusion::result_of::transform
            <typename fusion::result_of::filter_if<ArgsSeq const, is_not_in_lambda>::type
             , remove_value_type>::type
             , boost::remove_reference<mpl::_1>
             , mpl::back_inserter<mpl::vector0<> >
             >::type
-            >::type
            out_args_type_;
 
-        typedef typename in_args_one_elem_converter<mpl::size<out_args_type_>::value, out_args_type_>::type out_args_type;
         
         std::cout << "out_args_type_ " << typeid(out_args_type_).name() << std::endl;
 
-        typedef out_args_type arguments_attribute_type;
+        typedef typename fusion::result_of::as_vector
+          <typename mpl::eval_if
+          <boost::is_same<R, void>
+           , mpl::identity<out_args_type_>
+           , fusion::result_of::push_front
+             <out_args_type_, typename return_traits<R>::type>
+           >::type>::type arguments_attribute_type_;
+        typedef typename fusion::result_of::as_vector
+          <typename mpl::eval_if
+          <boost::is_same<R, void>
+           , mpl::identity<out_args_type_seq_type>
+           , fusion::result_of::push_front
+             <out_args_type_seq_type, type_tag::value_type_tag<R, type_tag::out_tag> >
+          >::type>::type arguments_attribute_seq_type;
+
+        typedef typename in_args_one_elem_converter
+          <mpl::size<arguments_attribute_type_>::value, arguments_attribute_type_>::type arguments_attribute_type;
+
         typedef fusion::vector3<std::string, unsigned int, unsigned int> system_exception_attribute_type;
         typedef boost::variant<system_exception_attribute_type, arguments_attribute_type> variant_attribute_type;
 
@@ -342,7 +355,7 @@ typename return_traits<R>::type call
         typedef fusion::vector1<reply_attribute_type>
           message_attribute_type;
         typedef giop::grammars::arguments
-          <iiop::parser_domain, iterator_type, out_args_type_seq_type
+          <iiop::parser_domain, iterator_type, arguments_attribute_seq_type
            , arguments_attribute_type>
           arguments_grammar;
         typedef giop::grammars::system_exception_reply_body
@@ -396,8 +409,9 @@ typename return_traits<R>::type call
                   = boost::get<arguments_attribute_type>(&result))
           {
             std::cout << "NO EXCEPTION" << std::endl;
-            return return_value<R>(mpl::identity<R>(), *attribute
-                                   , fusion::as_vector(fusion::filter_if<is_not_in_lambda>(args)));
+            return return_value(mpl::identity<R>(), *attribute
+                                , fusion::as_vector(fusion::filter_if<is_not_in_lambda>(args))
+                                , mpl::identity<typename fusion::traits::tag_of<arguments_attribute_type>::type>());
           }
           else
           {

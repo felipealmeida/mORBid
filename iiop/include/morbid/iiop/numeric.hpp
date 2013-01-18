@@ -333,6 +333,9 @@ struct unsigned_generator : karma::primitive_generator<unsigned_generator<N> >
     typedef typename boost::uint_t<N>::least type;
   };
 
+  typedef mpl::size_t<N/CHAR_BIT> static_size;
+  typedef static_size alignment;
+
   template <typename OutputIterator, typename Context, typename Delimiter>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, spirit::unused_type attr) const
   {

@@ -252,6 +252,7 @@ struct reply_arguments_generator
 template <typename NotInParams, typename ReplyArguments>
 void make_request_reply(reply& r, ReplyArguments& reply_arguments)
 {
+  std::cout << "Generating reply with reply arguments " << typeid(ReplyArguments).name() << std::endl;
   typedef ReplyArguments reply_argument_types;
 
   typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
@@ -376,7 +377,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
                          , const char* rq_first, const char* rq_last
                          , bool little_endian, reply& r)
 {
-  std::cout << "handle_request_body " << typeid(f).name() << std::endl;
+  std::cout << "handle_request_body " << typeid(f).name() << " align_offset " << align_offset << std::endl;
   typedef typename mpl::lambda<type_tag::is_not_out_type_tag<mpl::_1> >::type
     is_not_out_lambda;
   typedef typename mpl::copy_if<SeqParam, is_not_out_lambda>::type not_out_params;

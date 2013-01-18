@@ -58,5 +58,6 @@ alias struct : orb/tests//struct ;
 alias reference : orb/tests//reference ;
 
 alias tests : install allprimitives out_allprimitives inout_allprimitives
- return_allprimitives modules_allprimitives struct reference ;
+ return_allprimitives modules_allprimitives #struct reference
+ ;
 

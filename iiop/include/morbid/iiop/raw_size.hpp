@@ -10,6 +10,8 @@
 
 #include <morbid/giop/forward_back_insert_iterator.hpp>
 
+#include <morbid/iiop/alignment.hpp>
+
 #include <boost/spirit/home/support.hpp>
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/karma.hpp>
@@ -47,10 +49,36 @@ struct raw_size_generator : karma::unary_generator<raw_size_generator<Size, Subj
       <forward_iterator, properties> output_iterator;
     forward_iterator first(value);
     output_iterator buffered_sink (first);
+    std::cout << "Calling generate to buffered sink" << std::endl;
+
+    typedef typename Context::attributes_type attributes_type;
+    typedef get_alignment_attribute<attributes_type, forward_iterator> getter_alignment_attribute;
+    typedef typename getter_alignment_attribute::index_type alignment_index_type;
+
+    typedef typename spirit::result_of::compile<generator_domain, Size>::type
+      size_generator_type;
+
+    alignment_attribute<forward_iterator> tmp_alignment = fusion::at_c<alignment_index_type::value>(ctx.attributes);
+
+    {
+      std::size_t const distance = std::distance(tmp_alignment.first, sink.base()) + tmp_alignment.offset;
+      const std::size_t alignment = size_generator_type::alignment::value;
+      int const remainder = distance % alignment;
+      int const padding = remainder? alignment - remainder : 0;
+
+      fusion::at_c<alignment_index_type::value>(ctx.attributes).offset
+        += distance
+        + size_generator_type::static_size::value
+        + padding
+        ;
+      fusion::at_c<alignment_index_type::value>(ctx.attributes).first = first;
+    }
+
     if(subject.generate(buffered_sink, ctx, d, attr))
     {
-      typedef typename spirit::result_of::compile<generator_domain, Size>::type
-        size_generator_type;
+      fusion::at_c<alignment_index_type::value>(ctx.attributes) = tmp_alignment;
+
+      std::cout << "Generate succeeded, copying to original sink" << std::endl;
       size_generator_type size_generator = spirit::compile<generator_domain>(this->size);
       typedef typename spirit::traits::attribute_of<size_generator_type, Context, OutputIterator>::type size_attribute;
       size_attribute size = value.size();
@@ -60,6 +88,7 @@ struct raw_size_generator : karma::unary_generator<raw_size_generator<Size, Subj
       sink = std::copy(value.begin(), value.end(), sink);
       return true;
     }
+    fusion::at_c<alignment_index_type::value>(ctx.attributes) = tmp_alignment;
     return false;
   }
 

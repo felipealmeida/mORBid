@@ -12,6 +12,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
+#include <boost/algorithm/hex.hpp>
 #include <boost/utility.hpp>
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>
@@ -177,6 +178,9 @@ void connection::process_input()
           if(fusion::at_c<2u>(attr))
           {
             std::cout << "reply_buffer " << r.reply_body.size() << std::endl;
+            boost::algorithm::hex(r.reply_body.begin(), r.reply_body.end()
+                                  , std::ostream_iterator<char>(std::cout));
+            std::cout << std::endl;
             boost::system::error_code ec;
             int rs =
               boost::asio::write(socket, boost::asio::buffer(r.reply_body)
