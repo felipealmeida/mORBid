@@ -1,7 +1,7 @@
 
 import feature ;
 
-feature.feature test-orb : morbid mico : composite link-incompatible ;
+feature.feature test-orb : morbid mico tao : composite link-incompatible ;
 
 project morbid/tests/interop ;
 

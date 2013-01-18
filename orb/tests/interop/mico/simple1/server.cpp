@@ -5,10 +5,17 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#ifndef USING_TAO
 #include "hello.h"
 #include <CORBA.h>
+#else
+#include "helloS.h"
+#include <tao/corba.h>
+#endif
 
+#include <iostream>
 #include <fstream>
+#include <cassert>
 
 struct HelloWorld_impl : public POA_HelloWorld
 {

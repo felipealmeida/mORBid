@@ -5,10 +5,17 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#ifndef USING_TAO
 #include "hello.h"
 #include <CORBA.h>
+#else
+#include "helloC.h"
+#include <tao/corba.h>
+#endif
 
+#include <iostream>
 #include <fstream>
+#include <cassert>
 
 int main(int argc, char* argv[])
 {

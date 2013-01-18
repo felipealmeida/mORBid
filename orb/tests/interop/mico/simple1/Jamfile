@@ -52,10 +52,15 @@ actions run-client-server
 
 alias mico_client : mico//mico_client ;
 alias mico_server : mico//mico_server ;
+alias tao_client : tao//tao_client ;
+alias tao_server : tao//tao_server ;
 
 make morbid_morbid.output : morbid_client morbid_server : @run-client-server ;
 make mico_mico.output : mico_client mico_server : @run-client-server ;
 make morbid_mico.output : morbid_client mico_server : @run-client-server ;
 make mico_morbid.output : mico_client morbid_server : @run-client-server ;
+make tao_tao.output : tao_client tao_server : @run-client-server ;
+make morbid_tao.output : tao_client tao_server : @run-client-server ;
+make tao_morbid.output : tao_client tao_server : @run-client-server ;
 
-alias simple1 : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output ;
+alias simple1 : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output tao_tao.output tao_morbid.output morbid_tao.output ;
