@@ -165,7 +165,7 @@ struct initialize_arguments
     BOOST_MPL_ASSERT((mpl::not_<boost::is_fundamental<T> >));
     typedef typename mpl::apply1<typename mpl::lambda<ResultLambda>::type, T>::type type;
     return std::pair<mpl::int_<I>, fusion::cons<type, S> >
-      (mpl::int_<I>(), fusion::cons<type, S>(typename T::type(), s.second));
+      (mpl::int_<I>(), fusion::cons<type, S>(type(), s.second));
   }
 
   template <int I, typename S, typename T>
@@ -188,7 +188,6 @@ struct initialize_arguments
   {
     BOOST_MPL_ASSERT((mpl::not_<boost::is_fundamental<T> >));
     typedef typename mpl::apply1<typename mpl::lambda<Condition>::type, T>::type condition;
-    BOOST_MPL_ASSERT((mpl::not_<condition>));
     return call(s, t, condition());
   }
 
@@ -307,7 +306,9 @@ void make_request_reply(reply& r, ReplyArguments& reply_arguments)
 template <typename R, typename SeqParam, typename F, typename T, typename Args>
 void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<void>)
 {
-  f(fusion::push_front(args, self));
+  fusion::single_view<T*> self_view(self);
+  fusion::joint_view<fusion::single_view<T*> const, Args> new_args(self_view, args);
+  f(new_args);
 
   typedef Args argument_types;
 
@@ -335,7 +336,9 @@ void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<void
 template <typename R, typename SeqParam, typename F, typename T, typename Args>
 void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<R>)
 {
-  R result = f(fusion::push_front(args, self));
+  fusion::single_view<T*> self_view(self);
+  fusion::joint_view<fusion::single_view<T*> const, Args> new_args(self_view, args);
+  R result = f(new_args);
 
   typedef Args argument_types;
 
@@ -427,7 +430,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
                        >
            >
           , boost::add_reference<type_tag::value_type<mpl::_1> >
-          , mpl::identity<type_tag::value_type<mpl::_1> >
+          , boost::remove_reference<type_tag::value_type<mpl::_1> >
         >
        > >::type
       >::type
@@ -437,7 +440,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
     std::cout << "handle_request_body not_out_params " << typeid(argument_types).name() << std::endl;
 
     std::pair<mpl::int_<0>, fusion::nil> const pair;
-    argument_types const arguments = fusion::fold
+    argument_types arguments = fusion::fold
       (identity_arguments, pair, initialize_arguments
        <parse_argument_types
        // Default construct out types
@@ -453,7 +456,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
                        >
            >
           , boost::add_reference<type_tag::value_type<mpl::_1> >
-          , mpl::identity<type_tag::value_type<mpl::_1> >
+          , boost::remove_reference<type_tag::value_type<mpl::_1> >
         >
        >
        (parse_arguments));
