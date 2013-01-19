@@ -8,23 +8,23 @@ import testing ;
 import feature ;
 
 path-constant current : . ;
-path-constant install : ../../../../../install ;
+path-constant install : ../../../../install ;
 
-project morbid/tests/interop/mico/module_simple1 ;
+project morbid/tests/interop/mico/return_allprimitives ;
 
-make hello.h : hello.idl : @morbid.compileidl : <dependency>/morbid//install <test-orb>morbid ;
-make hello.cpp : hello.h : @donothing : <dependency>/morbid//install <test-orb>morbid ;
+make return_allprimitives.h : return_allprimitives.idl : @morbid.compileidl : <dependency>/morbid//install <test-orb>morbid ;
+make return_allprimitives.cpp : return_allprimitives.h : @donothing : <dependency>/morbid//install <test-orb>morbid ;
 
 exe morbid_client
- : client.cpp /morbid//morbid hello.cpp
- : <implicit-dependency>hello.h
-   <implicit-dependency>hello.cpp
+ : client.cpp /morbid//morbid return_allprimitives.cpp
+ : <implicit-dependency>return_allprimitives.h
+   <implicit-dependency>return_allprimitives.cpp
    <test-orb>morbid
  ;
 exe morbid_server
- : server.cpp /morbid//morbid hello.cpp
- : <implicit-dependency>hello.h
-   <implicit-dependency>hello.cpp
+ : server.cpp /morbid//morbid return_allprimitives.cpp
+ : <implicit-dependency>return_allprimitives.h
+   <implicit-dependency>return_allprimitives.cpp
    <test-orb>morbid
  ;
 
@@ -62,5 +62,7 @@ make mico_morbid.output : mico_client morbid_server : @run-client-server ;
 make tao_tao.output : tao_client tao_server : @run-client-server ;
 make morbid_tao.output : morbid_client tao_server : @run-client-server ;
 make tao_morbid.output : tao_client morbid_server : @run-client-server ;
+make mico_tao.output : tao_client mico_server : @run-client-server ;
+make tao_mico.output : mico_client tao_server : @run-client-server ;
 
-alias module_simple1 : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output tao_tao.output tao_morbid.output morbid_tao.output ;
+alias return_allprimitives : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output tao_tao.output tao_morbid.output morbid_tao.output ;

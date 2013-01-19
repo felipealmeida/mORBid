@@ -1,0 +1,66 @@
+# (c) Copyright 2012 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+import feature ;
+
+path-constant current : . ;
+path-constant install : ../../../../install ;
+
+project morbid/tests/interop/mico/module_simple1 ;
+
+make hello.h : hello.idl : @morbid.compileidl : <dependency>/morbid//install <test-orb>morbid ;
+make hello.cpp : hello.h : @donothing : <dependency>/morbid//install <test-orb>morbid ;
+
+exe morbid_client
+ : client.cpp /morbid//morbid hello.cpp
+ : <implicit-dependency>hello.h
+   <implicit-dependency>hello.cpp
+   <test-orb>morbid
+ ;
+exe morbid_server
+ : server.cpp /morbid//morbid hello.cpp
+ : <implicit-dependency>hello.h
+   <implicit-dependency>hello.cpp
+   <test-orb>morbid
+ ;
+
+actions donothing
+{
+}
+actions morbid.compileidl
+{
+  $(install:G=)/morbid_idl -i $(>) -o $(<:S=)
+}
+actions run-client-server
+{
+  $(>[2]) $(<).ior > $(<).server &
+  server_pid=$!
+  sleep 1
+  $(>[1]) $(<).ior > $(<).client
+  if [ "$?" -eq 0 ]
+  then
+    wait $server_pid
+  else
+    kill -s KILL $server_pid
+    exit 1
+  fi
+}
+
+alias mico_client : mico//mico_client ;
+alias mico_server : mico//mico_server ;
+alias tao_client : tao//tao_client ;
+alias tao_server : tao//tao_server ;
+
+make morbid_morbid.output : morbid_client morbid_server : @run-client-server ;
+make mico_mico.output : mico_client mico_server : @run-client-server ;
+make morbid_mico.output : morbid_client mico_server : @run-client-server ;
+make mico_morbid.output : mico_client morbid_server : @run-client-server ;
+make tao_tao.output : tao_client tao_server : @run-client-server ;
+make morbid_tao.output : morbid_client tao_server : @run-client-server ;
+make tao_morbid.output : tao_client morbid_server : @run-client-server ;
+
+alias module_simple1 : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output tao_tao.output tao_morbid.output morbid_tao.output ;

@@ -5,6 +5,11 @@ feature.feature test-orb : morbid mico tao : composite link-incompatible ;
 
 project morbid/tests/interop ;
 
-alias interops : mico/simple1//simple1
- mico/module_simple1//module_simple1 ;
+alias interops : simple1//simple1
+ module_simple1//module_simple1
+ allprimitives//allprimitives
+ out_allprimitives//out_allprimitives
+ inout_allprimitives//inout_allprimitives
+ return_allprimitives//return_allprimitives
+ ;
 

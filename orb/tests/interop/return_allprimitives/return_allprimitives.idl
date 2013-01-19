@@ -1,0 +1,21 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
+interface return_allprimitives
+{
+  boolean foo1();
+  char foo2();
+  double foo3();
+  float foo4();
+  long foo5();
+  octet foo6();
+  short foo7();
+  // void foo8(out string a);
+  // void foo9(out wchar a);
+  // void foo10(out wstring a);
+  // void foo11(out any a);
+};

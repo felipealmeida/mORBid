@@ -1,0 +1,37 @@
+# (c) Copyright 2012 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import path ;
+
+make return_allprimitivesS.h : ../return_allprimitives.idl : @tao.compileidl : <test-orb>tao ;
+make return_allprimitivesS.cpp : return_allprimitivesS.h : @donothing : <test-orb>tao ;
+make return_allprimitivesC.h : return_allprimitivesS.cpp : @donothing : <test-orb>tao ;
+make return_allprimitivesC.cpp : return_allprimitivesC.h : @donothing : <test-orb>tao ;
+make return_allprimitivesC.inl : return_allprimitivesC.cpp : @donothing : <test-orb>tao ;
+
+actions tao.compileidl
+{
+  tao_idl "$(>)" -o "$(<[0]:D)"
+}
+actions donothing
+{
+}
+
+exe tao_client : ../client.cpp /tao//tao return_allprimitivesC.cpp
+ : <implicit-dependency>return_allprimitivesC.h
+   <implicit-dependency>return_allprimitivesC.cpp
+   <test-orb>tao
+   <define>USING_TAO
+ ;
+exe tao_server : ../server.cpp /tao//tao return_allprimitivesS.cpp return_allprimitivesC.cpp
+ : <implicit-dependency>return_allprimitivesS.h
+   <implicit-dependency>return_allprimitivesS.cpp
+   <implicit-dependency>return_allprimitivesC.h
+   <implicit-dependency>return_allprimitivesC.cpp
+   <test-orb>tao
+   <define>USING_TAO
+ ;
+
