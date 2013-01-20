@@ -51,6 +51,8 @@ struct is_scalar< ::morbid::iiop::endianness_attribute const> : mpl::true_
 
 namespace morbid { namespace iiop {
 
+namespace mpl = boost::mpl;
+
 template <typename Attributes>
 struct generator_endianness
 {

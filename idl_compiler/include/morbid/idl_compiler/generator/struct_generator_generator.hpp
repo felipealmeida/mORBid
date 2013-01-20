@@ -40,11 +40,11 @@ struct struct_generator_generator : karma::grammar
     floating_point_generator = 
       (
        karma::eps(at_c<0>(_val) == types::floating_point::float_)
-       << "::morbid::iiop::generator::align(4u) << float_(true/*little_endian*/)"
+       << "::morbid::giop::float_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::double_)
-       << "::morbid::iiop::generator::align(8u) << double_(true/*little_endian*/)"
+       << "::morbid::giop::double_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::long_double_)
@@ -54,39 +54,41 @@ struct struct_generator_generator : karma::grammar
     integer_generator =
       (
        karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
-       << "::morbid::iiop::generator::align(2u) << karma::attr_cast< ::morbid::Short>(word(true/*little_endian*/))"
+       << "::morbid::giop::short_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
-       << "::morbid::iiop::generator::align(4u) << karma::attr_cast< ::morbid::Long>(dword(true/*little_endian*/))"
+       << "::morbid::giop::long_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
-       << "::morbid::iiop::generator::align(8u) << karma::attr_cast< ::morbid::LongLong>(qword(true/*little_endian*/))"
+       << "::morbid::giop::longlong_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
-       << "::morbid::iiop::generator::align(2u) << karma::attr_cast< ::morbid::UShort>(word(true/*little_endian*/))"
+       << "::morbid::giop::ushort_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
-       << "::morbid::iiop::generator::align(4u) << karma::attr_cast< ::morbid::ULong>(dword(true/*little_endian*/))"
+       << "::morbid::giop::ulong_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
-       << "::morbid::iiop::generator::align(8u) << karma::attr_cast< ::morbid::ULongLong>(qword(true/*little_endian*/))"
+       << "::morbid::giop::ulonglong_"
       )
       ;
-    char_generator = karma::string[_1 = "karma::char_"];
-    wchar_generator = karma::string[_1 = "karma::wchar_"];
-    boolean_generator = karma::string[_1 = "karma::attr_cast< ::morbid::Boolean>(karma::char_)"];
-    octet_generator = karma::string[_1 = "karma::attr_cast< ::morbid::Octet>(karma::char_)"];
+    char_generator = karma::string[_1 = "::morbid::giop::octet"];
+    wchar_generator = karma::string[_1 = "::morbid::giop::wchar_"];
+    boolean_generator = karma::string[_1 = "::morbid::giop::bool_"];
+    octet_generator = karma::string[_1 = "::morbid::giop::octet"];
     // any_generator = karma::eps;
     // object_generator = karma::eps;
     // value_base_generator = karma::eps;
     // void_generator = karma::eps;
-    scoped_name_generator = karma::string[_1 = "scoped_name_generator"];//karma::eps;
-    sequence_generator = karma::string[_1 = "sequence_generator"];//karma::eps;
+
+    // scoped_name_generator = karma::string[_1 = "scoped_name_generator"];//karma::eps;
+    // sequence_generator = karma::string[_1 = "sequence_generator"];//karma::eps;
+
     // any = karma::string[_1 = "CORBA::Any"];
     // object = karma::string[_1 = "CORBA::Object"];
     // value_base = karma::string[_1 = "CORBA::ValueBase"];
@@ -107,28 +109,22 @@ struct struct_generator_generator : karma::grammar
       ;    
     start =
       eol
-      << "template <typename OutputIterator>" << eol
-      << "struct _morbid_generator : ::boost::spirit::karma::grammar<OutputIterator" << eol
-      << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "(unsigned int)>" << eol
+      << "template <typename Domain, typename Iterator, typename Attr>" << eol
+      << "struct _morbid_grammar : ::morbid::giop::grammar<Domain, Iterator, Attr()>" << eol
+      // << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "(unsigned int)>" << eol
       << '{' << eol
-      << indent << "_morbid_generator() : _morbid_generator::base_type(start)" << eol
+      << indent << "_morbid_grammar() : _morbid_grammar::base_type(start)" << eol
       << indent << '{' << eol
-      << indent << indent << "namespace karma = boost::spirit::karma;" << eol
-      << indent << indent << "using karma::_r1;" << eol
-      << indent << indent << "start %= ::morbid::iiop::generator::alignable(_r1)[ " << eol
+      // << indent << indent << "namespace karma = boost::spirit::karma;" << eol
+      // << indent << indent << "using karma::_r1;" << eol
+      << indent << indent << "start = " << eol
       << indent << indent << indent
       << (
           ((member_generator(_r1) << eol) % (indent << indent << indent << "<< "))[_1 = at_c<1>(_val)]
           | ("karma::eps" << eol)
-         ) << indent << indent << indent << "];" << eol
+         ) << indent << indent << indent << ";" << eol
       << indent << '}' << eol
-      << indent << "::boost::spirit::karma::rule<OutputIterator" << eol
-      << indent << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "(unsigned int)> start;" << eol
-      << indent << "::morbid::iiop::generator::float_<OutputIterator> float_;" << eol
-      << indent << "::morbid::iiop::generator::double_<OutputIterator> double_;" << eol
-      << indent << "::morbid::iiop::generator::word<OutputIterator> word;" << eol
-      << indent << "::morbid::iiop::generator::dword<OutputIterator> dword;" << eol
-      << indent << "::morbid::iiop::generator::qword<OutputIterator> qword;" << eol
+      << indent << "::morbid::giop::rule<Domain, Iterator, Attr()> start;" << eol
       << "};" << eol << eol
       ;
     indent = karma::space << karma::space;

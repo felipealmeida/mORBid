@@ -12,7 +12,7 @@
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/generator/scoped_name.hpp>
 #include <morbid/idl_compiler/generator/struct_generator_generator.hpp>
-#include <morbid/idl_compiler/generator/struct_parser_generator.hpp>
+// #include <morbid/idl_compiler/generator/struct_parser_generator.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 
@@ -54,11 +54,11 @@ struct struct_generator : karma::grammar
       << indent << mpl_member_type(_r1)[_1 = _val] << " const& _morbid_fusion_at( ::boost::mpl::size_t<"
       << karma::lit(_r2) << "u>) const { return " << karma::string[_1 = at_c<1>(_val)] << "; }" << eol
       ;
-    morbid_fusion_model =
-         indent << "typedef boost::mpl::size_t<" << karma::lit(phoenix::size(at_c<1>(_val))) << "> _morbid_fusion_size;" << eol
-      << indent << "typedef " << mpl_sequence_type(_r1)[_1 = _val] << " _morbid_fusion_types;" << eol
-      << indent << "typedef ::boost::fusion::fusion_sequence_tag tag;" << eol
-      << (*fusion_at(_r1, _a++))[_1 = at_c<1>(_val)]
+    morbid_fusion_model = karma::eps
+      //    indent << "typedef boost::mpl::size_t<" << karma::lit(phoenix::size(at_c<1>(_val))) << "> _morbid_fusion_size;" << eol
+      // << indent << "typedef " << mpl_sequence_type(_r1)[_1 = _val] << " _morbid_fusion_types;" << eol
+      // << indent << "typedef ::boost::fusion::fusion_sequence_tag tag;" << eol
+      // << (*fusion_at(_r1, _a++))[_1 = at_c<1>(_val)]
       ;
     start =
       eol
@@ -71,7 +71,7 @@ struct struct_generator : karma::grammar
       << indent << "typedef ::morbid::struct_tag _morbid_type_kind;" << eol
       << morbid_fusion_model(_r1)[_1 = _val]
       << struct_generator_generator(_r1)[_1 = _val]
-      << struct_parser_generator(_r1)[_1 = _val]
+      // << struct_parser_generator(_r1)[_1 = _val]
       << "};" << eol << eol
       << "inline ::std::ostream& operator<<( ::std::ostream& os, " << string[_1 = at_c<0>(_val)] << " const& obj)" << eol
       << '{' << eol
@@ -91,8 +91,8 @@ struct struct_generator : karma::grammar
   generator::type_spec<OutputIterator, Iterator> type_spec;
   generator::struct_generator_generator<OutputIterator, Iterator>
     struct_generator_generator;
-  generator::struct_parser_generator<OutputIterator, Iterator>
-    struct_parser_generator;
+  // generator::struct_parser_generator<OutputIterator, Iterator>
+  //   struct_parser_generator;
   karma::rule<OutputIterator, idl_parser::struct_member<Iterator>(struct_)> mpl_member_type;
   karma::rule<OutputIterator, idl_parser::struct_member<Iterator>(struct_, unsigned int)> fusion_at;
   karma::rule<OutputIterator, idl_compiler::struct_def_type(struct_)> mpl_sequence_type;

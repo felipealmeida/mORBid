@@ -60,6 +60,9 @@ struct grammar_with_attrs : morbid::giop::grammar<Domain, Iterator, char(int)>
   grammar_with_attrs() : grammar_with_attrs::base_type(start)
   {
   }
+
+  static size_t const params_min_size = 1;
+  static size_t const params_max_size = 1;
   
   morbid::giop::rule<Domain, Iterator, char(int)> start;
 };
@@ -70,6 +73,9 @@ struct grammar : morbid::giop::grammar<Domain, Iterator, char()>
   grammar() : grammar::base_type(start)
   {
   }
+
+  static size_t const params_min_size = 0;
+  static size_t const params_max_size = 0;
   
   morbid::giop::rule<Domain, Iterator, char()> start;
 };

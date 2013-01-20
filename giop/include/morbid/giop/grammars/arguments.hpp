@@ -64,8 +64,9 @@ struct arguments_aux<N, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Itera
   template <typename C>
   arguments_aux(C const& c) : arguments_aux::base_type(start)
   {
-#define MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence(Z, I, DATA)     \
-    BOOST_PP_EXPR_IF(BOOST_PP_DEC(N), &) c.template call<typename mpl::at_c<TypeSeq, I>::type>()
+#define MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence(Z, I, DATA)             \
+    BOOST_PP_EXPR_IF(BOOST_PP_DEC(N), &) c.template call                \
+      <typename mpl::at_c<TypeSeq, I>::type, Domain, Iterator>()
 
     start = BOOST_PP_REPEAT(N, MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence, ~) & spirit::eps
       ;

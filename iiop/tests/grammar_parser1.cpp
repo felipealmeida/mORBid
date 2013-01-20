@@ -5,7 +5,7 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <morbid/giop/grammars/message_header_1_0.hpp>
+#include <morbid/giop/grammars/message_1_0.hpp>
 
 #include <morbid/iiop/all.hpp>
 #include <morbid/giop/forward_back_insert_iterator.hpp>
@@ -22,16 +22,15 @@ int main()
   namespace qi = spirit::qi;
   namespace phoenix = boost::phoenix;
 
-  typedef fusion::vector2<unsigned char, unsigned int> rest;
-  typedef fusion::vector3<unsigned char, unsigned char, rest> attribute_type;
+  typedef fusion::vector0<> attribute_type;
 
-  attribute_type attribute('\1', '\0', rest('\0', 32u));
+  attribute_type attribute;
 
-  const char output[] = "GIOP\x01\x00\x01\x00\x20\x00\x00\x00";
+  const char output[] = "GIOP\x01\x00\x01\x00\x00\x00\x00\x00";
   typedef const char* iterator_type;
-  typedef morbid::giop::grammars::message_header_1_0<iiop::parser_domain
-                                                     , iterator_type
-                                                     , attribute_type>
+  typedef morbid::giop::grammars::message_1_0<iiop::parser_domain
+                                              , iterator_type
+                                              , attribute_type, 0u>
     parser_message_header_grammar;
   parser_message_header_grammar parser_message_header;
   attribute_type attribute_read;
@@ -39,10 +38,6 @@ int main()
   if(qi::parse(first, last, giop::compile<iiop::parser_domain>
                (parser_message_header), attribute_read))
   {
-    std::cout << "Major " << (unsigned int)fusion::at_c<0>(attribute_read) << std::endl;
-    std::cout << "Minor " << (unsigned int)fusion::at_c<1>(attribute_read) << std::endl;
-    std::cout << "Flags " << (unsigned int)fusion::at_c<0>(fusion::at_c<2>(attribute_read)) << std::endl;
-    std::cout << "Size " << fusion::at_c<1>(fusion::at_c<2>(attribute_read)) << std::endl;
     assert(attribute == attribute_read);
   }
   else

@@ -144,3 +144,7 @@ alias return_allprimitives : return_allprimitives.output ;
 alias modules_allprimitives : modules_allprimitives.output ;
 alias struct : struct.output ;
 alias reference : reference.output ;
+
+alias tests : /morbid//install allprimitives out_allprimitives inout_allprimitives
+ return_allprimitives modules_allprimitives struct #reference
+  ;

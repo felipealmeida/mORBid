@@ -52,6 +52,9 @@ namespace test_compile {
 
 struct rule
 {
+  static size_t const params_min_size = 0;
+  static size_t const params_max_size = 1;
+
   typedef boost::fusion::cons<int, boost::fusion::nil> parameter_types;
 
   rule() {}

@@ -5,7 +5,7 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <morbid/giop/grammars/message_header_1_0.hpp>
+#include <morbid/giop/grammars/message_1_0.hpp>
 
 #include <morbid/iiop/all.hpp>
 #include <morbid/giop/forward_back_insert_iterator.hpp>
@@ -27,9 +27,9 @@ int main()
   attribute_type attribute('\1', '\0', something('\0', 32u));
 
   typedef giop::forward_back_insert_iterator<std::vector<char> > iterator_type;
-  typedef morbid::giop::grammars::message_header_1_0<iiop::generator_domain
-                                                     , iterator_type
-                                                     , attribute_type> message_header_grammar;
+  typedef morbid::giop::grammars::message_1_0<iiop::generator_domain
+                                              , iterator_type
+                                              , attribute_type, 0u> message_header_grammar;
   message_header_grammar message_header;
   std::vector<char> output;
   iterator_type iterator(output);

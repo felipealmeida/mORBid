@@ -5,7 +5,7 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <morbid/giop/grammars/message_header_1_0.hpp>
+#include <morbid/giop/grammars/message_1_0.hpp>
 
 #include <morbid/iiop/all.hpp>
 #include <morbid/giop/forward_back_insert_iterator.hpp>
@@ -22,15 +22,14 @@ int main()
   namespace qi = spirit::qi;
   namespace phoenix = boost::phoenix;
 
-  typedef fusion::vector2<unsigned char, unsigned int> something;
-  typedef fusion::vector3<unsigned char, unsigned char, fusion::vector2<unsigned char, unsigned int> > attribute_type;
+  typedef fusion::vector0<> attribute_type;
 
-  attribute_type attribute('\1', '\0', something('\0', 32u));
+  attribute_type attribute;
 
   typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
-  typedef morbid::giop::grammars::message_header_1_0<iiop::generator_domain
-                                                     , output_iterator_type
-                                                     , attribute_type>
+  typedef morbid::giop::grammars::message_1_0<iiop::generator_domain
+                                              , output_iterator_type
+                                              , attribute_type, 0u>
     generator_message_header_grammar;
   generator_message_header_grammar generator_message_header;
   std::vector<char> output;
@@ -42,9 +41,9 @@ int main()
   {
     std::cout << "Success" << std::endl;
     typedef std::vector<char>::const_iterator iterator_type;
-    typedef morbid::giop::grammars::message_header_1_0<iiop::parser_domain
-                                                       , iterator_type
-                                                       , attribute_type>
+    typedef morbid::giop::grammars::message_1_0<iiop::parser_domain
+                                                , iterator_type
+                                                , attribute_type, 0u>
       parser_message_header_grammar;
     parser_message_header_grammar parser_message_header;
     attribute_type attribute_read;
@@ -53,6 +52,10 @@ int main()
                  (parser_message_header)
                  , attribute_read))
     {
+      std::cout << "attribute " << attribute
+                << std::endl
+                << "attribute read " << attribute_read << std::endl;
+
       assert(attribute == attribute_read);
     }
     else

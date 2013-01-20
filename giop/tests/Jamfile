@@ -15,3 +15,5 @@ compile building.cpp /morbid//giop ;
 compile compile.cpp /morbid//giop ;
 run grammar.cpp /morbid//giop ;
 run rule.cpp /morbid//giop ;
+
+alias tests : building compile grammar rule ;
