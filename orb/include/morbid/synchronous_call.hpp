@@ -39,6 +39,7 @@
 #include <boost/mpl/end.hpp>
 #include <boost/fusion/include/as_vector.hpp>
 #include <boost/fusion/include/remove_if.hpp>
+#include <boost/fusion/include/tag_of.hpp>
 #include <boost/algorithm/hex.hpp>
 
 #include <string>

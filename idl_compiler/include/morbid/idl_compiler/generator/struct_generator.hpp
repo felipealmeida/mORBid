@@ -54,11 +54,11 @@ struct struct_generator : karma::grammar
       << indent << mpl_member_type(_r1)[_1 = _val] << " const& _morbid_fusion_at( ::boost::mpl::size_t<"
       << karma::lit(_r2) << "u>) const { return " << karma::string[_1 = at_c<1>(_val)] << "; }" << eol
       ;
-    morbid_fusion_model = karma::eps
-      //    indent << "typedef boost::mpl::size_t<" << karma::lit(phoenix::size(at_c<1>(_val))) << "> _morbid_fusion_size;" << eol
-      // << indent << "typedef " << mpl_sequence_type(_r1)[_1 = _val] << " _morbid_fusion_types;" << eol
-      // << indent << "typedef ::boost::fusion::fusion_sequence_tag tag;" << eol
-      // << (*fusion_at(_r1, _a++))[_1 = at_c<1>(_val)]
+    morbid_fusion_model = //karma::eps
+         indent << "typedef boost::mpl::size_t<" << karma::lit(phoenix::size(at_c<1>(_val))) << "> _morbid_fusion_size;" << eol
+      << indent << "typedef " << mpl_sequence_type(_r1)[_1 = _val] << " _morbid_fusion_types;" << eol
+      //      << indent << "typedef ::boost::fusion::fusion_sequence_tag tag;" << eol
+      << (*fusion_at(_r1, _a++))[_1 = at_c<1>(_val)]
       ;
     start =
       eol

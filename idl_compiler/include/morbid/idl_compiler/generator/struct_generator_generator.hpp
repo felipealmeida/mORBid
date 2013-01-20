@@ -110,7 +110,7 @@ struct struct_generator_generator : karma::grammar
     start =
       eol
       << "template <typename Domain, typename Iterator, typename Attr>" << eol
-      << "struct _morbid_grammar : ::morbid::giop::grammar<Domain, Iterator, Attr()>" << eol
+      << "struct _morbid_grammar : ::morbid::giop::grammar<Domain, Iterator, Attr( ::morbid::giop::endian)>" << eol
       // << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "(unsigned int)>" << eol
       << '{' << eol
       << indent << "_morbid_grammar() : _morbid_grammar::base_type(start)" << eol
@@ -120,11 +120,11 @@ struct struct_generator_generator : karma::grammar
       << indent << indent << "start = " << eol
       << indent << indent << indent
       << (
-          ((member_generator(_r1) << eol) % (indent << indent << indent << "<< "))[_1 = at_c<1>(_val)]
+          ((member_generator(_r1) << eol) % (indent << indent << indent << "& "))[_1 = at_c<1>(_val)]
           | ("karma::eps" << eol)
          ) << indent << indent << indent << ";" << eol
       << indent << '}' << eol
-      << indent << "::morbid::giop::rule<Domain, Iterator, Attr()> start;" << eol
+      << indent << "::morbid::giop::rule<Domain, Iterator, Attr( ::morbid::giop::endian)> start;" << eol
       << "};" << eol << eol
       ;
     indent = karma::space << karma::space;

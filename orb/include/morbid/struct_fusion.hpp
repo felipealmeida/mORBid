@@ -23,38 +23,58 @@
 
 namespace morbid { namespace fusion_adapt {
 
+template <typename S>
+struct struct_sequence
+{
+  typedef ::boost::fusion::fusion_sequence_tag tag;
+  typedef S struct_type;
+  typedef typename struct_type::_morbid_fusion_size _morbid_fusion_size;
+  typedef typename struct_type::_morbid_fusion_types _morbid_fusion_types;
+
+  struct_sequence(struct_type const& struct_)
+    : struct_(struct_) {}
+  struct_sequence() {}
+
+  operator struct_type() const
+  {
+    return struct_;
+  }
+
+  struct_type struct_;
+};
+
 namespace mpl = boost::mpl;
 
 struct struct_sequence_tag;
 
-template <typename Struct, std::size_t Pos>
+template <typename Sequence, std::size_t Pos>
 struct struct_sequence_iterator
-  : boost::fusion::iterator_base<struct_sequence_iterator<Struct, Pos> >
+  : boost::fusion::iterator_base<struct_sequence_iterator<Sequence, Pos> >
 {
-  typedef typename Struct::_morbid_fusion_size seq_size;
-  typedef typename Struct::_morbid_fusion_types types_seq;
+  typedef typename Sequence::_morbid_fusion_size seq_size;
+  typedef typename Sequence::_morbid_fusion_types types_seq;
 
   // BOOST_MPL_ASSERT_RELATION(Pos, >=, 0)
   // BOOST_MPL_ASSERT_RELATION(Pos, <=, seq_size::value)
 
-  typedef Struct struct_type;
+  typedef Sequence sequence_type;
   typedef boost::mpl::size_t<Pos> index;
   typedef boost::fusion::random_access_traversal_tag category;
   typedef struct_sequence_tag fusion_tag;
 
   typedef typename mpl::at_c<types_seq, Pos>::type mutable_value_type;
-  typedef typename mpl::if_<boost::is_const<Struct>
+  typedef typename mpl::if_<boost::is_const<Sequence>
                             , mutable_value_type const
                             , mutable_value_type>::type value_type;
 
-  struct_sequence_iterator(Struct& struct_)
-    : struct_(struct_) {}
+  struct_sequence_iterator(Sequence& seq)
+    : seq(seq) {}
 
-  Struct& struct_;
+  Sequence& seq;
 
   value_type& call() const
   {
-    return struct_._morbid_fusion_at(index());
+    return seq.struct_._morbid_fusion_at(index());
   }
 };
 
@@ -63,9 +83,9 @@ struct struct_sequence_iterator
 namespace boost { namespace fusion { namespace traits {
 
 template <typename T>
-struct tag_of<T, typename boost::enable_if
-              <boost::is_same<typename T::_morbid_type_kind, ::morbid::struct_tag>
-               , void>::type>
+struct tag_of< ::morbid::fusion_adapt::struct_sequence<T>, typename boost::enable_if
+               <boost::is_same<typename T::_morbid_type_kind, ::morbid::struct_tag>
+                , void>::type>
 {
   typedef ::morbid::fusion_adapt::struct_sequence_tag type;
 };
@@ -180,14 +200,14 @@ struct next_impl< ::morbid::fusion_adapt::struct_sequence_tag>
   template<typename Iterator>
   struct apply
   {
-    typedef typename Iterator::struct_type struct_type;
+    typedef typename Iterator::sequence_type sequence_type;
     typedef typename Iterator::index index;
-    typedef ::morbid::fusion_adapt::struct_sequence_iterator<struct_type, index::value + 1> type;
+    typedef ::morbid::fusion_adapt::struct_sequence_iterator<sequence_type, index::value + 1> type;
 
     static type
     call(Iterator const& i)
     {
-      return type(i.struct_);
+      return type(i.seq);
     }
   };
 };

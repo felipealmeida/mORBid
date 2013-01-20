@@ -8,6 +8,7 @@
 #ifndef MORBID_ORB_ARGUMENTS_TRAITS_HPP
 #define MORBID_ORB_ARGUMENTS_TRAITS_HPP
 
+#include <morbid/struct_fusion.hpp>
 #include <morbid/in_out_traits.hpp>
 #include <morbid/type_tag.hpp>
 #include <morbid/giop/common_terminals.hpp>
@@ -21,102 +22,115 @@ namespace spirit = boost::spirit;
 
 namespace detail {
 
-template <typename T>
+template <typename T, typename Domain, typename Iterator, typename Enable = void>
 struct argument_giop_grammar;
 
-template <>
-struct argument_giop_grammar<morbid::String>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::String, Domain, Iterator>
 {
   typedef spirit::terminal<giop::tag::string>const& result_type;
   result_type operator()() const { return giop::string; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::Char>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::Char, Domain, Iterator>
 {
   typedef spirit::terminal<giop::tag::octet>const& result_type;
   result_type operator()() const { return giop::octet; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::Boolean>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::Boolean, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::bool_>const& result_type;
   result_type operator()() const { return giop::bool_; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::Double>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::Double, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::double_>const& result_type;
   result_type operator()() const { return giop::double_; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::Float>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::Float, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::float_>const& result_type;
   result_type operator()() const { return giop::float_; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::LongLong>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::LongLong, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::long_long>const& result_type;
   result_type operator()() const { return giop::long_long; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::ULongLong>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::ULongLong, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::ulong_long>const& result_type;
   result_type operator()() const { return giop::ulong_long; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::Long>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::Long, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::long_>const& result_type;
   result_type operator()() const { return giop::long_; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::ULong>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::ULong, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::ulong_>const& result_type;
   result_type operator()() const { return giop::ulong_; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::Short>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::Short, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::short_>const& result_type;
   result_type operator()() const { return giop::short_; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::UShort>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::UShort, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::ushort_>const& result_type;
   result_type operator()() const { return giop::ushort_; }
 };
 
-template <>
-struct argument_giop_grammar<morbid::Octet>
+template <typename Domain, typename Iterator>
+struct argument_giop_grammar<morbid::Octet, Domain, Iterator>
 {
   typedef spirit::terminal<giop::tag::octet>const& result_type;
   result_type operator()() const { return giop::octet; }
+};
+
+template <typename T, typename Domain, typename Iterator>
+struct argument_giop_grammar<T, Domain, Iterator
+                             , typename boost::enable_if<boost::is_same<typename T::_morbid_type_kind, struct_tag> >::type>
+{
+  typedef typename T::template _morbid_grammar<Domain, Iterator, fusion_adapt::struct_sequence<T> > grammar_type;
+  typedef grammar_type& result_type;
+  result_type operator()() const
+  {
+    static grammar_type r;
+    return r;
+  }
 };
 
 }
 
 struct arguments_traits
 {
-  template <typename T>
-  typename detail::argument_giop_grammar<typename T::original_type>::result_type
+  template <typename T, typename Domain, typename Iterator>
+  typename detail::argument_giop_grammar<typename T::original_type, Domain, Iterator>::result_type
   call() const
   {
-    return detail::argument_giop_grammar<typename T::original_type>()();
+    return detail::argument_giop_grammar<typename T::original_type, Domain, Iterator>()();
   }
 };
 

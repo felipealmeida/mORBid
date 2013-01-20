@@ -42,6 +42,7 @@ template <typename T>
 struct create_argument_transform<type_tag::value_type_tag<T, type_tag::in_tag> >
 {
   typedef type_tag::value_type_tag<T, type_tag::in_tag> tagged;
+  BOOST_MPL_ASSERT((mpl::not_<boost::is_const<typename tagged::type> >));
   typedef typename boost::add_reference<typename tagged::type>::type type;
   typedef type result_type;
 
@@ -60,8 +61,13 @@ struct create_argument_transform<type_tag::value_type_tag<T, type_tag::out_tag> 
 
 template <typename T>
 struct create_argument_transform<type_tag::value_type_tag<T, type_tag::inout_tag> >
-  : create_argument_transform<type_tag::value_type_tag<T, type_tag::in_tag> >
 {
+  typedef type_tag::value_type_tag<T, type_tag::inout_tag> tagged;
+  BOOST_MPL_ASSERT((mpl::not_<boost::is_const<typename tagged::type> >));
+  typedef typename boost::add_reference<typename tagged::type>::type type;
+  typedef type result_type;
+
+  result_type operator()(result_type r) const { return r; }
 };
 
 template <>
@@ -176,6 +182,10 @@ struct initialize_arguments
     BOOST_MPL_ASSERT((mpl::not_<boost::is_fundamental<T> >));
     typedef typename mpl::apply1<typename mpl::lambda<ResultLambda>::type, T>::type type;
     typedef create_argument_transform<T> transform;
+    typedef fusion::result_of::at_c<ParseArguments, I> arg_type;
+    // BOOST_MPL_ASSERT((mpl::not_<boost::is_const<typename boost::remove_reference<arg_type>::type> >));
+    // BOOST_MPL_ASSERT((mpl::not_<boost::is_const<typename boost::remove_reference<typename transform::result_type>::type> >));
+    BOOST_MPL_ASSERT((boost::is_same<typename boost::result_of<transform(arg_type)>::type, type>));
     return std::pair<mpl::int_<I+1>, fusion::cons<type, S> >
       (mpl::int_<I+1>(), fusion::cons<type, S>
        (transform()(fusion::at_c<I>(parse_arguments)), s.second));
