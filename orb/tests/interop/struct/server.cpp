@@ -5,10 +5,18 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#ifndef USING_TAO
 #include "struct.h"
 #include <CORBA.h>
+#else
+#include "structS.h"
+#include <tao/corba.h>
+#endif
 
+#include <iostream>
 #include <fstream>
+#include <cassert>
+#include <cstring>
 
 struct struct_interface_impl : POA_struct_interface
 {

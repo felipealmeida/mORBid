@@ -1,0 +1,37 @@
+# (c) Copyright 2012 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import path ;
+
+make structS.h : ../struct.idl : @tao.compileidl : <test-orb>tao ;
+make structS.cpp : structS.h : @donothing : <test-orb>tao ;
+make structC.h : structS.cpp : @donothing : <test-orb>tao ;
+make structC.cpp : structC.h : @donothing : <test-orb>tao ;
+make structC.inl : structC.cpp : @donothing : <test-orb>tao ;
+
+actions tao.compileidl
+{
+  tao_idl "$(>)" -o "$(<[0]:D)"
+}
+actions donothing
+{
+}
+
+exe tao_client : ../client.cpp /tao//tao structC.cpp
+ : <implicit-dependency>structC.h
+   <implicit-dependency>structC.cpp
+   <test-orb>tao
+   <define>USING_TAO
+ ;
+exe tao_server : ../server.cpp /tao//tao structS.cpp structC.cpp
+ : <implicit-dependency>structS.h
+   <implicit-dependency>structS.cpp
+   <implicit-dependency>structC.h
+   <implicit-dependency>structC.cpp
+   <test-orb>tao
+   <define>USING_TAO
+ ;
+
