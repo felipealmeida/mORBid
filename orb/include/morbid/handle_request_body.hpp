@@ -349,7 +349,7 @@ void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<R>)
 {
   fusion::single_view<T*> self_view(self);
   fusion::joint_view<fusion::single_view<T*> const, Args> new_args(self_view, args);
-  R result = f(new_args);
+  typename return_traits<R>::type result = f(new_args);
 
   typedef Args argument_types;
 
@@ -364,7 +364,7 @@ void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<R>)
   typedef typename fusion::result_of::as_vector<mpl_identity_argument_types>::type identity_argument_types;
   identity_argument_types const identity_arguments;
 
-  typedef fusion::cons<R, argument_types> args_with_result_type;
+  typedef fusion::cons<typename return_traits<R>::type, argument_types> args_with_result_type;
 
   typedef typename boost::remove_reference<
     typename fusion::result_of::fold<identity_argument_types const, std::pair<mpl::int_<0>, fusion::nil>

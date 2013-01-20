@@ -91,6 +91,14 @@ struct inout_traits<T, typename boost::enable_if
   typedef typename T::_ptr_type& type;
 };
 
+template <typename T>
+struct return_traits<T, typename boost::enable_if
+                     <boost::is_same<typename T::_morbid_type_kind, interface_tag>
+                      , void>::type>
+{
+  typedef typename T::_ptr_type type;
+};
+
 template <>
 struct in_traits<String>
 {

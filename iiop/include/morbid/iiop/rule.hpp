@@ -10,6 +10,7 @@
 
 #include <morbid/giop/rule.hpp>
 #include <morbid/iiop/endianness.hpp>
+#include <morbid/iiop/alignment.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/support.hpp>
