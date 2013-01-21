@@ -147,4 +147,5 @@ alias reference : reference.output ;
 
 alias tests : /morbid//install allprimitives out_allprimitives inout_allprimitives
  return_allprimitives modules_allprimitives struct #reference
+ interop//interops
   ;

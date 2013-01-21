@@ -93,7 +93,8 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << " _construct_remote_stub" << eol
     << indent << "(::morbid::structured_ior const& ior);" << eol
     << indent << "static _ptr_type _nil() { return _ptr_type(); }" << eol
-    << indent << "::morbid::return_traits< ::morbid::string>::type _get_interface() const { return _repository_id; }"
+    << indent << "::morbid::return_traits< ::morbid::string>::type _get_interface() const { return _repository_id; }" << eol
+    << indent << "static _ptr_type _duplicate(_ptr_type p) { return p; }" << eol
     ;
   public_members = 
     indent
@@ -104,7 +105,10 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << karma::string[_1 = _val]
     << "> " << karma::string[_1 = _val] << "_ptr;" << eol
     << "typedef ::morbid::var<" << karma::string[_1 = _val] << "> "
-    << karma::string[_1 = _val] << "_var;" << eol;
+    << karma::string[_1 = _val] << "_var;" << eol
+    << "typedef " << karma::string[_1 = _val] << "_ptr& "
+    << karma::string[_1 = _val] << "_out;" << eol
+    ;
   indent = karma::space << karma::space;
 
   // start.name("header_stub_generator");
