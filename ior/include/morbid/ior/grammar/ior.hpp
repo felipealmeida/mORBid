@@ -21,7 +21,7 @@ namespace fusion = boost::fusion;
 namespace spirit = boost::spirit;
 
 template <typename Domain, typename Iterator, typename Attr>
-struct ior : giop::grammar<Domain, Iterator, Attr()>
+struct ior : giop::grammar<Domain, Iterator, Attr(giop::endian)>
 {
   template <typename Profile>
   ior(Profile const& profile) : ior::base_type(start)
@@ -33,18 +33,15 @@ struct ior : giop::grammar<Domain, Iterator, Attr()>
   void init(Profile const& profile)
   {
     start = 
-      giop::endianness
-      [
        giop::string
        & giop::sequence
        [
         profile
        ]
-      ]
       ;
   }
 
-  giop::rule<Domain, Iterator, Attr()> start;
+  giop::rule<Domain, Iterator, Attr(giop::endian)> start;
 };
 
 } } }

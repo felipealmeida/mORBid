@@ -68,7 +68,9 @@ struct reference_generator : karma::primitive_generator<reference_generator>
     namespace karma = boost::spirit::karma;
     if(karma::generate(sink
                        , giop::compile<iiop::generator_domain>
-                       (ior_grammar(giop::native_endian))
+                       (
+                        ior_grammar(giop::native_endian)
+                       )
                        , sior))
     {
       std::cout << "Success" << std::endl;
@@ -124,7 +126,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
     namespace qi = boost::spirit::qi;
     Iterator first_ = first;
     if(qi::parse(first_, last
-                 , giop::compile<iiop::parser_domain>(ior_grammar)
+                 , giop::compile<iiop::parser_domain>(ior_grammar(giop::native_endian))
                  , r))
     {
       first = first_;

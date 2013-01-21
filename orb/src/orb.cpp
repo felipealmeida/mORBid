@@ -81,7 +81,8 @@ String_ptr ORB::object_to_string(Object_ptr p)
                      , karma::lit("IOR:")
                      << ior::hex
                      [
-                      giop::compile<iiop::generator_domain>(ior_grammar(giop::native_endian))
+                      giop::compile<iiop::generator_domain>
+                      (giop::endianness(giop::native_endian)[ior_grammar])
                      ]
                      , sior))
   {
@@ -111,7 +112,7 @@ Object_ptr ORB::string_to_object(const char* ref)
 
   typedef structured_ior attribute_type;
   namespace fusion = boost::fusion;
-  typedef typename fusion::result_of::as_vector
+  typedef fusion::result_of::as_vector
     <fusion::joint_view<fusion::single_view<char> // minor version
                         , iiop::profile_body> >::type profile_body_1_1_attr;
 
@@ -143,7 +144,7 @@ Object_ptr ORB::string_to_object(const char* ref)
                ,  qi::lit("IOR:")
                >> ior::hex
                [
-                   giop::compile<iiop::parser_domain>(ior_grammar)
+                giop::compile<iiop::parser_domain>(giop::endianness[ior_grammar])
                ]
                , r))
   {

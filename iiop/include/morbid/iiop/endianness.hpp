@@ -321,6 +321,13 @@ struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::
                    , Subject, Modifiers>
 {};
 
+template <typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::native_endian_type> >
+                      , Subject, Modifiers>
+  : make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
+                   , Subject, Modifiers>
+{};
+
 }
 
 } }
@@ -359,9 +366,17 @@ struct use_directive< ::morbid::iiop::generator_domain
                       , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::big_endian_type> >
                       , Enable> : mpl::true_ {};
 
+template <typename Enable>
+struct use_directive< ::morbid::iiop::generator_domain
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::native_endian_type> >
+                      , Enable> : mpl::true_ {};
+
 template <>
 struct use_lazy_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::endianness, 1>
-  : mpl::true_ {};
+  : mpl::true_
+{
+  //BOOST_MPL_ASSERT((boost::is_same<void, int>));
+};
 
 // Parser
 template <typename Enable>
