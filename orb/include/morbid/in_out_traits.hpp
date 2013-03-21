@@ -14,6 +14,7 @@
 
 namespace morbid {
 
+struct primitive_tag {};
 struct struct_tag {};
 struct interface_tag {};
 
@@ -33,6 +34,21 @@ template <typename Enable>
 struct return_traits<void, Enable>
 {
   typedef void type;
+};
+
+template <typename T, typename Enable = void>
+struct type_kind;
+
+template <typename T>
+struct type_kind<T, typename boost::enable_if<boost::is_scalar<T> >::type>
+{
+  typedef primitive_tag type;
+};
+
+template <typename T>
+struct type_kind<T, typename boost::disable_if<boost::is_scalar<T> >::type>
+{
+  typedef typename T::_morbid_type_kind type;
 };
 
 template <typename T>

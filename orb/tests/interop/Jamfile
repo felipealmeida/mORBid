@@ -11,5 +11,6 @@ alias interops : simple1//simple1
  out_allprimitives//out_allprimitives
  inout_allprimitives//inout_allprimitives
  return_allprimitives//return_allprimitives
+ reference//reference
  ;
 
