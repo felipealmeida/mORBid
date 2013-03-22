@@ -147,6 +147,16 @@ struct use_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::seque
 template <typename Enable>
 struct use_directive< ::morbid::iiop::parser_domain, morbid::giop::tag::sequence, Enable> : mpl::true_ {};
 
+namespace traits {
+
+template <typename Subject, typename Attribute, typename Context
+          , typename Iterator>
+struct handles_container< ::morbid::iiop::parser::sequence_parser<Subject>, Attribute
+                          , Context, Iterator>
+: mpl::true_ {};
+
+}
+
 } }
 
 #endif

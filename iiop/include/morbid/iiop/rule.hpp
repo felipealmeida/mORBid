@@ -668,6 +668,16 @@ struct use_terminal< ::morbid::iiop::parser_domain
                      , ::morbid::giop::parameterized_nonterminal
                      <D, ::morbid::iiop::parser::rule< Iterator, T1, T2, T3, T4>, Params>, Enable> : mpl::true_ {};
 
+namespace traits {
+
+template <typename R, typename Params, typename Attribute, typename Context
+          , typename Iterator>
+struct handles_container< ::morbid::iiop::parser::rule_parser<R, Params>, Attribute
+                          , Context, Iterator>
+: mpl::true_ {};
+
+}
+
 } }
 
 #endif
