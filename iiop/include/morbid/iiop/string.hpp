@@ -131,6 +131,20 @@ template <typename Enable>
 struct use_terminal< ::morbid::iiop::parser_domain, morbid::giop::tag::string, Enable>
   : mpl::true_ {};
 
+namespace traits {
+
+template <typename Attribute, typename Context, typename Iterator>
+struct handles_container< ::morbid::iiop::parser::string_parser, Attribute
+                          , Context, Iterator>
+: mpl::true_ {};
+
+template <typename Attribute, typename Context, typename Iterator>
+struct handles_container< ::morbid::iiop::generator::string_generator, Attribute
+                          , Context, Iterator>
+: mpl::true_ {};
+
+}
+
 } }
 
 #endif

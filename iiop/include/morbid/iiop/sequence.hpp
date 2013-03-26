@@ -138,9 +138,6 @@ struct make_directive<giop::tag::sequence, Subject, Modifiers>
 
 namespace boost { namespace spirit {
 
-// template <typename Enable>
-// struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::sequence, Enable> : mpl::true_ {};
-
 template <typename Enable>
 struct use_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::sequence, Enable> : mpl::true_ {};
 
@@ -152,6 +149,12 @@ namespace traits {
 template <typename Subject, typename Attribute, typename Context
           , typename Iterator>
 struct handles_container< ::morbid::iiop::parser::sequence_parser<Subject>, Attribute
+                          , Context, Iterator>
+: mpl::true_ {};
+
+template <typename Subject, typename Attribute, typename Context
+          , typename Iterator>
+struct handles_container< ::morbid::iiop::generator::sequence_generator<Subject>, Attribute
                           , Context, Iterator>
 : mpl::true_ {};
 

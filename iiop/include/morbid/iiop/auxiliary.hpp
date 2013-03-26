@@ -54,6 +54,60 @@ struct make_primitive<spirit::lazy_terminal<Terminal, Actor, Arity>, Modifiers>
   }
 };
 
+template <typename Subject, typename Modifiers>
+struct make_directive<spirit::tag::repeat, Subject, Modifiers>
+{
+  typedef qi::kleene<Subject> result_type;
+  result_type operator()(spirit::unused_type, Subject const& subject, spirit::unused_type) const
+  {
+    return result_type(subject);
+  }
+};
+
+template <typename T, typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<spirit::tag::repeat, fusion::vector1<T> >, Subject, Modifiers>
+{
+  typedef qi::exact_iterator<T> iterator_type;
+  typedef qi::repeat_parser<Subject, iterator_type> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, Subject const& subject, spirit::unused_type) const
+  {
+    return result_type(subject, fusion::at_c<0>(term.args));
+  }
+};
+
+template <typename T, typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<spirit::tag::repeat, fusion::vector2<T, T> >, Subject, Modifiers>
+{
+  typedef qi::finite_iterator<T> iterator_type;
+  typedef qi::repeat_parser<Subject, iterator_type> result_type;
+  
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, Subject const& subject, spirit::unused_type) const
+  {
+    return result_type(subject,
+                       iterator_type(
+                                     fusion::at_c<0>(term.args)
+                                     , fusion::at_c<1>(term.args)
+                                     )
+                       );
+  }
+};
+
+template <typename T, typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<spirit::tag::repeat, fusion::vector2<T, spirit::inf_type> >, Subject, Modifiers>
+{
+  typedef qi::infinite_iterator<T> iterator_type;
+  typedef qi::repeat_parser<Subject, iterator_type> result_type;
+  
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, Subject const& subject, spirit::unused_type) const
+  {
+    return result_type(subject, fusion::at_c<0>(term.args));
+  }
+};
+
 }
 
 namespace generator {
@@ -119,6 +173,42 @@ struct use_terminal
 template <>
 struct use_lazy_terminal< ::morbid::iiop::generator_domain, tag::eps, 1>
   : mpl::true_ {};
+
+template <>
+struct use_directive< ::morbid::iiop::parser_domain, tag::repeat>   // enables repeat[p]
+  : mpl::true_ {};
+
+template <typename T>
+struct use_directive
+ < ::morbid::iiop::parser_domain
+   , terminal_ex<tag::repeat, fusion::vector1<T> >    // enables repeat(exact)[p]
+ > : mpl::true_ {};
+
+template <typename T>
+struct use_directive
+ < ::morbid::iiop::parser_domain
+   , terminal_ex<tag::repeat, fusion::vector2<T, T> > // enables repeat(min, max)[p]
+ > : mpl::true_ {};
+
+template <typename T>
+struct use_directive
+ < ::morbid::iiop::parser_domain
+   , terminal_ex<tag::repeat, fusion::vector2<T, inf_type> > // enables repeat(min, inf)[p]
+ > : mpl::true_ {};
+
+template <>                                     // enables *lazy* repeat(exact)[p]
+struct use_lazy_directive
+ < ::morbid::iiop::parser_domain
+   , tag::repeat
+   , 1 // arity
+ > : mpl::true_ {};
+
+template <>                                     // enables *lazy* repeat(min, max)[p]
+struct use_lazy_directive                       // and repeat(min, inf)[p]
+ < ::morbid::iiop::parser_domain
+   , tag::repeat
+   , 2 // arity
+ > : mpl::true_ {};
 
 } }
 

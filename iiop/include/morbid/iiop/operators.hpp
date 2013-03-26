@@ -33,6 +33,10 @@ struct use_operator< ::morbid::iiop::generator_domain, proto::tag::dereference> 
   : mpl::true_ {};
 
 template <>
+struct use_operator< ::morbid::iiop::generator_domain, proto::tag::unary_plus> // enables +p
+  : mpl::true_ {};
+
+template <>
 struct use_operator< ::morbid::iiop::generator_domain, proto::tag::bitwise_or>  // enables |
   : mpl::true_ {};
 
@@ -56,6 +60,10 @@ struct flatten_tree< ::morbid::iiop::parser_domain, proto::tag::logical_and>
 
 template <>
 struct use_operator< ::morbid::iiop::parser_domain, proto::tag::dereference> // enables *p
+  : mpl::true_ {};
+
+template <>
+struct use_operator< ::morbid::iiop::parser_domain, proto::tag::unary_plus> // enables +p
   : mpl::true_ {};
 
 template <>
@@ -90,6 +98,11 @@ struct make_composite<proto::tag::dereference, Subject, Modifiers>
   : karma::make_composite<proto::tag::dereference, Subject, Modifiers>
 {};
 
+template <typename Subject, typename Modifiers>
+struct make_composite<proto::tag::unary_plus, Subject, Modifiers>
+  : karma::make_composite<proto::tag::unary_plus, Subject, Modifiers>
+{};
+
 template <typename Elements, typename Modifiers>
 struct make_composite<proto::tag::bitwise_or, Elements, Modifiers>
   : karma::make_composite<proto::tag::bitwise_or, Elements, Modifiers>
@@ -107,6 +120,11 @@ struct make_composite<proto::tag::bitwise_and, Elements, Modifiers>
 template <typename Subject, typename Modifiers>
 struct make_composite<proto::tag::dereference, Subject, Modifiers>
   : qi::make_composite<proto::tag::dereference, Subject, Modifiers>
+{};
+
+template <typename Subject, typename Modifiers>
+struct make_composite<proto::tag::unary_plus, Subject, Modifiers>
+  : qi::make_composite<proto::tag::unary_plus, Subject, Modifiers>
 {};
 
 template <typename Elements, typename Modifiers>

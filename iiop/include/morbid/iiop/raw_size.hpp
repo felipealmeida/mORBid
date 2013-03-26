@@ -183,6 +183,12 @@ struct handles_container< ::morbid::iiop::generator::raw_size_generator<Size, Su
                           , Context, Iterator>
   : unary_handles_container<Subject, Attribute, Context, Iterator> {};
 
+template <typename Size, typename Subject, typename Attribute, typename Context
+          , typename Iterator>
+struct handles_container< ::morbid::iiop::parser::raw_size_parser<Size, Subject>, Attribute
+                          , Context, Iterator>
+  : unary_handles_container<Subject, Attribute, Context, Iterator> {};
+
 }
 
 // Parser
