@@ -93,7 +93,7 @@ struct string_parser : qi::primitive_parser<string_parser>
 
     qi::char_class<spirit::tag::char_code
                    <spirit::tag::char_, octet_encoding> > octet_parser;
-    octet_encoding::char_type c;
+    octet_encoding::char_type c = 0;
     for(;size > 1 && r;--size)
     {
       r = octet_parser.parse(first, last, ctx, skipper, c);
