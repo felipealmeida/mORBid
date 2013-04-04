@@ -139,7 +139,8 @@ struct raw_size_parser : qi::unary_parser<raw_size_parser<Size, Subject> >
 
     std::cout << "Size of the input for subject " << size << std::endl;
 
-    if(std::distance(first, last) < size)
+    std::size_t dist = std::distance(first, last);
+    if(dist < size)
       return false;
 
     last = boost::next(first, size);
