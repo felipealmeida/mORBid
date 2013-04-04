@@ -6,8 +6,8 @@
 
 project morbid
  : build-dir bin
- : requirements <toolset>gcc:<cxxflags>-ftemplate-depth=1000
- : usage-requirements <toolset>gcc:<cxxflags>-ftemplate-depth=1000
+ : requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
+ : usage-requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
  : default-build <link>static <threading>multi
  ;
 
