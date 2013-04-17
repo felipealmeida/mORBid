@@ -108,6 +108,29 @@ struct make_directive<spirit::terminal_ex<spirit::tag::repeat, fusion::vector2<T
   }
 };
 
+///////////////////////////////////////////////////////////////////////////
+// Parser generator: make_xxx function (objects)
+///////////////////////////////////////////////////////////////////////////
+template <typename Expr, typename Exposed, typename Transformed
+          , typename Modifiers>
+struct make_primitive<
+  spirit::tag::stateful_tag<Expr, spirit::tag::attr_cast, Exposed, Transformed>, Modifiers>
+{
+  typedef typename spirit::result_of::compile<parser_domain, Expr>::type
+    expr_type;
+  typedef qi::attr_cast_parser<Exposed, Transformed, expr_type> result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, spirit::unused_type) const
+  {
+    typedef spirit::tag::stateful_tag<
+      expr_type, spirit::tag::attr_cast, Exposed, Transformed> tag_type;
+    using spirit::detail::get_stateful_data;
+    return result_type(/*giop::compile<parser_domain>*/
+                       /*(*/get_stateful_data<tag_type>::call(term))/*)*/;
+  }
+};
+
 }
 
 namespace generator {
@@ -209,6 +232,12 @@ struct use_lazy_directive                       // and repeat(min, inf)[p]
    , tag::repeat
    , 2 // arity
  > : mpl::true_ {};
+
+// enables attr_cast<>() pseudo parser
+template <typename Expr, typename Exposed, typename Transformed>
+struct use_terminal< ::morbid::iiop::parser_domain
+                    , tag::stateful_tag<Expr, tag::attr_cast, Exposed, Transformed> >
+ : mpl::true_ {};
 
 } }
 
