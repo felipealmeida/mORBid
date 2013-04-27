@@ -5,11 +5,11 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_COMPILER_REMOTE_STUB_GENERATOR_IPP
-#define TECORB_IDL_COMPILER_REMOTE_STUB_GENERATOR_IPP
+#ifndef TECORB_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_IPP
+#define TECORB_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_IPP
 
 #include <morbid/idl_compiler/generator/parameter.hpp>
-#include <morbid/idl_compiler/generator/remote_stub_generator.hpp>
+#include <morbid/idl_compiler/generator/reference_model_generator.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
 
@@ -31,8 +31,8 @@ namespace morbid { namespace idl_compiler { namespace generator {
 namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
-header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_generator()
-  : header_remote_stub_generator::base_type(start)
+header_reference_model_generator<OutputIterator, Iterator>::header_reference_model_generator()
+  : header_reference_model_generator::base_type(start)
 {
   namespace phoenix = boost::phoenix;
   using karma::_1;
@@ -40,25 +40,22 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
   using karma::_a;
   using karma::eol;
   using phoenix::at_c;
-  
+
+  class_name = karma::string[_1 = at_c<0>(_val)] << "_ref";
   start = 
-    "namespace remote_stub {"
-    << eol[_a = at_c<0>(_val)]
-    << eol << "class "
-    << karma::string[_1 = _a] << eol
-    << " : public " << (karma::string % "::")[_1 = _r2] << eol
+    "struct "
+    << class_name[_1 = _val]
     << "{" << eol
-    << "public:" << eol
     << common_functions[_1 = _val]
     << indent << "// Start of operations defined in IDL" << eol
-    << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
+    << (*(operation(_r1, _r2) << eol))[_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
     << ior_function
     << "private:" << eol
     << common_members[_1 = _a]
     << "};" << eol << eol
-    << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol << eol
-    << "}" << eol
+    // << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol << eol
+    // << "}" << eol
     ;
   operation =
     indent
@@ -87,7 +84,9 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
         //       << synchronous_template_args(_r1)))[_1 = at_c<2>(_val)]
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
-        << "(_repository_id, \"" << karma::string[_1 = at_c<1>(_val)]
+        << "("
+        << "\"IDL:" << (karma::string % '/')[_1 = _r2] << ":1.0\""
+        << ", \"" << karma::string[_1 = at_c<1>(_val)]
         << "\", _structured_ior_"
         << eol << indent << indent << indent << indent << ", "
         << "boost::fusion::vector"
@@ -118,28 +117,37 @@ header_remote_stub_generator<OutputIterator, Iterator>::header_remote_stub_gener
   
   common_functions =
     indent
-    << "// Constructor" << eol
-    << indent
-    << (
-        karma::string[_1 = at_c<0>(_val)]
-        << "( ::morbid::structured_ior const& structured_ior)" << eol
-        << indent << indent << " : _structured_ior_(structured_ior)" << eol
+    << "// Constructors" << eol
+    << indent << 
+       (
+        class_name[_1 = _val]
+        << "( ::morbid::orb orb, ::morbid::structured_ior const& structured_ior)" << eol
+        << indent << indent << " : _orb_(orb), _structured_ior_(structured_ior)" << eol
         << indent << "{}" << eol
        )
-    << indent << "~" << karma::string[_1 = at_c<0>(_val)] << "();" << eol
+    << indent << 
+      (
+        class_name[_1 = _val]
+        << "( ::morbid::orb orb, std::string const& ior)" << eol
+        << indent << indent << " : _orb_(orb)/*, _structured_ior_(structured_ior)*/" << eol
+        << indent << "{}" << eol
+       )
+    // << indent << "~" << class_name[_1 = _val] << "();" << eol
     ;
 
   common_members =
     indent
     << "// Members" << eol
+    << indent << "::morbid::orb _orb_;" << eol
     << indent << "::morbid::structured_ior _structured_ior_;" << eol
+    // << indent << "static const char* _repository_id;" << eol
     ;
   indent = karma::space << karma::space;
   ior_function =
     indent << "::morbid::structured_ior _structured_ior() const { return _structured_ior_; }" << eol
     ;
 
-  start.name("header_remote_stub_generator");
+  start.name("header_reference_model_generator");
   karma::debug(start);
 }
 

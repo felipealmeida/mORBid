@@ -267,22 +267,21 @@ int main(int argc, char** argv)
         boost::filesystem::path header_path, impl_path;
         if(vm.count("output"))
         {
-          header_path = vm["output"].as<std::string>() + ".h";
-          impl_path = vm["output"].as<std::string>() + ".cpp";
+          header_path = vm["output"].as<std::string>() + ".hpp";
         }
         else
         {
           header_path = input_file;
-          header_path.replace_extension(".h");
-          impl_path = input_file;
-          impl_path.replace_extension(".cpp");
+          header_path.replace_extension(".hpp");
+          // impl_path = input_file;
+          // impl_path.replace_extension(".cpp");
         }
 
         boost::filesystem::ofstream header(header_path);
-        boost::filesystem::ofstream cpp(impl_path);
+        // boost::filesystem::ofstream cpp(impl_path);
         typedef std::map<vertex_descriptor, boost::default_color_type> color_map_container_t;
         typedef boost::associative_property_map<color_map_container_t> color_map_t;
-        if(header.is_open() && cpp.is_open())
+        if(header.is_open()/* && cpp.is_open()*/)
         {
           namespace karma = boost::spirit::karma;
           using morbid::idl_compiler::output_iterator_type;
@@ -298,6 +297,8 @@ int main(int argc, char** argv)
                << karma::lit("#include <morbid/reply.hpp>") << karma::eol
                << karma::lit("#include <morbid/structured_ior.hpp>") << karma::eol
                << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol << karma::eol
+               << karma::lit("#include <morbid/synchronous_call.hpp>") << karma::eol << karma::eol
+               << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <boost/integer.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
@@ -344,55 +345,55 @@ int main(int argc, char** argv)
             }
           }                  
 
-          {
-            output_iterator_type iterator(cpp);
+          // {
+          //   output_iterator_type iterator(cpp);
 
-            bool r = karma::generate
-              (iterator
-               , karma::lit("// -*- c++ -*-") << karma::eol
-               << "// Generated implementation. DO NOT EDIT" << karma::eol << karma::eol
-               << "#include \"" << karma::lit(header_path.filename().native()) << "\"" << karma::eol
-               << "#include <morbid/synchronous_call.hpp>" << karma::eol
-               << "#include <boost/fusion/include/vector.hpp>" << karma::eol
-               << karma::eol
-               );
-            if(!r) 
-              throw std::runtime_error("Failed generating #includes for cpp");
+          //   bool r = karma::generate
+          //     (iterator
+          //      , karma::lit("// -*- c++ -*-") << karma::eol
+          //      << "// Generated implementation. DO NOT EDIT" << karma::eol << karma::eol
+          //      << "#include \"" << karma::lit(header_path.filename().native()) << "\"" << karma::eol
+          //      << "#include <morbid/synchronous_call.hpp>" << karma::eol
+          //      << "#include <boost/fusion/include/vector.hpp>" << karma::eol
+          //      << karma::eol
+          //      );
+          //   if(!r) 
+          //     throw std::runtime_error("Failed generating #includes for cpp");
 
-            {
-              color_map_container_t color_map_container;
-              color_map_t color_map(color_map_container);
-              morbid::idl_compiler::generate_cpp_modules_visitor cpp_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module
-                                  , boost::visitor(cpp_modules_visitor)
-                                  .color_map(color_map));
-              typedef boost::property_map<modules_tree_type, module_property_t>
-                ::type module_map;
-              module_map map = get(module_property_t(), modules_tree);
-              for(std::size_t l = cpp_modules_visitor.state->opened_modules.size() - 1
-                    ;l != 0;--l)
-              {
-                morbid::idl_compiler::module const& m
-                  = *boost::get(map, cpp_modules_visitor.state->opened_modules[l]);
+          //   {
+          //     color_map_container_t color_map_container;
+          //     color_map_t color_map(color_map_container);
+          //     morbid::idl_compiler::generate_cpp_modules_visitor cpp_modules_visitor (iterator);
+          //     breadth_first_visit(modules_tree, global_module
+          //                         , boost::visitor(cpp_modules_visitor)
+          //                         .color_map(color_map));
+          //     typedef boost::property_map<modules_tree_type, module_property_t>
+          //       ::type module_map;
+          //     module_map map = get(module_property_t(), modules_tree);
+          //     for(std::size_t l = cpp_modules_visitor.state->opened_modules.size() - 1
+          //           ;l != 0;--l)
+          //     {
+          //       morbid::idl_compiler::module const& m
+          //         = *boost::get(map, cpp_modules_visitor.state->opened_modules[l]);
                 
-                *iterator++ = '}';
-                *iterator++ = ' ';
-                *iterator++ = '/';
-                *iterator++ = '/';
-                iterator = std::copy(m.name.begin(), m.name.end(), iterator);
-                karma::generate(iterator, karma::eol);
-              }
-            }
+          //       *iterator++ = '}';
+          //       *iterator++ = ' ';
+          //       *iterator++ = '/';
+          //       *iterator++ = '/';
+          //       iterator = std::copy(m.name.begin(), m.name.end(), iterator);
+          //       karma::generate(iterator, karma::eol);
+          //     }
+          //   }
 
-            {
-              color_map_container_t color_map_container;
-              color_map_t color_map(color_map_container);
-              morbid::idl_compiler::generate_cpp_poa_modules_visitor cpp_poa_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module
-                                  , boost::visitor(cpp_poa_modules_visitor)
-                                  .color_map(color_map));
-            }
-          }
+          //   {
+          //     color_map_container_t color_map_container;
+          //     color_map_t color_map(color_map_container);
+          //     morbid::idl_compiler::generate_cpp_poa_modules_visitor cpp_poa_modules_visitor (iterator);
+          //     breadth_first_visit(modules_tree, global_module
+          //                         , boost::visitor(cpp_poa_modules_visitor)
+          //                         .color_map(color_map));
+          //   }
+          // }
         }
         else
         {

@@ -143,61 +143,63 @@ void connection::process_input()
     std::size_t align_offset = std::distance(processing_buffer.begin(), iterator) - fusion::at_c<6u>(attr).size();
     processing_buffer.erase(processing_buffer.begin(), iterator);
 
-    if(boost::shared_ptr<POA> poa = poa_.lock())
-    {
+    // if(boost::shared_ptr<POA> poa = poa_.lock())
+    // {
       std::vector<char>& object_key = fusion::at_c<3u>(attr);
       std::cout << "POA still alive" << std::endl;
-      std::string poa_name;
+      // std::string poa_name;
       std::size_t impl_;
       std::vector<char>::iterator object_key_first = object_key.begin();
-      if(qi::parse(object_key_first, object_key.end(), +(qi::char_ - qi::char_('/'))
-                   >> qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
-                   , poa_name, impl_))
+      if(qi::parse(object_key_first, object_key.end(), // +(qi::char_ - qi::char_('/'))
+                   // >>
+                   qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
+                   // , poa_name
+                   , impl_))
       {
-        std::cout << "POA name " << poa_name << std::endl;
-        ServantBase* impl = 0;
-        std::memcpy(&impl, &impl_, sizeof(impl));
-        std::cout << "ServantBase pointer " << impl << std::endl;
-        if(poa->object_map.find(impl) != poa->object_map.end())
-        {
-          std::cout << "Found servant " << impl << std::endl;
-          std::vector<char>& arguments = fusion::at_c<6u>(attr);
-          const char* arg_first = 0
-            , *arg_last = 0;
-          if(!arguments.empty())
-          {
-            arg_first = &arguments[0];
-            arg_last = arg_first + arguments.size();
-          }
+        // std::cout << "POA name " << poa_name << std::endl;
+        // ServantBase* impl = 0;
+        // std::memcpy(&impl, &impl_, sizeof(impl));
+        // std::cout << "ServantBase pointer " << impl << std::endl;
+        // if(poa->object_map.find(impl) != poa->object_map.end())
+        // {
+        //   std::cout << "Found servant " << impl << std::endl;
+        //   std::vector<char>& arguments = fusion::at_c<6u>(attr);
+        //   const char* arg_first = 0
+        //     , *arg_last = 0;
+        //   if(!arguments.empty())
+        //   {
+        //     arg_first = &arguments[0];
+        //     arg_last = arg_first + arguments.size();
+        //   }
 
-          reply r = {fusion::at_c<1u>(attr)};
-          impl->_dispatch(fusion::at_c<4u>(attr).c_str()
-                          , align_offset, arg_first
-                          , arg_last, fusion::at_c<7u>(attr), r);
+        //   reply r = {fusion::at_c<1u>(attr)};
+        //   impl->_dispatch(fusion::at_c<4u>(attr).c_str()
+        //                   , align_offset, arg_first
+        //                   , arg_last, fusion::at_c<7u>(attr), r);
 
-          if(fusion::at_c<2u>(attr))
-          {
-            std::cout << "reply_buffer " << r.reply_body.size() << std::endl;
-            boost::algorithm::hex(r.reply_body.begin(), r.reply_body.end()
-                                  , std::ostream_iterator<char>(std::cout));
-            std::cout << std::endl;
-            boost::system::error_code ec;
-            int rs =
-              boost::asio::write(socket, boost::asio::buffer(r.reply_body)
-                                 , boost::asio::transfer_all(), ec);
-            int size = r.reply_body.size();
-            assert(rs == size);
-            if(!ec)
-            {
-              std::cout << "Successful transfer" << std::endl;
-            }
-            else
-            {
-              std::cout << "Failed transfering" << std::endl;
-            }
-          }
-        }
-      }
+        //   if(fusion::at_c<2u>(attr))
+        //   {
+        //     std::cout << "reply_buffer " << r.reply_body.size() << std::endl;
+        //     boost::algorithm::hex(r.reply_body.begin(), r.reply_body.end()
+        //                           , std::ostream_iterator<char>(std::cout));
+        //     std::cout << std::endl;
+        //     boost::system::error_code ec;
+        //     int rs =
+        //       boost::asio::write(socket, boost::asio::buffer(r.reply_body)
+        //                          , boost::asio::transfer_all(), ec);
+        //     int size = r.reply_body.size();
+        //     assert(rs == size);
+        //     if(!ec)
+        //     {
+        //       std::cout << "Successful transfer" << std::endl;
+        //     }
+        //     else
+        //     {
+        //       std::cout << "Failed transfering" << std::endl;
+        //     }
+        //   }
+        // }
+      // }
     }
   }
   else

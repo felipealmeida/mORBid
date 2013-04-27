@@ -32,26 +32,26 @@ header_local_stub_generator<OutputIterator, Iterator>::header_local_stub_generat
   using karma::eol;
   using phoenix::at_c;
 
-  start = 
-    "namespace local_stub {"
-    << eol[_a = at_c<0>(_val)]
-    << eol << "class "
-    << karma::string[_1 = _a] << eol
-    << " : public ::" << -((karma::string % "::")[_1 = _r2] << "::")
-    << karma::string[_1 = _a]
-    << eol
-    << "{" << eol
-    << "public:" << eol
-    << common_functions(_r2)[_1 = _val]
-    << indent << "// Start of operations defined in IDL" << eol
-    << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
-    << indent << "// End of operations defined in IDL" << eol
-    << ior_function
-    << "private:" << eol
-    << common_members(_r2)[_1 = _a]
-    << "};" << eol << eol
-    << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol << eol
-    << "}" << eol
+  start = karma::eps
+    // "namespace local_stub {"
+    // << eol[_a = at_c<0>(_val)]
+    // << eol << "class "
+    // << karma::string[_1 = _a] << eol
+    // << " : public ::" << -((karma::string % "::")[_1 = _r2] << "::")
+    // << karma::string[_1 = _a]
+    // << eol
+    // << "{" << eol
+    // << "public:" << eol
+    // << common_functions(_r2)[_1 = _val]
+    // << indent << "// Start of operations defined in IDL" << eol
+    // << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
+    // << indent << "// End of operations defined in IDL" << eol
+    // << ior_function
+    // << "private:" << eol
+    // << common_members(_r2)[_1 = _a]
+    // << "};" << eol << eol
+    // << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol << eol
+    // << "}" << eol
     ;
   operation =
     indent

@@ -11,8 +11,7 @@ project morbid/tests ;
 path-constant current : . ;
 path-constant install : ../../install ;
 
-make allprimitives.h : allprimitives.idl : @compileidl : <dependency>/morbid//install ;
-make allprimitives.cpp : allprimitives.h : @donothing ;
+make allprimitives.hpp : allprimitives.idl : @compileidl : <dependency>/morbid//install ;
 
 actions donothing
 {
@@ -23,12 +22,12 @@ actions compileidl
 }
 
 exe allprimitives_client
- : allprimitives_client.cpp /morbid//morbid allprimitives.cpp
-  : <implicit-dependency>allprimitives.h
+ : allprimitives_client.cpp /morbid//morbid
+  : <implicit-dependency>allprimitives.hpp
  ;
 exe allprimitives_server
- : allprimitives_server.cpp /morbid//morbid allprimitives.cpp
-  : <implicit-dependency>allprimitives.h
+ : allprimitives_server.cpp /morbid//morbid
+  : <implicit-dependency>allprimitives.hpp
  ;
 
 make allprimitives.output : allprimitives_client allprimitives_server : @run-server-client ;

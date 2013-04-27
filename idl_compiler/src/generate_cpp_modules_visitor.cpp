@@ -8,7 +8,6 @@
 #include <morbid/idl_compiler/generator/stub_generator.hpp>
 #include <morbid/idl_compiler/generator/local_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
-#include <morbid/idl_compiler/generator/remote_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
 #include <morbid/idl_compiler/generate_cpp_modules_visitor.hpp>
 #include <morbid/idl_compiler/module.hpp>
@@ -80,9 +79,6 @@ void generate_cpp_modules_visitor::examine_vertex
     }
   }
 
-  morbid::idl_compiler::generator::header_remote_stub_generator
-    <output_iterator_type, parser_iterator_type>
-    header_remote_stub_generator;
   morbid::idl_compiler::generator::cpp_stub_generator
     <output_iterator_type, parser_iterator_type>
     cpp_stub_generator;
@@ -99,22 +95,11 @@ void generate_cpp_modules_visitor::examine_vertex
 
   if (!m.interfaces.empty())
   {
-    
-    open_namespace(state->iterator, ""); // anonymous namespace
+    // open_namespace(state->iterator, ""); // anonymous namespace
 
-    for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
-          , last = m.interfaces.end(); first != last; ++first)
-    {
-      std::vector<std::string> base_name(modules_name);
-      base_name.push_back(first->definition.name);
-      bool r = karma::generate(state->iterator, header_remote_stub_generator
-                               (phoenix::val(*first), phoenix::ref(base_name))
-                               , first->definition);
-      if(!r) throw std::runtime_error("Failed generating header_remote_stub_generator");
-    }
 
-    *state->iterator++ = '}';
-    karma::generate(state->iterator, karma::eol);
+    // *state->iterator++ = '}';
+    // karma::generate(state->iterator, karma::eol);
   }
 
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
@@ -124,7 +109,7 @@ void generate_cpp_modules_visitor::examine_vertex
     base_name.push_back(first->definition.name);
     bool r = karma::generate(state->iterator, cpp_stub_generator(phoenix::val(*first), phoenix::ref(base_name))
                              , first->definition);
-    if(!r) throw std::runtime_error("Failed generating header_stub_generator");
+    if(!r) throw std::runtime_error("BUG: Failed generating header_stub_generator");
   }
 
 }

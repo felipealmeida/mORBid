@@ -40,18 +40,18 @@ header_poa_stub_generator<OutputIterator, Iterator>::header_poa_stub_generator()
   using karma::eol;
   using phoenix::at_c;
 
-  start = 
-    eol << "class " << class_name(_r2)[_1 = at_c<0>(_val)] << eol
-    << " : public ::morbid::poa::ServantBase" << eol
-    << "{" << eol
-    << "public:" << eol
-    << common_functions(_r1, _r2)[_1 = _val]
-    << indent << "// Start of operations defined in IDL" << eol
-    << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
-    << indent << "// End of operations defined in IDL" << eol
-    << construct_local_stub_function[_1 = at_c<0>(_val)]
-    << dispatch_function
-    << "};" << eol << eol
+  start = karma::eps
+    // eol << "class " << class_name(_r2)[_1 = at_c<0>(_val)] << eol
+    // << " : public ::morbid::poa::ServantBase" << eol
+    // << "{" << eol
+    // << "public:" << eol
+    // << common_functions(_r1, _r2)[_1 = _val]
+    // << indent << "// Start of operations defined in IDL" << eol
+    // << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
+    // << indent << "// End of operations defined in IDL" << eol
+    // << construct_local_stub_function[_1 = at_c<0>(_val)]
+    // << dispatch_function
+    // << "};" << eol << eol
     ;
   class_name =
     -(karma::eps(_r1) << "POA_")
@@ -117,13 +117,13 @@ cpp_poa_stub_generator<OutputIterator, Iterator>::cpp_poa_stub_generator()
   using karma::eol;
   using phoenix::at_c;
 
-  start = 
-    class_name(_r2)[_1 = at_c<0>(_val)] << "::~"
-    << class_name(_r2)[_1 = at_c<0>(_val)] << "() {}" << eol
-    << eol
-    << dispatch_function(_r2, _r1)[_1 = _val] << eol
-    << (*(non_user_defined_operations(_val, _r1, _r2) << eol))[_1 = at_c<1>(_val)]
-    << construct_local_stub_function(_r2)[_1 = at_c<0>(_val)]
+  start = karma::eps
+    // class_name(_r2)[_1 = at_c<0>(_val)] << "::~"
+    // << class_name(_r2)[_1 = at_c<0>(_val)] << "() {}" << eol
+    // << eol
+    // << dispatch_function(_r2, _r1)[_1 = _val] << eol
+    // << (*(non_user_defined_operations(_val, _r1, _r2) << eol))[_1 = at_c<1>(_val)]
+    // << construct_local_stub_function(_r2)[_1 = at_c<0>(_val)]
     ;
   dispatch_function =
     "void " << class_name(_r1)[_1 = at_c<0>(_val)]

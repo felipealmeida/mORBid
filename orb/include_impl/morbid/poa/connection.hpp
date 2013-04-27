@@ -8,7 +8,7 @@
 #ifndef MORBID_POA_CONNECTION_HPP
 #define MORBID_POA_CONNECTION_HPP
 
-#include <morbid/poa.hpp>
+#include <morbid/orb.hpp>
 
 #include <boost/array.hpp>
 #include <boost/shared_ptr.hpp>
@@ -23,8 +23,8 @@ namespace morbid { namespace poa {
 struct connection : boost::enable_shared_from_this<connection>
 {
   connection(boost::asio::io_service& io_service
-             , boost::weak_ptr<POA> poa_)
-    : socket(io_service), poa_(poa_) {}
+             , boost::weak_ptr<orb_impl> orb)
+    : socket(io_service), orb_(orb) {}
 
   void start();
 
@@ -38,7 +38,7 @@ struct connection : boost::enable_shared_from_this<connection>
   std::vector<char> processing_buffer;
   boost::array<char, 512*1024> read_buffer;
   boost::asio::ip::tcp::socket socket;
-  boost::weak_ptr<POA> poa_;
+  boost::weak_ptr<orb_impl> orb_;
 };
 
 } }

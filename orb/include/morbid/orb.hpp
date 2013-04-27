@@ -15,34 +15,36 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/asio/io_service.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
-namespace morbid {
+namespace morbid { namespace poa {
 
-struct ORB
+    struct connection;
+
+}
+
+struct orb_impl : boost::enable_shared_from_this<orb_impl>
 {
-  ORB();
+  orb_impl();
 
   void run();
-  void shutdown(bool wait_for_completion);
-  void destroy();
+  void stop();
+  void handle_accept(boost::shared_ptr<poa::connection> c);
 
-  Object_ptr resolve_initial_references(const char* id);
-  String_ptr object_to_string(Object_ptr);
-  Object_ptr string_to_object(const char* ref);
-
-private:
-  poa::POA_ptr root_poa;
   boost::asio::io_service io_service;
+  boost::asio::ip::tcp::acceptor acceptor;
+  boost::asio::ip::tcp::endpoint local_endpoint;
 };
 
-typedef boost::shared_ptr<ORB> ORB_ptr;
-typedef morbid::var<ORB> ORB_var;
-
-ORB_ptr ORB_init(int argc, const char* argv[], const char* str_op);
-inline ORB_ptr ORB_init(int argc, char* argv[], const char* str_op)
+struct orb
 {
-  return ORB_init(argc, const_cast<const char**>(argv), str_op);
-}
+  orb() : impl(new orb_impl) {}
+
+  void run() { impl->run(); }
+  void stop() { impl->stop(); }
+private:
+  boost::shared_ptr<orb_impl> impl;
+};
 
 }
 

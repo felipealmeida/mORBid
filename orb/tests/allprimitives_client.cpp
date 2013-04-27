@@ -5,14 +5,14 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "allprimitives.h"
-#include <CORBA.h>
+#include "allprimitives.hpp"
+#include <morbid/corba.hpp>
 
 #include <fstream>
 
 int main(int argc, char* argv[])
 {
-  CORBA::ORB_var orb = CORBA::ORB_init(argc, argv, "");
+  corba::orb orb;
 
   assert(argc > 1);
 
@@ -22,19 +22,17 @@ int main(int argc, char* argv[])
     std::getline(ifs, ior);
   }
 
-  CORBA::Object_var obj = orb->string_to_object (ior.c_str());
-  allprimitives_var allprimitives_ = allprimitives::_narrow (obj);
+  allprimitives_ref allprimitives_ (orb, ior);
   
-  assert(!CORBA::is_nil(allprimitives_));
-  allprimitives_->foo1(true);
-  allprimitives_->foo2('c');
-  allprimitives_->foo3(2.0);
-  allprimitives_->foo4(2.0f);
-  allprimitives_->foo5(2l);
+  allprimitives_.foo1(true);
+  allprimitives_.foo2('c');
+  allprimitives_.foo3(2.0);
+  allprimitives_.foo4(2.0f);
+  allprimitives_.foo5(2l);
   unsigned char asd = 'a';
-  allprimitives_->foo6(asd);
-  allprimitives_->foo7(2);
-  allprimitives_->foo8("qwe");
+  allprimitives_.foo6(asd);
+  allprimitives_.foo7(2);
+  allprimitives_.foo8("qwe");
   // allprimitives_->foo9(L'q');
   // allprimitives_->foo10(L"qwe");
   // CORBA::Any_ptr any(new CORBA::Any);

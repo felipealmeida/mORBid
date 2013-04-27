@@ -24,7 +24,7 @@ alias ior : iiop /boost//headers : : : <include>ior/include ;
 exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/stub_generator.cpp
  idl_compiler/src/local_stub_generator.cpp
- idl_compiler/src/remote_stub_generator.cpp
+ idl_compiler/src/reference_model_generator.cpp
  idl_compiler/src/poa_stub_generator.cpp
  idl_compiler/src/generate_header_modules_visitor.cpp
  idl_compiler/src/generate_cpp_modules_visitor.cpp

@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef MORBID_IDL_COMPILER_REMOTE_STUB_GENERATOR_HPP
-#define MORBID_IDL_COMPILER_REMOTE_STUB_GENERATOR_HPP
+#ifndef MORBID_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_HPP
+#define MORBID_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_HPP
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
@@ -20,16 +20,17 @@ namespace morbid { namespace idl_compiler { namespace generator {
 namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
-struct header_remote_stub_generator : karma::grammar
-<OutputIterator, idl_parser::interface_def<Iterator>(interface_
-                                                     , std::vector<std::string>)
+struct header_reference_model_generator : karma::grammar
+<OutputIterator, idl_parser::interface_def<Iterator>(interface_, std::vector<std::string>)
  , karma::locals<std::string> >
 {
-  header_remote_stub_generator();
+  header_reference_model_generator();
 
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
   idl_compiler::generator::return_<OutputIterator, Iterator> return_;
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
+  karma::rule<OutputIterator, idl_parser::interface_def<Iterator>()>
+    class_name;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;
   karma::rule<OutputIterator, idl_parser::type_spec<Iterator>(interface_)>
@@ -40,11 +41,11 @@ struct header_remote_stub_generator : karma::grammar
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>()> common_functions;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(interface_), karma::locals<unsigned int> > 
+              , idl_parser::op_decl<Iterator>(interface_, std::vector<std::string>)
+              , karma::locals<unsigned int> > 
     operation;
   karma::rule<OutputIterator
-              , idl_parser::interface_def<Iterator>(interface_
-                                                    , std::vector<std::string>)
+              , idl_parser::interface_def<Iterator>(interface_, std::vector<std::string>)
               , karma::locals<std::string> > start;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     synchronous_template_args;

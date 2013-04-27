@@ -44,17 +44,14 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
   start = 
     karma::eps[_a = at_c<0>(_val)]
     << eol
-    << "class " << karma::string[_1 = _a] << ';' << eol
-    << typedefs[_1 = _a] << eol
-    << "class "
-    << karma::string[_1 = _a]
-    << eol << " : public ::morbid::narrow< "
-    << karma::string[_1 = _a]
-    << ", ::boost::mpl::vector1< ::morbid::Object> >"
+    << "struct " << karma::string[_1 = _a] << eol
+    // << " : public ::morbid::narrow< "
+    // << karma::string[_1 = _a]
+    // << ", ::boost::mpl::vector1< ::morbid::Object> >"
     << eol << "{" << eol
-    << "public:" << eol
-    << indent << "typedef " << karma::string[_1 = _a] << "_ptr _ptr_type;" << eol
-    << indent << "typedef " << karma::string[_1 = _a] << "_var _var_type;" << eol << eol
+    // << "public:" << eol
+    // << indent << "typedef " << karma::string[_1 = _a] << "_ptr _ptr_type;" << eol
+    // << indent << "typedef " << karma::string[_1 = _a] << "_var _var_type;" << eol << eol
     << common_functions[_1 = _val] << eol
     << indent << "// Start of operations defined in IDL" << eol
     << (*(operation(_r1) << eol))
@@ -88,26 +85,27 @@ header_stub_generator<OutputIterator, Iterator>::header_stub_generator()
     << karma::string[_1 = at_c<0>(_val)] << "() {}" << eol
     << indent << "~" << karma::string[_1 = at_c<0>(_val)] << "();"
     << eol
-    << indent << "static boost::shared_ptr<"
-    << karma::string[_1 = at_c<0>(_val)] << ">"
-    << " _construct_remote_stub" << eol
-    << indent << "(::morbid::structured_ior const& ior);" << eol
-    << indent << "static _ptr_type _nil() { return _ptr_type(); }" << eol
-    << indent << "::morbid::return_traits< ::morbid::string>::type _get_interface() const { return _repository_id; }" << eol
-    << indent << "static _ptr_type _duplicate(_ptr_type p) { return p; }" << eol
+    // << indent << "static boost::shared_ptr<"
+    // << karma::string[_1 = at_c<0>(_val)] << ">"
+    // << " _construct_remote_stub" << eol
+    // << indent << "(::morbid::structured_ior const& ior);" << eol
+    // << indent << "static _ptr_type _nil() { return _ptr_type(); }" << eol
+    // << indent << "::morbid::return_traits< ::morbid::string>::type _get_interface() const { return _repository_id; }" << eol
+    // << indent << "static _ptr_type _duplicate(_ptr_type p) { return p; }" << eol
     ;
   public_members = 
     indent
     << "static const char* _repository_id;" << eol
     ;
   typedefs =
-    "typedef boost::shared_ptr<"
-    << karma::string[_1 = _val]
-    << "> " << karma::string[_1 = _val] << "_ptr;" << eol
-    << "typedef ::morbid::var<" << karma::string[_1 = _val] << "> "
-    << karma::string[_1 = _val] << "_var;" << eol
-    << "typedef " << karma::string[_1 = _val] << "_ptr& "
-    << karma::string[_1 = _val] << "_out;" << eol
+    karma::eps
+    // "typedef boost::shared_ptr<"
+    // << karma::string[_1 = _val]
+    // << "> " << karma::string[_1 = _val] << "_ptr;" << eol
+    // << "typedef ::morbid::var<" << karma::string[_1 = _val] << "> "
+    // << karma::string[_1 = _val] << "_var;" << eol
+    // << "typedef " << karma::string[_1 = _val] << "_ptr& "
+    // << karma::string[_1 = _val] << "_out;" << eol
     ;
   indent = karma::space << karma::space;
 
@@ -132,21 +130,21 @@ cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
     karma::string[_1 = at_c<0>(_val)]
     << "::~" << karma::string[_1 = at_c<0>(_val)] << "() {}" << eol
     << eol
-    << construct_remote_stub[_1 = at_c<0>(_val)] << eol
+    // << construct_remote_stub[_1 = at_c<0>(_val)] << eol
     << members(_r2)[_1 = at_c<0>(_val)] << eol
     ;
-  construct_remote_stub =
-    "boost::shared_ptr<"
-    << karma::string[_1 = _val] << "> "
-    << karma::string[_1 = _val]
-    << "::_construct_remote_stub" << eol
-    << indent << "(::morbid::structured_ior const& ior)" << eol
-    << "{" << eol
-    << indent << "return " << karma::string[_1 = _val]
-    << "_ptr(new remote_stub::" << karma::string[_1 = _val]
-    << "(ior));" << eol
-    << "}" << eol
-    ;
+  // construct_remote_stub =
+  //   "boost::shared_ptr<"
+  //   << karma::string[_1 = _val] << "> "
+  //   << karma::string[_1 = _val]
+  //   << "::_construct_remote_stub" << eol
+  //   << indent << "(::morbid::structured_ior const& ior)" << eol
+  //   << "{" << eol
+  //   << indent << "return " << karma::string[_1 = _val]
+  //   << "_ptr(new remote_stub::" << karma::string[_1 = _val]
+  //   << "(ior));" << eol
+  //   << "}" << eol
+  //   ;
   members =
     "const char* "
     << karma::string[_1 = _val] << "::_repository_id = \"IDL:"

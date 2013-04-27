@@ -10,6 +10,7 @@
 #include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
 #include <morbid/idl_compiler/generator/struct_generator.hpp>
+#include <morbid/idl_compiler/generator/reference_model_generator.hpp>
 #include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
 #include <morbid/idl_compiler/module.hpp>
 
@@ -81,12 +82,25 @@ void generate_header_modules_visitor::examine_vertex
     }
   }
 
+  std::vector<std::string> modules_name;
+  for(std::vector<vertex_descriptor>::const_iterator
+        first = state->opened_modules.begin()
+        , last = state->opened_modules.end()
+        ;first != last; ++first)
+  {
+    module const* mx = &*boost::get(map, *first);
+    modules_name.push_back(mx->name);
+  }
+
   morbid::idl_compiler::generator::header_stub_generator
     <output_iterator_type, parser_iterator_type>
     header_stub_generator;
   morbid::idl_compiler::generator::header_local_stub_generator
     <output_iterator_type, parser_iterator_type>
     header_local_stub_generator;
+  morbid::idl_compiler::generator::header_reference_model_generator
+    <output_iterator_type, parser_iterator_type>
+    header_reference_model_generator;
   morbid::idl_compiler::generator::typedef_generator
     <output_iterator_type, parser_iterator_type>
     typedef_generator;
@@ -117,6 +131,17 @@ void generate_header_modules_visitor::examine_vertex
     bool r = karma::generate(state->iterator, header_stub_generator(phoenix::val(*first))
                              , first->definition);
     if(!r) throw std::runtime_error("Failed generating header_stub_generator");
+
+    std::vector<std::string> base_name
+      (boost::next(modules_name.begin()), modules_name.end());
+    base_name.push_back(first->definition.name);
+    // std::vector<std::string> base_name(modules_name);
+    // base_name.push_back(first->definition.name);
+    r = karma::generate(state->iterator, header_reference_model_generator
+                        (phoenix::val(*first), phoenix::val(base_name))
+                        , first->definition);
+    if(!r)
+      throw std::runtime_error("BUG: Failed generating header_reference_model_generator");
   }
 }
 
