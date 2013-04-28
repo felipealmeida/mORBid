@@ -129,7 +129,7 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
       (
         class_name[_1 = _val]
         << "( ::morbid::orb orb, std::string const& ior)" << eol
-        << indent << indent << " : _orb_(orb)/*, _structured_ior_(structured_ior)*/" << eol
+        << indent << indent << " : _orb_(orb), _structured_ior_( ::morbid::string_to_structured_ior(ior.begin(), ior.end()))" << eol
         << indent << "{}" << eol
        )
     // << indent << "~" << class_name[_1 = _val] << "();" << eol

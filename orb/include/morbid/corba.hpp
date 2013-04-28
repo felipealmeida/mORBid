@@ -19,6 +19,7 @@
 namespace corba {
 
 using ::morbid::orb;
+using ::morbid::stringify_object_id;
 
 }
 

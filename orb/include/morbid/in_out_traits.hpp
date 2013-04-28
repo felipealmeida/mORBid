@@ -116,12 +116,6 @@ struct return_traits<T, typename boost::enable_if
 };
 
 template <>
-struct in_traits<String>
-{
-  typedef const char* type;
-};
-
-template <>
 struct in_traits<std::string>
 {
   typedef std::string type;
@@ -200,12 +194,6 @@ struct in_traits<Octet>
 };
 
 template <>
-struct out_traits<String>
-{
-  typedef String_out type;
-};
-
-template <>
 struct out_traits<std::string>
 {
   typedef std::string& type;
@@ -281,12 +269,6 @@ template <>
 struct out_traits<Octet>
 {
   typedef Octet& type;
-};
-
-template <>
-struct inout_traits<String>
-{
-  typedef String_out type;
 };
 
 template <>

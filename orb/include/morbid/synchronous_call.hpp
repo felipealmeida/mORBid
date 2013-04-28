@@ -94,7 +94,7 @@ struct use_manage_types_result_of
 };
 
 template <typename T>
-struct use_manage_types_result_of<morbid::String, T>
+struct use_manage_types_result_of<morbid::string, T>
 {
   typedef type_tag::value_type_tag<std::string, typename T::tag> type;
   type operator()(T const& t) const { return type(t.value); }
@@ -182,6 +182,7 @@ template <typename R, typename ArgsSeq>
 typename return_traits<R>::type call
   (const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args)
 {
+  std::cout << "synchronous_call::call" << std::endl;
   namespace mpl = boost::mpl;
   if(ior.structured_profiles.empty())
     throw MARSHALL();

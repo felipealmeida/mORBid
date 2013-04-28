@@ -27,7 +27,7 @@ template <typename T, typename Domain, typename Iterator, typename Enable = void
 struct argument_giop_grammar;
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::String, Domain, Iterator>
+struct argument_giop_grammar<morbid::string, Domain, Iterator>
 {
   typedef spirit::terminal<giop::tag::string>const& result_type;
   result_type operator()() const { return giop::string; }

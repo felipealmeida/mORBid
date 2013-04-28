@@ -27,6 +27,7 @@ struct connection : boost::enable_shared_from_this<connection>
     : socket(io_service), orb_(orb) {}
 
   void start();
+  void close();
 
   bool handle_request(std::vector<char>::const_iterator first
                       , std::vector<char>::const_iterator last
@@ -36,7 +37,7 @@ struct connection : boost::enable_shared_from_this<connection>
   void process_input();
 
   std::vector<char> processing_buffer;
-  boost::array<char, 512*1024> read_buffer;
+  boost::array<char, 10*1024> read_buffer;
   boost::asio::ip::tcp::socket socket;
   boost::weak_ptr<orb_impl> orb_;
 };

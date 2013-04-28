@@ -5,7 +5,7 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <morbid/idl_compiler/generator/stub_generator.hpp>
+#include <morbid/idl_compiler/generator/concept_generator.hpp>
 #include <morbid/idl_compiler/generator/local_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
@@ -92,45 +92,48 @@ void generate_header_modules_visitor::examine_vertex
     modules_name.push_back(mx->name);
   }
 
-  morbid::idl_compiler::generator::header_stub_generator
+  morbid::idl_compiler::generator::header_concept_generator
     <output_iterator_type, parser_iterator_type>
-    header_stub_generator;
-  morbid::idl_compiler::generator::header_local_stub_generator
-    <output_iterator_type, parser_iterator_type>
-    header_local_stub_generator;
+    header_concept_generator;
+  // morbid::idl_compiler::generator::header_local_stub_generator
+  //   <output_iterator_type, parser_iterator_type>
+  //   header_local_stub_generator;
   morbid::idl_compiler::generator::header_reference_model_generator
     <output_iterator_type, parser_iterator_type>
     header_reference_model_generator;
-  morbid::idl_compiler::generator::typedef_generator
-    <output_iterator_type, parser_iterator_type>
-    typedef_generator;
-  morbid::idl_compiler::generator::struct_generator
-    <output_iterator_type, parser_iterator_type>
-    struct_generator;
+  // morbid::idl_compiler::generator::typedef_generator
+  //   <output_iterator_type, parser_iterator_type>
+  //   typedef_generator;
+  // morbid::idl_compiler::generator::struct_generator
+  //   <output_iterator_type, parser_iterator_type>
+  //   struct_generator;
 
-  for(std::vector<struct_>::const_iterator first = m.structs.begin()
-        , last = m.structs.end(); first != last; ++first)
-  {
-    std::cout << "generate struct" << std::endl;
-    bool r = karma::generate(state->iterator, struct_generator(phoenix::val(*first))
-                             , first->definition);
-    if(!r) throw std::runtime_error("Failed generating struct_generator");
-  }
+  // for(std::vector<struct_>::const_iterator first = m.structs.begin()
+  //       , last = m.structs.end(); first != last; ++first)
+  // {
+  //   std::cout << "generate struct" << std::endl;
+  //   bool r = karma::generate(state->iterator, struct_generator(phoenix::val(*first))
+  //                            , first->definition);
+  //   if(!r) throw std::runtime_error("Failed generating struct_generator");
+  // }
 
-  for(std::vector<typedef_>::const_iterator first = m.typedefs.begin()
-        , last = m.typedefs.end(); first != last; ++first)
-  {
-    bool r = karma::generate(state->iterator, typedef_generator(phoenix::val(first->lookup))
-                             , first->definition);
-    if(!r) throw std::runtime_error("Failed generating typedefs");
-  }
+  // for(std::vector<typedef_>::const_iterator first = m.typedefs.begin()
+  //       , last = m.typedefs.end(); first != last; ++first)
+  // {
+  //   bool r = karma::generate(state->iterator, typedef_generator(phoenix::val(first->lookup))
+  //                            , first->definition);
+  //   if(!r) throw std::runtime_error("Failed generating typedefs");
+  // }
 
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
         , last = m.interfaces.end(); first != last; ++first)
   {
-    bool r = karma::generate(state->iterator, header_stub_generator(phoenix::val(*first))
+    std::vector<std::string> modules
+      (boost::next(modules_name.begin()), modules_name.end());
+    bool r = karma::generate(state->iterator, header_concept_generator
+                             (phoenix::val(*first), phoenix::val(modules))
                              , first->definition);
-    if(!r) throw std::runtime_error("Failed generating header_stub_generator");
+    if(!r) throw std::runtime_error("Failed generating header_concept_generator");
 
     std::vector<std::string> base_name
       (boost::next(modules_name.begin()), modules_name.end());
@@ -158,62 +161,62 @@ void generate_header_poa_modules_visitor::examine_vertex
   std::cout << "Module v: " << v << " name: " << m.name << std::endl;
   typedef modules_tree_type::in_edge_iterator in_edge_iterator;
 
-  if(!m.interfaces.empty())
-  {
-    std::vector<std::string> modules_names;
-    {
-      vertex_descriptor vx = v;
-      module const* mx = &*boost::get(map, vx);
-      std::pair<in_edge_iterator, in_edge_iterator> edges;
-      while(mx->name != "")
-      {
-        modules_names.push_back(mx->name);
+  // if(!m.interfaces.empty())
+  // {
+  //   std::vector<std::string> modules_names;
+  //   {
+  //     vertex_descriptor vx = v;
+  //     module const* mx = &*boost::get(map, vx);
+  //     std::pair<in_edge_iterator, in_edge_iterator> edges;
+  //     while(mx->name != "")
+  //     {
+  //       modules_names.push_back(mx->name);
 
-        edges = in_edges(vx, modules);
-        vx = source(*edges.first, modules);
-        mx = &*boost::get(map, vx);
-      }
-    }
+  //       edges = in_edges(vx, modules);
+  //       vx = source(*edges.first, modules);
+  //       mx = &*boost::get(map, vx);
+  //     }
+  //   }
 
-    bool prepend_poa = modules_names.empty();
+  //   bool prepend_poa = modules_names.empty();
 
-    if(!prepend_poa)
-    {
-      std::string name = "POA_" + modules_names.back();
-      open_namespace(state->iterator, name);
-    }
+  //   if(!prepend_poa)
+  //   {
+  //     std::string name = "POA_" + modules_names.back();
+  //     open_namespace(state->iterator, name);
+  //   }
 
-    for(std::vector<std::string>::const_reverse_iterator
-          first = prepend_poa ? modules_names.rbegin() : boost::next(modules_names.rbegin())
-          , last = modules_names.rend()
-          ;first != last; ++first)
-      open_namespace(state->iterator, *first);
+  //   for(std::vector<std::string>::const_reverse_iterator
+  //         first = prepend_poa ? modules_names.rbegin() : boost::next(modules_names.rbegin())
+  //         , last = modules_names.rend()
+  //         ;first != last; ++first)
+  //     open_namespace(state->iterator, *first);
 
-    morbid::idl_compiler::generator::header_poa_stub_generator
-      <output_iterator_type, parser_iterator_type>
-      header_poa_stub_generator;
-    for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
-          , last = m.interfaces.end(); first != last; ++first)
-    {
-      bool r = karma::generate(state->iterator, header_poa_stub_generator
-                               (phoenix::val(*first)
-                                , prepend_poa), first->definition);
-      if(!r) throw std::runtime_error("Failed generating header_poa_stub_generator");
-    }
+  //   morbid::idl_compiler::generator::header_poa_stub_generator
+  //     <output_iterator_type, parser_iterator_type>
+  //     header_poa_stub_generator;
+  //   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
+  //         , last = m.interfaces.end(); first != last; ++first)
+  //   {
+  //     bool r = karma::generate(state->iterator, header_poa_stub_generator
+  //                              (phoenix::val(*first)
+  //                               , prepend_poa), first->definition);
+  //     if(!r) throw std::runtime_error("Failed generating header_poa_stub_generator");
+  //   }
 
-    for(std::vector<std::string>::const_reverse_iterator
-          first = modules_names.rbegin()
-          , last = modules_names.rend()
-          ;first != last; ++first)
-    {
-      *state->iterator++ = '}';
-      *state->iterator++ = ' ';
-      *state->iterator++ = '/';
-      *state->iterator++ = '/';
-      state->iterator = std::copy(first->begin(), first->end(), state->iterator);
-      karma::generate(state->iterator, karma::eol);
-    }
-  }
+  //   for(std::vector<std::string>::const_reverse_iterator
+  //         first = modules_names.rbegin()
+  //         , last = modules_names.rend()
+  //         ;first != last; ++first)
+  //   {
+  //     *state->iterator++ = '}';
+  //     *state->iterator++ = ' ';
+  //     *state->iterator++ = '/';
+  //     *state->iterator++ = '/';
+  //     state->iterator = std::copy(first->begin(), first->end(), state->iterator);
+  //     karma::generate(state->iterator, karma::eol);
+  //   }
+  // }
 }
 
 std::ostream& operator<<(std::ostream& os, lookuped_type l)

@@ -153,7 +153,7 @@ namespace morbid {
 // }
 
 orb_impl::orb_impl()
-  : acceptor(io_service)
+  : last_id(0u), acceptor(io_service)
 {
   boost::asio::ip::tcp::endpoint endpoint;
   acceptor.open(endpoint.protocol());

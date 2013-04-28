@@ -15,7 +15,7 @@
 #include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/lookup.hpp>
 #include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
-#include <morbid/idl_compiler/generate_cpp_modules_visitor.hpp>
+// #include <morbid/idl_compiler/generate_cpp_modules_visitor.hpp>
 #include <morbid/idl_compiler/common_types.hpp>
 
 #include <boost/program_options.hpp>
@@ -190,13 +190,13 @@ int main(int argc, char** argv)
             typedef morbid::idl_compiler::param_decl param_decl;
             interface_type i(interface);
 
-            op_decl_type is_a_op_decl = {morbid::idl_parser::types::boolean(), "_is_a"};
-            morbid::idl_parser::types::scoped_name string_scoped_name = {false};
-            string_scoped_name.identifiers.push_back("string");
-            param_decl param = {morbid::idl_parser::direction::in(), string_scoped_name};
-            is_a_op_decl.params.push_back(param);
-            is_a_op_decl.user_defined = false;
-            i.definition.op_decls.push_back(is_a_op_decl);
+            // op_decl_type is_a_op_decl = {morbid::idl_parser::types::boolean(), "_is_a"};
+            // morbid::idl_parser::types::scoped_name string_scoped_name = {false};
+            // string_scoped_name.identifiers.push_back("string");
+            // param_decl param = {morbid::idl_parser::direction::in(), string_scoped_name};
+            // is_a_op_decl.params.push_back(param);
+            // is_a_op_decl.user_defined = false;
+            // i.definition.op_decls.push_back(is_a_op_decl);
 
             module_map map = get(module_property_t(), modules_tree);
             std::vector<std::string> modules_names;
@@ -305,6 +305,8 @@ int main(int argc, char** argv)
                << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector40.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector50.hpp>") << karma::eol
+               << karma::lit("#include <boost/type_erasure/any.hpp>") << karma::eol
+               << karma::lit("#include <boost/type_erasure/member.hpp>") << karma::eol
                << karma::eol
                );
             if(!r) 

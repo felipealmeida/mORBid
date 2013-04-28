@@ -108,28 +108,20 @@ int main(int argc, char* argv[])
 {
   corba::orb orb;
 
-  // CORBA::Object_var poa_obj = orb->resolve_initial_references ("RootPOA");
-  // PortableServer::POA_var poa = PortableServer::POA::_narrow (poa_obj);
-  // PortableServer::POAManager_var poa_manager = poa->the_POAManager();
-  
   allprimitives_impl allprimitives(orb);
-  // orb.serve<::allprimitives>(allprimitives);
-
-  // PortableServer::ObjectId_var oid = poa->activate_object (&allprimitives);
-
-  // CORBA::Object_var ref = poa->id_to_reference (oid.in());
-  // CORBA::String_var str = orb->object_to_string (ref.in());
-  // if(argc > 1)
-  // {
-  //   std::ofstream ofs(argv[1]);
-  //   ofs << str.in() << std::endl;
-  // }
-  // else
-  //   std::cout << str.in() << std::endl;
+  {
+    std::ostream_iterator<char> output(std::cout);
+    std::ofstream ofs;
+    if(argc > 1)
+    {
+      ofs.open(argv[1]);
+      output = std::ostream_iterator<char> (ofs);
+    }
+    corba::stringify_object_id(orb, orb.serve_ref< ::allprimitives> (allprimitives), output);
+  }
 
   std::cout << "Running" << std::endl;
 
-  // poa_manager->activate();
   orb.run();
 
   assert(allprimitives.foo7_ && allprimitives.foo6_ && allprimitives.foo5_

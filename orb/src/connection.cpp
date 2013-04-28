@@ -38,6 +38,11 @@ void connection::start()
                                        , _1, _2));
 }
 
+void connection::close()
+{
+  socket.close();
+}
+
 void connection::handle_read(boost::system::error_code const& ec
                              , std::size_t bytes_read)
 {
@@ -143,64 +148,57 @@ void connection::process_input()
     std::size_t align_offset = std::distance(processing_buffer.begin(), iterator) - fusion::at_c<6u>(attr).size();
     processing_buffer.erase(processing_buffer.begin(), iterator);
 
-    // if(boost::shared_ptr<POA> poa = poa_.lock())
-    // {
-      std::vector<char>& object_key = fusion::at_c<3u>(attr);
-      std::cout << "POA still alive" << std::endl;
-      // std::string poa_name;
-      std::size_t impl_;
-      std::vector<char>::iterator object_key_first = object_key.begin();
-      if(qi::parse(object_key_first, object_key.end(), // +(qi::char_ - qi::char_('/'))
-                   // >>
-                   qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
-                   // , poa_name
-                   , impl_))
+    std::vector<char>& object_key = fusion::at_c<3u>(attr);
+    std::cout << "POA still alive" << std::endl;
+    std::size_t id;
+    assert(object_key.size() == sizeof(std::size_t));
+    std::memcpy(&id, &object_key[0], object_key.size());
+
+    if(boost::shared_ptr<orb_impl> orb = orb_.lock())
+    {
+      std::cout << "Searching object " << id << std::endl;
+      orb_impl::object_map_iterator iterator = orb->object_map.find(id);
+      if(iterator != orb->object_map.end())
       {
-        // std::cout << "POA name " << poa_name << std::endl;
-        // ServantBase* impl = 0;
-        // std::memcpy(&impl, &impl_, sizeof(impl));
-        // std::cout << "ServantBase pointer " << impl << std::endl;
-        // if(poa->object_map.find(impl) != poa->object_map.end())
-        // {
-        //   std::cout << "Found servant " << impl << std::endl;
-        //   std::vector<char>& arguments = fusion::at_c<6u>(attr);
-        //   const char* arg_first = 0
-        //     , *arg_last = 0;
-        //   if(!arguments.empty())
-        //   {
-        //     arg_first = &arguments[0];
-        //     arg_last = arg_first + arguments.size();
-        //   }
+        std::cout << "Found object" << std::endl;
 
-        //   reply r = {fusion::at_c<1u>(attr)};
-        //   impl->_dispatch(fusion::at_c<4u>(attr).c_str()
-        //                   , align_offset, arg_first
-        //                   , arg_last, fusion::at_c<7u>(attr), r);
+        typedef std::vector<char>::const_iterator iterator;
+        namespace qi = boost::spirit::qi;
+        namespace phoenix = boost::phoenix;
 
-        //   if(fusion::at_c<2u>(attr))
-        //   {
-        //     std::cout << "reply_buffer " << r.reply_body.size() << std::endl;
-        //     boost::algorithm::hex(r.reply_body.begin(), r.reply_body.end()
-        //                           , std::ostream_iterator<char>(std::cout));
-        //     std::cout << std::endl;
-        //     boost::system::error_code ec;
-        //     int rs =
-        //       boost::asio::write(socket, boost::asio::buffer(r.reply_body)
-        //                          , boost::asio::transfer_all(), ec);
-        //     int size = r.reply_body.size();
-        //     assert(rs == size);
-        //     if(!ec)
-        //     {
-        //       std::cout << "Successful transfer" << std::endl;
-        //     }
-        //     else
-        //     {
-        //       std::cout << "Failed transfering" << std::endl;
-        //     }
-        //   }
-        // }
-      // }
+        std::vector<char>::const_iterator first_first = first;
+
+        iiop::request_header request_header;
+        iiop::grammar::request_header_1_1<iterator> request_header_grammar;
+
+        if(qi::parse(first, last, request_header_grammar
+                     (phoenix::val(first), little_endian), request_header))
+        {
+          std::cout << "Parsed request header correctly" << std::endl;
+          std::cout << "Request id: " << request_header.request_id << std::endl;
+          std::cout << "Response expected: " << request_header.response_expected << std::endl;
+          std::cout << "Object key size: " << request_header.object_key.size() << std::endl;
+          std::cout << "Object key |";
+          std::copy(request_header.object_key.begin(), request_header.object_key.end()
+                    , std::ostream_iterator<char>(std::cout));
+          std::cout << "|" << std::endl;
+          std::cout << "operation |";
+          std::copy(request_header.operation.begin(), request_header.operation.end()
+                    , std::ostream_iterator<char>(std::cout));
+          std::cout << "|" << std::endl;
+          if(boost::distance(request_header.operation) != 0)
+          {
+            reply r = {request_header.request_id};
+            // iterator->second.obj.call(fusion::at_c<4u>(attr), r
+            //                           , &*first_first, &*first
+            //                           , &*first + std::distance(first, last)
+            //                           , little_endian, r);, );
+          }
+        }
+      }
     }
+    close();
+    return;
   }
   else
   {

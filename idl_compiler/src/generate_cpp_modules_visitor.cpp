@@ -5,7 +5,6 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <morbid/idl_compiler/generator/stub_generator.hpp>
 #include <morbid/idl_compiler/generator/local_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
@@ -79,9 +78,9 @@ void generate_cpp_modules_visitor::examine_vertex
     }
   }
 
-  morbid::idl_compiler::generator::cpp_stub_generator
-    <output_iterator_type, parser_iterator_type>
-    cpp_stub_generator;
+  // morbid::idl_compiler::generator::cpp_stub_generator
+  //   <output_iterator_type, parser_iterator_type>
+  //   cpp_stub_generator;
 
   std::vector<std::string> modules_name;
   for(std::vector<vertex_descriptor>::const_iterator
