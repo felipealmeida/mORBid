@@ -20,11 +20,7 @@ void foo( ::allprimitives allprimitives)
   unsigned char asd = 'a';
   allprimitives.foo6(asd);
   allprimitives.foo7(2);
-  // allprimitives_.foo8("qwe");
-  // allprimitives_->foo9(L'q');
-  // allprimitives_->foo10(L"qwe");
-  // CORBA::Any_ptr any(new CORBA::Any);
-  // allprimitives_->foo11(any);
+  allprimitives.foo8("qwe");
 }
 
 int main(int argc, char* argv[])

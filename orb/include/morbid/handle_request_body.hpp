@@ -70,30 +70,6 @@ struct create_argument_transform<type_tag::value_type_tag<T, type_tag::inout_tag
   result_type operator()(result_type r) const { return r; }
 };
 
-template <>
-struct create_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::in_tag> >
-{
-  typedef const char* type;
-  typedef type result_type;
-
-  result_type operator()(std::string const& str) const
-  {
-    return str.c_str();
-  }
-};
-
-template <>
-struct create_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::out_tag> >
-  : create_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::in_tag> >
-{
-};
-
-template <>
-struct create_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::inout_tag> >
-  : create_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::in_tag> >
-{
-};
-
 template <typename T>
 struct reply_argument_transform;
 
@@ -110,24 +86,6 @@ struct reply_argument_transform<type_tag::value_type_tag<T, type_tag::out_tag> >
 template <typename T>
 struct reply_argument_transform<type_tag::value_type_tag<T, type_tag::inout_tag> >
   : reply_argument_transform<type_tag::value_type_tag<T, type_tag::out_tag> >
-{
-};
-
-template <>
-struct reply_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::out_tag> >
-{
-  typedef std::string type;
-  typedef type result_type;
-
-  result_type operator()(const char* str) const
-  {
-    return str;
-  }
-};
-
-template <>
-struct reply_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::inout_tag> >
-  : reply_argument_transform<type_tag::value_type_tag<morbid::string, type_tag::out_tag> >
 {
 };
 
@@ -434,12 +392,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
         , 
         mpl::if_
         <
-          mpl::and_
-          <type_tag::is_not_out_type_tag<mpl::_1>
-           , mpl::not_<boost::is_same
-                       <mpl::_1, type_tag::value_type_tag<morbid::string, type_tag::in_tag> >
-                       >
-           >
+          type_tag::is_not_out_type_tag<mpl::_1>
           , boost::add_reference<type_tag::value_type<mpl::_1> >
           , boost::remove_reference<type_tag::value_type<mpl::_1> >
         >
@@ -460,12 +413,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
        , 
         mpl::if_
         <
-          mpl::and_
-          <type_tag::is_not_out_type_tag<mpl::_1>
-           , mpl::not_<boost::is_same
-                       <mpl::_1, type_tag::value_type_tag<morbid::string, type_tag::in_tag> >
-                       >
-           >
+          type_tag::is_not_out_type_tag<mpl::_1>
           , boost::add_reference<type_tag::value_type<mpl::_1> >
           , boost::remove_reference<type_tag::value_type<mpl::_1> >
         >

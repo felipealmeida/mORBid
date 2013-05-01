@@ -67,37 +67,15 @@ struct allprimitives_impl
     assert(!foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     assert(s == 2);
     foo7_ = true;
+  }
+  void foo8(std::string const& str)
+  {
+    std::cout << "== foo8" << std::endl;
+    assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+    assert(str == "qwe");
+    foo8_ = true;
     orb.stop();
   }
-  // void foo8(std::string const& str)
-  // {
-  //   std::cout << "== foo8" << std::endl;
-  //   assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   assert(str == "qwe");
-  //   foo8_ = true;
-  //   orb.stop();
-  // }
-  // void foo9(wchar_t wc)
-  // {
-  //   std::cout << "== foo9" << std::endl;
-  //   assert(!foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   assert(wc == L'q');
-  //   foo9_ = true;
-  // }
-  // void foo10(const wchar_t* str)
-  // {
-  //   std::cout << "== foo10" << std::endl;
-  //   assert(!foo10_ && foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   assert(false);
-  //   foo10_ = true;
-  // }
-  // void foo11(CORBA::Any_ptr)
-  // {
-  //   std::cout << "== foo11" << std::endl;
-  //   assert(!foo11_ && /*foo10_ && foo9_ &&*/ foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   foo11_ = true;
-  //   orb->shutdown(true);
-  // }
 
   bool foo1_, foo2_, foo3_, foo4_, foo5_
        , foo6_, foo7_, foo8_, foo9_, foo10_
@@ -125,7 +103,7 @@ int main(int argc, char* argv[])
 
   orb.run();
 
-  assert(allprimitives.foo7_ && allprimitives.foo6_ && allprimitives.foo5_
-         && allprimitives.foo4_ && allprimitives.foo3_ && allprimitives.foo2_
-         && allprimitives.foo1_);
+  assert(allprimitives.foo8_ && allprimitives.foo7_ && allprimitives.foo6_
+         && allprimitives.foo5_ && allprimitives.foo4_ && allprimitives.foo3_
+         && allprimitives.foo2_ && allprimitives.foo1_);
 }
