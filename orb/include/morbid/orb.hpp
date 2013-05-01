@@ -20,39 +20,83 @@
 #include <morbid/ior/hex_directive.hpp>
 #include <morbid/iiop/all.hpp>
 #include <morbid/iiop/grammars/profile_body_1_1.hpp>
+#include <morbid/handle_request_body.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/bind.hpp>
+#include <boost/fusion/include/fused.hpp>
+#include <boost/fusion/include/make_fused.hpp>
 
 #include <boost/type_erasure/any.hpp>
 #include <boost/type_erasure/member.hpp>
 
-BOOST_TYPE_ERASURE_MEMBER((morbid)(poa)(has_call), call, 1)
+BOOST_TYPE_ERASURE_MEMBER((morbid)(poa)(has_call), call, 6)
 
 namespace morbid { namespace poa {
 
 struct connection;
 
-template <typename Any>
+template <typename C, typename T>
 struct object_registration
 {
-  Any object;
+  typedef object_registration<C, T> self_type;
+  typedef typename boost::remove_reference<T>::type value_type;
+  T object;
 
-  object_registration(Any object)
+  object_registration(T object)
     : object(object) {}
 
-  // struct call_member
-  // {
-  //   void operator()(
-  // }
+  template <int I, typename Enable = void>
+  struct call_if_not_end;
 
-  void call(std::string const& method)
+  template <int I>
+  inline void call_if(std::string const& method
+                      , std::size_t align_offset, const char* first
+                      , const char* last, bool little_endian, reply& r)
   {
+    typedef typename C::requirements requirements;
+    typedef typename mpl::at_c<requirements, I>::type method_concept;
+    if(method == method_concept::name())
+    {
+      std::cout << "Should call method " << method << std::endl;
+      handle_request_body
+        <void, typename method_concept::arguments>
+        (&object, method_concept(), align_offset, first, last, little_endian, r);
+    }
+    else
+      call_if_not_end<I+1>::do_(*this, method, align_offset, first, last, little_endian, r);
+  }
+
+  template <int I>
+  struct call_if_not_end<I, typename boost::enable_if
+                         <mpl::equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
+  {
+    inline static void do_(self_type& self, std::string const&, std::size_t, const char*, const char*, bool, reply&) {}
+  };
+
+  template <int I>
+  struct call_if_not_end<I, typename boost::enable_if
+                         <mpl::not_equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
+  {
+    inline static void do_(self_type& self, std::string const& method
+                           , std::size_t align_offset, const char* first, const char* last
+                           , bool little_endian, reply& r)
+    {
+      self.call_if<I>(method, align_offset, first, last, little_endian, r);
+    }
+  };
+
+  void call(std::string const& method
+            , std::size_t align_offset, const char* first
+            , const char* last, bool little_endian
+            , reply& r)
+  {
+    namespace fusion = boost::fusion;
     std::cout << "calling method " << method << std::endl;
 
-    // handle_request_reply(&Any::foo1, &object
+    call_if_not_end<0>::do_(*this, method, align_offset, first, last, little_endian, r);
   }
 };
 
@@ -61,6 +105,10 @@ struct object_registration
 struct orb_impl : boost::enable_shared_from_this<orb_impl>
 {
   orb_impl();
+  ~orb_impl()
+  {
+    std::cout << "Destroying orb" << std::endl;
+  }
 
   void run();
   void stop();
@@ -71,7 +119,10 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
   typedef boost::type_erasure::any
     <boost::mpl::vector
      <boost::type_erasure::copy_constructible<>
-      , poa::has_call<void(std::string)>
+      , poa::has_call<void(std::string, std::size_t, const char*
+                           , const char*, bool
+                           , reply&
+                           )>
      > > object;
   struct object_registration
   {
@@ -93,10 +144,6 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
 struct orb
 {
   orb() : impl(new orb_impl) {}
-  ~orb()
-  {
-    std::cout << "Destroying orb" << std::endl;
-  }
 
   void run() { impl->run(); }
   void stop() { impl->stop(); }
@@ -106,12 +153,10 @@ struct orb
   template <typename C, typename T>
   object_id serve_ref(T& servant)
   {
-    typedef boost::type_erasure::any
-      <typename C::requirements, boost::type_erasure::_self&> any_type;
     std::pair<object_id, bool> pair = impl->object_map.insert
       (std::make_pair(impl->last_id++, orb_impl::object_registration
                       (C::type_id()
-                       , poa::object_registration<any_type>(servant))));
+                       , poa::object_registration<C, T&>(servant))));
     assert(pair.second);
     std::cout << "Added object " << pair.first->first << std::endl;
     return pair.first;

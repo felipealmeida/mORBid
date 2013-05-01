@@ -29,9 +29,6 @@ struct connection : boost::enable_shared_from_this<connection>
   void start();
   void close();
 
-  bool handle_request(std::vector<char>::const_iterator first
-                      , std::vector<char>::const_iterator last
-                      , bool little_endian);
   void handle_read(boost::system::error_code const& ec
                    , std::size_t bytes_read);
   void process_input();

@@ -11,6 +11,7 @@
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
 #include <morbid/idl_compiler/generator/return.hpp>
+#include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/interface.hpp>
 
 #include <boost/spirit/home/karma.hpp>
@@ -31,7 +32,11 @@ struct header_concept_generator : karma::grammar
   header_concept_generator();
 
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
+  idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   idl_compiler::generator::return_<OutputIterator, Iterator> return_;
+  karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
+  karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
+  karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     parameter_select;
   karma::rule<OutputIterator> indent;
@@ -42,6 +47,8 @@ struct header_concept_generator : karma::grammar
   karma::rule<OutputIterator
               , idl_parser::op_decl<Iterator>(interface_, std::vector<std::string>, std::string)
               , karma::locals<unsigned int> > operation_concept_interface_specialization;
+  karma::rule<OutputIterator
+              , idl_parser::param_decl<Iterator>(interface_)> arguments;
   karma::rule<OutputIterator
               , idl_parser::op_decl<Iterator>(interface_)
               , karma::locals<unsigned int> > operation;

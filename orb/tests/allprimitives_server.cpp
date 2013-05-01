@@ -67,15 +67,16 @@ struct allprimitives_impl
     assert(!foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     assert(s == 2);
     foo7_ = true;
-  }
-  void foo8(std::string const& str)
-  {
-    std::cout << "== foo8" << std::endl;
-    assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-    assert(str == "qwe");
-    foo8_ = true;
     orb.stop();
   }
+  // void foo8(std::string const& str)
+  // {
+  //   std::cout << "== foo8" << std::endl;
+  //   assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+  //   assert(str == "qwe");
+  //   foo8_ = true;
+  //   orb.stop();
+  // }
   // void foo9(wchar_t wc)
   // {
   //   std::cout << "== foo9" << std::endl;
@@ -117,7 +118,7 @@ int main(int argc, char* argv[])
       ofs.open(argv[1]);
       output = std::ostream_iterator<char> (ofs);
     }
-    corba::stringify_object_id(orb, orb.serve_ref< ::allprimitives> (allprimitives), output);
+    corba::stringify_object_id(orb, orb.serve_ref< ::allprimitives_concept> (allprimitives), output);
   }
 
   std::cout << "Running" << std::endl;

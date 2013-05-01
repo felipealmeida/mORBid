@@ -162,38 +162,31 @@ void connection::process_input()
       {
         std::cout << "Found object" << std::endl;
 
-        typedef std::vector<char>::const_iterator iterator;
-        namespace qi = boost::spirit::qi;
-        namespace phoenix = boost::phoenix;
-
-        std::vector<char>::const_iterator first_first = first;
-
-        iiop::request_header request_header;
-        iiop::grammar::request_header_1_1<iterator> request_header_grammar;
-
-        if(qi::parse(first, last, request_header_grammar
-                     (phoenix::val(first), little_endian), request_header))
+        std::vector<char>& arguments = fusion::at_c<6u>(attr);
+        const char* arg_first = 0, *arg_last = 0;
+        if(!arguments.empty())
         {
-          std::cout << "Parsed request header correctly" << std::endl;
-          std::cout << "Request id: " << request_header.request_id << std::endl;
-          std::cout << "Response expected: " << request_header.response_expected << std::endl;
-          std::cout << "Object key size: " << request_header.object_key.size() << std::endl;
-          std::cout << "Object key |";
-          std::copy(request_header.object_key.begin(), request_header.object_key.end()
-                    , std::ostream_iterator<char>(std::cout));
-          std::cout << "|" << std::endl;
-          std::cout << "operation |";
-          std::copy(request_header.operation.begin(), request_header.operation.end()
-                    , std::ostream_iterator<char>(std::cout));
-          std::cout << "|" << std::endl;
-          if(boost::distance(request_header.operation) != 0)
-          {
-            reply r = {request_header.request_id};
-            // iterator->second.obj.call(fusion::at_c<4u>(attr), r
-            //                           , &*first_first, &*first
-            //                           , &*first + std::distance(first, last)
-            //                           , little_endian, r);, );
-          }
+          arg_first = &arguments[0];
+          arg_last = arg_first + arguments.size();
+        }
+
+        reply r = {fusion::at_c<1u>(attr)};
+        iterator->second.obj.call(fusion::at_c<4u>(attr), align_offset
+                                  , arg_first, arg_last, fusion::at_c<7u>(attr), r);
+
+        boost::system::error_code ec;
+        int rs = boost::asio::write(socket, boost::asio::buffer(r.reply_body)
+                                    , boost::asio::transfer_all(), ec);
+        int size = r.reply_body.size();
+        assert(rs == size);
+        if(!ec)
+        {
+          std::cout << "Successful transfer" << std::endl;
+          return;
+        }
+        else
+        {
+          std::cout << "Failed transfering" << std::endl;
         }
       }
     }
@@ -205,122 +198,6 @@ void connection::process_input()
     std::cout << "Failed parsing for request" << std::endl;
   }
   start();
-}
-
-bool connection::handle_request(std::vector<char>::const_iterator first
-                                , std::vector<char>::const_iterator last
-                                , bool little_endian)
-{
-  // std::cout << "Handle request for " << std::distance(first, last) << " bytes" << std::endl;
-  // typedef std::vector<char>::const_iterator iterator;
-  // namespace qi = boost::spirit::qi;
-  // namespace phoenix = boost::phoenix;
-
-  // std::vector<char>::const_iterator first_first = first;
-
-  // iiop::request_header request_header;
-  // iiop::grammar::request_header_1_1<iterator> request_header_grammar;
-
-  // if(qi::parse(first, last, request_header_grammar(phoenix::val(first), little_endian), request_header))
-  // {
-  //   std::cout << "Parsed request header correctly" << std::endl;
-  //   std::cout << "Request id: " << request_header.request_id << std::endl;
-  //   std::cout << "Response expected: " << request_header.response_expected << std::endl;
-  //   std::cout << "Object key size: " << request_header.object_key.size() << std::endl;
-  //   std::cout << "Object key |";
-  //   std::copy(request_header.object_key.begin(), request_header.object_key.end()
-  //             , std::ostream_iterator<char>(std::cout));
-  //   std::cout << "|" << std::endl;
-  //   std::cout << "operation |";
-  //   std::copy(request_header.operation.begin(), request_header.operation.end()
-  //             , std::ostream_iterator<char>(std::cout));
-  //   std::cout << "|" << std::endl;
-  //   if(boost::distance(request_header.operation) != 0)
-  //   {
-  //     if(boost::shared_ptr<POA> poa = poa_.lock())
-  //     {
-  //       std::cout << "POA still alive" << std::endl;
-  //       std::vector<char>::const_iterator header_first
-  //         = request_header.object_key.begin()
-  //         , header_last = request_header.object_key.end();
-  //       std::string poa_name;
-  //       std::size_t impl_;
-  //       std::cout << "== " << std::distance(first, last) << std::endl;
-  //       if(qi::parse(header_first, header_last, +(qi::char_ - qi::char_('/'))
-  //                    >> qi::omit[qi::char_] >> qi::uint_parser<std::size_t, 16u>()
-  //                    , poa_name, impl_))
-  //       {
-  //         std::cout << "POA name " << poa_name << std::endl;
-  //         ServantBase* impl = 0;
-  //         std::memcpy(&impl, &impl_, sizeof(impl));
-  //         std::cout << "ServantBase pointer " << impl << std::endl;
-  //         if(poa->object_map.find(impl) != poa->object_map.end())
-  //         {
-  //           std::cout << "Found servant " << std::distance(first, last) << std::endl;
-  //           try
-  //           {
-  //             reply r = {request_header.request_id};
-  //             impl->_dispatch(request_header.operation.c_str(), &*first_first, &*first
-  //                             , &*first + std::distance(first, last)
-  //                             , little_endian, r);
-
-  //             if(request_header.response_expected)
-  //             {
-  //               namespace karma = boost::spirit::karma;
-  //               std::cout << "Reply body size: " << r.reply_body.size() << std::endl;
-  //               std::vector<char> reply_buffer(12 + 12);
-  //               reply_buffer.insert(reply_buffer.end(), r.reply_body.begin()
-  //                                   , r.reply_body.end());
-  //               std::vector<char>::iterator iterator = reply_buffer.begin();
-  //               iiop::generator::message_header<std::vector<char>::iterator> message_header_grammar;
-  //               if(karma::generate(iterator, message_header_grammar(little_endian, 1, reply_buffer.size())))
-  //               {
-  //                 std::cout << "generated message header" << std::endl;
-  //                 iiop::generator::reply_header<std::vector<char>::iterator> reply_header_grammar;
-  //                 if(karma::generate(iterator, reply_header_grammar(little_endian, request_header.request_id)))
-  //                 {
-  //                   std::cout << "generated reply header grammar" << std::endl;
-  //                   boost::system::error_code ec;
-  //                   std::cout << "reply_buffer " << reply_buffer.size() << std::endl;
-  //                   int rs =
-  //                   boost::asio::write(socket, boost::asio::buffer(reply_buffer)
-  //                                      , boost::asio::transfer_all(), ec);
-  //                   int size = reply_buffer.size();
-  //                   assert(rs == size);
-  //                   if(!ec)
-  //                   {
-  //                     std::cout << "Successful transfer" << std::endl;
-  //                     return true;
-  //                   }
-  //                   else
-  //                   {
-  //                     std::cout << "Failed transfering" << std::endl;
-  //                   }
-  //                 }
-  //               }
-  //             }
-  //           }
-  //           catch(std::runtime_error const& e)
-  //           {
-  //             std::cout << "Error running dispatch " << e.what() << " name: " << typeid(e).name() << std::endl;
-  //           }
-  //         }
-  //         else
-  //         {
-  //           std::cout << "Servant not found, should throw OBJECT_NOT_EXIST" << std::endl;
-  //         }
-  //       }
-  //       else
-  //       {
-  //         std::cout << "Couldn't parse reference pointer from object key" << std::endl;
-  //       }
-  //     }
-  //   }
-  // }
-  // else
-  //   std::cout << "Failed parsing service_context_list" << std::endl;
-
-  return false;
 }
 
 } }

@@ -10,6 +10,23 @@
 
 #include <fstream>
 
+void foo( ::allprimitives allprimitives)
+{
+  allprimitives.foo1(true);
+  allprimitives.foo2('c');
+  allprimitives.foo3(2.0);
+  allprimitives.foo4(2.0f);
+  allprimitives.foo5(2l);
+  unsigned char asd = 'a';
+  allprimitives.foo6(asd);
+  allprimitives.foo7(2);
+  // allprimitives_.foo8("qwe");
+  // allprimitives_->foo9(L'q');
+  // allprimitives_->foo10(L"qwe");
+  // CORBA::Any_ptr any(new CORBA::Any);
+  // allprimitives_->foo11(any);
+}
+
 int main(int argc, char* argv[])
 {
   corba::orb orb;
@@ -22,21 +39,8 @@ int main(int argc, char* argv[])
     std::getline(ifs, ior);
   }
 
-  allprimitives_ref allprimitives_ (orb, ior);
-  
-  allprimitives_.foo1(true);
-  allprimitives_.foo2('c');
-  allprimitives_.foo3(2.0);
-  allprimitives_.foo4(2.0f);
-  allprimitives_.foo5(2l);
-  unsigned char asd = 'a';
-  allprimitives_.foo6(asd);
-  allprimitives_.foo7(2);
-  allprimitives_.foo8("qwe");
-  // allprimitives_->foo9(L'q');
-  // allprimitives_->foo10(L"qwe");
-  // CORBA::Any_ptr any(new CORBA::Any);
-  // allprimitives_->foo11(any);
+  allprimitives_ref allprimitives (orb, ior);
+  foo(allprimitives);
 
   std::cout << "Finished" << std::endl;
 }

@@ -7,6 +7,8 @@
 project morbid
  : build-dir bin
  : requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
+   <define>BOOST_TYPE_ERASURE_MAX_ARITY=7
+   <toolset>gcc:<cxxflags>-Wunused-local-typedefs
  : usage-requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
  : default-build <link>static <threading>multi
  ;
@@ -23,11 +25,8 @@ alias ior : iiop /boost//headers : : : <include>ior/include ;
 
 exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/concept_generator.cpp
-# idl_compiler/src/local_stub_generator.cpp
  idl_compiler/src/reference_model_generator.cpp
-# idl_compiler/src/poa_stub_generator.cpp
  idl_compiler/src/generate_header_modules_visitor.cpp
-# idl_compiler/src/generate_cpp_modules_visitor.cpp
  idl_parser /boost//filesystem /boost//program_options
   : <toolset>gcc:<cxxflags>-Wno-sign-compare
     <include>idl_compiler/include

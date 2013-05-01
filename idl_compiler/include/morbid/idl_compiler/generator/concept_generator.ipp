@@ -44,7 +44,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
   start =
     karma::eps[_a = at_c<0>(_val)]
     << eol
-    << "struct " << karma::string[_1 = _a] << eol
+    << "struct " << karma::string[_1 = _a] << "_concept" << eol
     << eol << "{" << eol
     << common_functions[_1 = _val] << eol
     << indent << "// Start of operations defined in IDL" << eol
@@ -55,6 +55,8 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << public_members(_r2, _a)[_1 = at_c<0>(_val)] << eol
     << indent << "typedef ::morbid::interface_tag _morbid_type_kind;" << eol
     << "};" << eol << eol
+    << "typedef ::boost::type_erasure::any< " << karma::string[_1 = _a]
+    << "_concept::regular_requirements> " << karma::string[_1 = _a] << ';' << eol
     << (*(karma::skip[karma::string] << karma::lit("}")))[_1 = _r2] << eol
     << "namespace boost { namespace type_erasure { // specialization of concept_interface" << eol
     << (*operation_concept_interface_specialization(_r1, _r2, _a))[_1 = at_c<1>(_val)]
@@ -66,7 +68,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     "template <class C, class Base>" 
     << eol
     << "struct concept_interface< " << (*karma::string)[_1 = _r2]
-    << "::" << karma::lit(_r3) << "::" << operation_name[_1 = _val] << "<C>, Base, C> : Base" << eol
+    << "::" << karma::lit(_r3) << "_concept::" << operation_name[_1 = _val] << "<C>, Base, C> : Base" << eol
     << "{" << eol
     << indent << return_(at_c<1>(_r1)[at_c<0>(_val)])[_1 = at_c<0>(_val)] << karma::space << operation_name[_1 = _val]
     << '('
@@ -77,7 +79,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << ')' << eol
     << indent << "{" << eol
     << indent << indent << "return call( " << (*karma::string)[_1 = _r2]
-    << "::" << karma::lit(_r3) << "::" << operation_name[_1 = _val] << "<C>(), *this"
+    << "::" << karma::lit(_r3) << "_concept::" << operation_name[_1 = _val] << "<C>(), *this"
     << karma::eps[_a = 0] << -(", " << ((args(++_a) % ", ")[_1 = at_c<2>(_val)]))
     << ");" << eol
     << indent << "}" << eol
@@ -86,18 +88,32 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
 
   operation_name = karma::stream[_1 = at_c<1>(_val)];
   args = "arg" << karma::lit(_r1);
+  in_tag = karma::string[_1 = " ::morbid::type_tag::in_tag"];
+  out_tag = karma::string[_1 = " ::morbid::type_tag::out_tag"];
+  inout_tag = karma::string[_1 = " ::morbid::type_tag::inout_tag"];
+  arguments = " ::morbid::type_tag::value_type_tag< "
+    << type_spec
+    (
+      at_c<1>(_r1)[at_c<1>(_val)]
+    )
+    [_1 = at_c<1>(_val)]
+    << " , " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
+    << " >"
+    ;
   operation =
     -(
       // karma::eps(at_c<3>(_val))
       indent << "template <typename C = ::boost::type_erasure::_self>" << eol
       << indent << "struct " << operation_name[_1 = _val] << eol
       << indent << '{' << eol
-      << indent << indent << "static " << return_
+      << indent << indent << "typedef " << return_
       (
        at_c<1>(_r1)[at_c<0>(_val)]
       )
       [_1 = at_c<0>(_val)]
-      << karma::space << "apply(C& self"
+      << " result_type;" << eol
+      // apply
+      << indent << indent << "static result_type apply(C& self"
       << -(
            ", " << ((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
           )
@@ -106,7 +122,22 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
       << indent << indent << indent << "return self." << karma::stream[_1 = at_c<1>(_val)]
       << "(" << karma::eps[_a = 0] << -(args(++_a) % ", ")[_1 = at_c<2>(_val)] << ");" << eol
       << indent << indent << "}" << eol
+      // operator()
+      << karma::eps[_a = 0]
+      << indent << indent << "template <typename This_>" << eol
+      << indent << indent << "result_type operator()(This_* self"
+      << -(
+           ", " << ((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
+          )
+      << ")" << eol
+      << indent << indent << "{" << eol
+      << indent << indent << indent << "return self->" << karma::stream[_1 = at_c<1>(_val)]
+      << "(" << karma::eps[_a = 0] << -(args(++_a) % ", ")[_1 = at_c<2>(_val)] << ");" << eol
+      << indent << indent << "}" << eol
+      // end of operator()
       << indent << indent << "inline static const char* name() { return \"" << operation_name[_1 = _val] << "\"; }" << eol
+      << indent << indent << "typedef ::boost::mpl::vector< "
+      << (arguments(_r1) % ", ")[_1 = at_c<2>(_val)] << " > arguments;" << eol
       << indent << "};" << eol
      )
     ;
@@ -136,7 +167,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
   public_members = 
     indent
     << "inline static const char* type_id() { return \"IDL:"
-    << ((*karma::string << '/'))[_1 = _r1] << karma::lit(_r2) << ":1.0\"; }" << eol
+    << (*(karma::string << '/'))[_1 = _r1] << karma::lit(_r2) << ":1.0\"; }" << eol
     ;
   typedefs =
     karma::eps

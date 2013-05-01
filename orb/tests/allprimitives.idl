@@ -14,7 +14,7 @@ interface allprimitives
   void foo5(in long a);
   void foo6(in octet a);
   void foo7(in short a);
-  void foo8(in string a);
+  // void foo8(in string a);
   // void foo9(in wchar a);
   // void foo10(in wstring a);
   // void foo11(in any a);
