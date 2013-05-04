@@ -18,6 +18,7 @@
 #include <morbid/ior/grammar/generic_tagged_profile.hpp>
 #include <morbid/ior/grammar/tagged_profile.hpp>
 #include <morbid/ior/grammar/ior.hpp>
+#include <morbid/structured_ior.hpp>
 
 #include <boost/spirit/home/support.hpp>
 #include <boost/spirit/home/karma.hpp>

@@ -8,6 +8,8 @@
 #ifndef MORBID_GIOP_FORWARD_BACK_INSERT_ITERATOR_HPP
 #define MORBID_GIOP_FORWARD_BACK_INSERT_ITERATOR_HPP
 
+#include <iterator>
+
 namespace morbid { namespace giop {
 
 template <typename Vector>

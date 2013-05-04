@@ -47,7 +47,9 @@ lib morbid :
  ; 
 explicit morbid ;
 
-install install : morbid_idl morbid ;
+install install-idl : morbid_idl : <location>install ;
+install install-lib : morbid : <location>install ;
+alias install : install-idl install-lib ;
 
 install demos : demo/simple//simple_server demo/simple//simple_client ;
 

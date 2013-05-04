@@ -63,33 +63,33 @@ struct struct_parser_generator : karma::grammar
     integer_parser =
       (
        karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
-       << "::morbid::iiop::grammar::align(_r1, 2u) >> qi::as< ::morbid::Short>()[ word(_r2)]"
+       << "::morbid::iiop::grammar::align(_r1, 2u) >> qi::as< ::morbid::short_>()[ word(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
-       << "::morbid::iiop::grammar::align(_r1, 4u) >> qi::as< ::morbid::Long>()[ dword(_r2)]"
+       << "::morbid::iiop::grammar::align(_r1, 4u) >> qi::as< ::morbid::long_>()[ dword(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
-       << "::morbid::iiop::grammar::align(_r1, 8u) >> qi::as< ::morbid::LongLong>()[ qword(_r2)]"
+       << "::morbid::iiop::grammar::align(_r1, 8u) >> qi::as< ::morbid::long_long>()[ qword(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
-       << "::morbid::iiop::grammar::align(_r1, 2u) >> qi::as< ::morbid::UShort>()[ word(_r2)]"
+       << "::morbid::iiop::grammar::align(_r1, 2u) >> qi::as< ::morbid::unsigned_short>()[ word(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
-       << "::morbid::iiop::grammar::align(_r1, 4u) >> qi::as< ::morbid::ULong>()[ dword(_r2)]"
+       << "::morbid::iiop::grammar::align(_r1, 4u) >> qi::as< ::morbid::unsigned_long>()[ dword(_r2)]"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
-       << "::morbid::iiop::grammar::align(_r1, 8u) >> qi::as< ::morbid::ULongLong>()[ qword(_r2)]"
+       << "::morbid::iiop::grammar::align(_r1, 8u) >> qi::as< ::morbid::unsigned_long_long>()[ qword(_r2)]"
       )
       ;
     char_parser = karma::string[_1 = "qi::char_"];
     wchar_parser = karma::string[_1 = "qi::wchar_"];
-    boolean_parser = karma::string[_1 = "qi::as< ::morbid::Boolean>()[qi::char_]"];
-    octet_parser = karma::string[_1 = "qi::as< ::morbid::Octet>()[qi::char_]"];
+    boolean_parser = karma::string[_1 = "qi::as<bool>()[qi::char_]"];
+    octet_parser = karma::string[_1 = "qi::as< ::morbid::octet>()[qi::char_]"];
     // any_parser = karma::eps;
     // object_parser = karma::eps;
     // value_base_parser = karma::eps;

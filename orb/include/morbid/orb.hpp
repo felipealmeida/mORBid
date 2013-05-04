@@ -8,10 +8,6 @@
 #ifndef MORBID_ORB_INIT_HPP
 #define MORBID_ORB_INIT_HPP
 
-#include <morbid/var.hpp>
-#include <morbid/poa.hpp>
-#include <morbid/object.hpp>
-#include <morbid/string.hpp>
 #include <morbid/giop/forward_back_insert_iterator.hpp>
 #include <morbid/ior/grammar/corbaloc.hpp>
 #include <morbid/ior/grammar/ior.hpp>
@@ -31,6 +27,8 @@
 
 #include <boost/type_erasure/any.hpp>
 #include <boost/type_erasure/member.hpp>
+
+#include <boost/asio.hpp>
 
 BOOST_TYPE_ERASURE_MEMBER((morbid)(poa)(has_call), call, 6)
 
@@ -62,7 +60,7 @@ struct object_registration
     {
       std::cout << "Should call method " << method << std::endl;
       handle_request_body
-        <void, typename method_concept::arguments>
+        <typename method_concept::result_type, typename method_concept::arguments>
         (&object, method_concept(), align_offset, first, last, little_endian, r);
     }
     else
@@ -288,7 +286,7 @@ structured_ior string_to_structured_ior(Iterator first, Iterator last)
     return sior;
   }
 
-  throw morbid::INVALID_PARAM();
+  // throw morbid::INVALID_PARAM();
 }
 
 }

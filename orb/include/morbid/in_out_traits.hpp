@@ -9,8 +9,10 @@
 #define MORBID_IN_OUT_TRAITS_HPP
 
 #include <morbid/primitive_types.hpp>
-#include <morbid/string.hpp>
+
 #include <boost/integer.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_scalar.hpp>
 
 namespace morbid {
 
@@ -122,75 +124,75 @@ struct in_traits<std::string>
 };
 
 template <>
-struct in_traits<Boolean>
+struct in_traits<bool>
 {
-  typedef Boolean type;
+  typedef bool type;
 };
 
 template <>
-struct in_traits<UShort>
+struct in_traits<unsigned_short>
 {
-  typedef UShort type;
+  typedef unsigned_short type;
 };
 
 template <>
-struct in_traits<Short>
+struct in_traits<short_>
 {
-  typedef Short type;
+  typedef short_ type;
 };
 
 template <>
-struct in_traits<ULong>
+struct in_traits<unsigned_long>
 {
-  typedef ULong type;
+  typedef unsigned_long type;
 };
 
 template <>
-struct in_traits<Long>
+struct in_traits<long_>
 {
-  typedef Long type;
+  typedef long_ type;
 };
 
 template <>
-struct in_traits<ULongLong>
+struct in_traits<unsigned_long_long>
 {
-  typedef ULongLong type;
+  typedef unsigned_long_long type;
 };
 
 template <>
-struct in_traits<LongLong>
+struct in_traits<long_long>
 {
-  typedef LongLong type;
+  typedef long_long type;
 };
 
 template <>
-struct in_traits<Double>
+struct in_traits<double>
 {
-  typedef Double type;
+  typedef double type;
 };
 
 template <>
-struct in_traits<Float>
+struct in_traits<float>
 {
-  typedef Float type;
+  typedef float type;
 };
 
 template <>
-struct in_traits<Char>
+struct in_traits<char>
 {
-  typedef Char type;
+  typedef char type;
 };
 
 template <>
-struct in_traits<WChar>
+struct in_traits<wchar_t>
 {
-  typedef WChar type;
+  typedef wchar_t type;
 };
 
 template <>
-struct in_traits<Octet>
+struct in_traits<octet>
 {
-  typedef Octet type;
+  typedef octet type;
 };
 
 template <>
@@ -200,75 +202,75 @@ struct out_traits<std::string>
 };
 
 template <>
-struct out_traits<Boolean>
+struct out_traits<bool>
 {
-  typedef Boolean& type;
+  typedef bool& type;
 };
 
 template <>
-struct out_traits<UShort>
+struct out_traits<unsigned_short>
 {
-  typedef UShort& type;
+  typedef unsigned_short& type;
 };
 
 template <>
-struct out_traits<Short>
+struct out_traits<short_>
 {
-  typedef Short& type;
+  typedef short_& type;
 };
 
 template <>
-struct out_traits<ULong>
+struct out_traits<unsigned_long>
 {
-  typedef ULong& type;
+  typedef unsigned_long& type;
 };
 
 template <>
-struct out_traits<Long>
+struct out_traits<long_>
 {
-  typedef Long& type;
+  typedef long_& type;
 };
 
 template <>
-struct out_traits<ULongLong>
+struct out_traits<unsigned_long_long>
 {
-  typedef ULongLong& type;
+  typedef unsigned_long_long& type;
 };
 
 template <>
-struct out_traits<LongLong>
+struct out_traits<long_long>
 {
-  typedef LongLong& type;
+  typedef long_long& type;
 };
 
 template <>
-struct out_traits<Double>
+struct out_traits<double>
 {
-  typedef Double& type;
+  typedef double& type;
 };
 
 template <>
-struct out_traits<Float>
+struct out_traits<float>
 {
-  typedef Float& type;
+  typedef float& type;
 };
 
 template <>
-struct out_traits<Char>
+struct out_traits<char>
 {
-  typedef Char& type;
+  typedef char& type;
 };
 
 template <>
-struct out_traits<WChar>
+struct out_traits<wchar_t>
 {
-  typedef WChar& type;
+  typedef wchar_t& type;
 };
 
 template <>
-struct out_traits<Octet>
+struct out_traits<octet>
 {
-  typedef Octet& type;
+  typedef octet& type;
 };
 
 template <>
@@ -278,53 +280,53 @@ struct inout_traits<std::string>
 };
 
 template <>
-struct inout_traits<Boolean> : out_traits<Boolean> {};
+struct inout_traits<bool> : out_traits<bool> {};
 
 template <>
-struct inout_traits<UShort> : out_traits<UShort> {};
+struct inout_traits<unsigned_short> : out_traits<unsigned_short> {};
 
 template <>
-struct inout_traits<Short> : out_traits<Short> {};
+struct inout_traits<short_> : out_traits<short_> {};
 
 template <>
-struct inout_traits<ULong> : out_traits<ULong> {};
+struct inout_traits<unsigned_long> : out_traits<unsigned_long> {};
 
 template <>
-struct inout_traits<Long> : out_traits<Long> {};
+struct inout_traits<long_> : out_traits<long_> {};
 
 template <>
-struct inout_traits<ULongLong> : out_traits<ULongLong> {};
+struct inout_traits<unsigned_long_long> : out_traits<unsigned_long_long> {};
 
 template <>
-struct inout_traits<LongLong> : out_traits<LongLong> {};
+struct inout_traits<long_long> : out_traits<long_long> {};
 
 template <>
-struct inout_traits<Double> : out_traits<Double> {};
+struct inout_traits<double> : out_traits<double> {};
 
 template <>
-struct inout_traits<Float> : out_traits<Float> {};
+struct inout_traits<float> : out_traits<float> {};
 
 template <>
-struct inout_traits<Char> : out_traits<Char> {};
+struct inout_traits<char> : out_traits<char> {};
 
 template <>
-struct inout_traits<WChar> : out_traits<WChar> {};
+struct inout_traits<wchar_t> : out_traits<wchar_t> {};
 
 template <>
-struct inout_traits<Octet> : out_traits<Octet> {};
+struct inout_traits<octet> : out_traits<octet> {};
 
-typedef out_traits<Boolean>::type Boolean_out;
-typedef out_traits<UShort>::type UShort_out;
-typedef out_traits<Short>::type Short_out;
-typedef out_traits<ULong>::type ULong_out;
-typedef out_traits<Long>::type Long_out;
-typedef out_traits<ULongLong>::type ULongLong_out;
-typedef out_traits<LongLong>::type LongLong_out;
-typedef out_traits<Double>::type Double_out;
-typedef out_traits<Float>::type Float_out;
-typedef out_traits<Char>::type Char_out;
-typedef out_traits<WChar>::type WChar_out;
-typedef out_traits<Octet>::type Octet_out;
+typedef out_traits<bool>::type Boolean_out;
+typedef out_traits<unsigned_short>::type UShort_out;
+typedef out_traits<short_>::type Short_out;
+typedef out_traits<unsigned_long>::type ULong_out;
+typedef out_traits<long_>::type Long_out;
+typedef out_traits<unsigned_long_long>::type ULongLong_out;
+typedef out_traits<long_long>::type LongLong_out;
+typedef out_traits<double>::type Double_out;
+typedef out_traits<float>::type Float_out;
+typedef out_traits<char>::type Char_out;
+typedef out_traits<wchar_t>::type WChar_out;
+typedef out_traits<octet>::type Octet_out;
 
 }
 

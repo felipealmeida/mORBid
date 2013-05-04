@@ -11,7 +11,7 @@ project morbid/tests ;
 path-constant current : . ;
 path-constant install : ../../install ;
 
-make allprimitives.hpp : allprimitives.idl : @compileidl : <dependency>/morbid//install ;
+make allprimitives.hpp : allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
 
 actions donothing
 {
@@ -46,92 +46,80 @@ actions run-server-client
   fi
 }
 
-make out_allprimitives.h : out_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
-make out_allprimitives.cpp : out_allprimitives.h : @donothing ;
+make out_allprimitives.hpp : out_allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
 
 exe out_allprimitives_client
- : out_allprimitives_client.cpp /morbid//morbid out_allprimitives.cpp
- : <implicit-dependency>out_allprimitives.h
+ : out_allprimitives_client.cpp /morbid//morbid
+ : <implicit-dependency>out_allprimitives.hpp
  ;
 exe out_allprimitives_server
- : out_allprimitives_server.cpp /morbid//morbid out_allprimitives.cpp
- : <implicit-dependency>out_allprimitives.h
+ : out_allprimitives_server.cpp /morbid//morbid
+ : <implicit-dependency>out_allprimitives.hpp
  ;
 
 make out_allprimitives.output : out_allprimitives_client out_allprimitives_server : @run-server-client ;
 
-make inout_allprimitives.h : inout_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
-make inout_allprimitives.cpp : inout_allprimitives.h : @donothing ;
+make inout_allprimitives.hpp : inout_allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
 
 exe inout_allprimitives_client
- : inout_allprimitives_client.cpp /morbid//morbid inout_allprimitives.cpp
- : <implicit-dependency>inout_allprimitives.h
+ : inout_allprimitives_client.cpp /morbid//morbid
+ : <implicit-dependency>inout_allprimitives.hpp
  ;
 exe inout_allprimitives_server
- : inout_allprimitives_server.cpp /morbid//morbid inout_allprimitives.cpp
- : <implicit-dependency>inout_allprimitives.h
+ : inout_allprimitives_server.cpp /morbid//morbid
+ : <implicit-dependency>inout_allprimitives.hpp
  ;
 
 make inout_allprimitives.output : inout_allprimitives_client inout_allprimitives_server : @run-server-client ;
 
-make return_allprimitives.h : return_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
-make return_allprimitives.cpp : return_allprimitives.h : @donothing ;
+make return_allprimitives.hpp : return_allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
 
 exe return_allprimitives_client
- : return_allprimitives_client.cpp /morbid//morbid return_allprimitives.cpp
- : <implicit-dependency>return_allprimitives.h
+ : return_allprimitives_client.cpp /morbid//morbid
+ : <implicit-dependency>return_allprimitives.hpp
  ;
 exe return_allprimitives_server
- : return_allprimitives_server.cpp /morbid//morbid return_allprimitives.cpp
- : <implicit-dependency>return_allprimitives.h
+ : return_allprimitives_server.cpp /morbid//morbid
+ : <implicit-dependency>return_allprimitives.hpp
  ;
 
 make return_allprimitives.output : return_allprimitives_client return_allprimitives_server : @run-server-client ;
 
-make modules_allprimitives.h : modules_allprimitives.idl : @compileidl : <dependency>/morbid//install ;
-make modules_allprimitives.cpp : modules_allprimitives.h
- : @donothing : <dependency>/morbid//install ;
+make modules_allprimitives.hpp : modules_allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
 
 exe modules_allprimitives_client
- : modules_allprimitives_client.cpp /morbid//morbid modules_allprimitives.cpp
- : <implicit-dependency>modules_allprimitives.h
+ : modules_allprimitives_client.cpp /morbid//morbid
+ : <implicit-dependency>modules_allprimitives.hpp
  ;
 exe modules_allprimitives_server
- : modules_allprimitives_server.cpp /morbid//morbid modules_allprimitives.cpp
- : <implicit-dependency>modules_allprimitives.h
-   <implicit-dependency>modules_allprimitives.cpp
+ : modules_allprimitives_server.cpp /morbid//morbid
+ : <implicit-dependency>modules_allprimitives.hpp
  ;
 
 make modules_allprimitives.output : modules_allprimitives_client modules_allprimitives_server : @run-server-client ;
 
-make struct.h : struct.idl : @compileidl : <dependency>/morbid//install ;
-make struct.cpp : struct.h
- : @donothing : <dependency>/morbid//install ;
+make struct.hpp : struct.idl : @compileidl : <dependency>/morbid//install-idl ;
 
 exe struct_client
- : struct_client.cpp /morbid//morbid struct.cpp
- : <implicit-dependency>struct.h
+ : struct_client.cpp /morbid//morbid
+ : <implicit-dependency>struct.hpp
  ;
 exe struct_server
- : struct_server.cpp /morbid//morbid struct.cpp
- : <implicit-dependency>struct.h
-   <implicit-dependency>struct.cpp
+ : struct_server.cpp /morbid//morbid
+ : <implicit-dependency>struct.hpp
  ;
 
 make struct.output : struct_client struct_server : @run-server-client ;
 
-make reference.h : reference.idl : @compileidl : <dependency>/morbid//install ;
-make reference.cpp : reference.h
- : @donothing : <dependency>/morbid//install ;
+make reference.hpp : reference.idl : @compileidl : <dependency>/morbid//install-idl ;
 
 exe reference_client
- : reference_client.cpp /morbid//morbid reference.cpp
- : <implicit-dependency>reference.h
+ : reference_client.cpp /morbid//morbid
+ : <implicit-dependency>reference.hpp
  ;
 exe reference_server
- : reference_server.cpp /morbid//morbid reference.cpp
- : <implicit-dependency>reference.h
-   <implicit-dependency>reference.cpp
+ : reference_server.cpp /morbid//morbid
+ : <implicit-dependency>reference.hpp
  ;
 
 make reference.output : reference_client reference_server : @run-server-client ;

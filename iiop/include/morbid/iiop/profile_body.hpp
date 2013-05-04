@@ -12,6 +12,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include <ostream>
+#include <vector>
 
 namespace morbid { namespace iiop {
 

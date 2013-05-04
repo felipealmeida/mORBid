@@ -292,7 +292,6 @@ int main(int argc, char** argv)
               (iterator
                , karma::lit("// -*- c++ -*-") << karma::eol
                << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
-               << karma::lit("#include <morbid/poa.hpp>") << karma::eol
                << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
                << karma::lit("#include <morbid/reply.hpp>") << karma::eol
                << karma::lit("#include <morbid/structured_ior.hpp>") << karma::eol

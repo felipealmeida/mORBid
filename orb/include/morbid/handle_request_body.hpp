@@ -8,7 +8,6 @@
 #ifndef MORBID_HANDLE_REQUEST_BODY_HPP
 #define MORBID_HANDLE_REQUEST_BODY_HPP
 
-#include <morbid/any.hpp>
 #include <morbid/detail/max_args.hpp>
 #include <morbid/primitive_types.hpp>
 #include <morbid/type_tag.hpp>
@@ -19,6 +18,7 @@
 #include <morbid/giop/grammars/message_1_0.hpp>
 #include <morbid/giop/grammars/reply_1_0.hpp>
 #include <morbid/iiop/all.hpp>
+#include <morbid/reply.hpp>
 
 #include <boost/fusion/include/fused.hpp>
 #include <boost/fusion/include/as_vector.hpp>
@@ -268,7 +268,6 @@ void make_request_reply(reply& r, ReplyArguments& reply_arguments)
   else
   {
     std::cout << "Failed generating reply" << std::endl;
-    throw morbid::MARSHALL();
   }
 }
 
@@ -295,7 +294,7 @@ void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<void
     >::type
     reply_argument_types;
 
-  std::cout << "reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
+  std::cout << "(no result) reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
 
   reply_argument_types reply_arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
                                                       , reply_arguments_generator<argument_types>(args));
@@ -330,7 +329,9 @@ void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<R>)
     >::type
     reply_argument_types;
 
-  std::cout << "reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
+  std::cout << "(with result "
+            << typeid(R).name()
+            << ") reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
 
   args_with_result_type args_with_result(result, args);
   reply_argument_types reply_arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
@@ -427,7 +428,6 @@ void handle_request_body(T* self, F f, std::size_t align_offset
   }
   else
   {
-    throw morbid::MARSHALL();
   }
 }
 

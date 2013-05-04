@@ -44,50 +44,50 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
     floating_point =
       (
        karma::eps(at_c<0>(_val) == types::floating_point::float_)
-       << "::morbid::Float"
+       << "float"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::double_)
-       << "::morbid::Double"
+       << "double"
       )
       | (
        karma::eps(at_c<0>(_val) == types::floating_point::long_double_)
-       << "::morbid::LongDouble"
+       << "::morbid::long_double"
       )
       ;
     integer =
       (
        karma::eps(at_c<0>(_val) == types::integer::signed_short_int)
-       << "::morbid::Short"
+       << "::morbid::short_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_long_int)
-       << "::morbid::Long"
+       << "::morbid::long_"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::signed_longlong_int)
-       << "::morbid::LongLong"
+       << "::morbid::long_long"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_short_int)
-       << "::morbid::UShort"
+       << "::morbid::unsigned_short"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_long_int)
-       << "::morbid::ULong"
+       << "::morbid::unsigned_long"
       )
       | (
        karma::eps(at_c<0>(_val) == types::integer::unsigned_longlong_int)
-       << "::morbid::ULongLong"
+       << "::morbid::unsigned_long_long"
       )
       ;
-    char_ = karma::string[_1 = "::morbid::Char"];
-    wchar_ = karma::string[_1 = "::morbid::WChar"];
-    boolean = karma::string[_1 = "::morbid::Boolean"];
-    octet = karma::string[_1 = "::morbid::Octet"];
-    any = karma::string[_1 = "::morbid::Any"];
-    object = karma::string[_1 = "::morbid::Object"];
-    value_base = karma::string[_1 = "::morbid::ValueBase"];
+    char_ = karma::string[_1 = "char"];
+    wchar_ = karma::string[_1 = "wchar_t"];
+    boolean = karma::string[_1 = "bool"];
+    octet = karma::string[_1 = "::morbid::octet"];
+    // any = karma::string[_1 = "::morbid::Any"];
+    // object = karma::string[_1 = "::morbid::Object"];
+    // value_base = karma::string[_1 = "::morbid::ValueBase"];
     void_ = karma::string[_1 = "void"];
     sequence =
       karma::lit("::morbid::sequence<")

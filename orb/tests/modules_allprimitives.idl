@@ -16,10 +16,7 @@ interface modules_allprimitives
   long foo5();
   octet foo6();
   short foo7();
-  // void foo8(out string a);
-  // void foo9(out wchar a);
-  // void foo10(out wstring a);
-  // void foo11(out any a);
+  string foo8();
 };
 
 }; };

@@ -34,77 +34,77 @@ struct argument_giop_grammar<morbid::string, Domain, Iterator>
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::Char, Domain, Iterator>
+struct argument_giop_grammar<char, Domain, Iterator>
 {
   typedef spirit::terminal<giop::tag::octet>const& result_type;
   result_type operator()() const { return giop::octet; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::Boolean, Domain, Iterator>
+struct argument_giop_grammar<bool, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::bool_>const& result_type;
   result_type operator()() const { return giop::bool_; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::Double, Domain, Iterator>
+struct argument_giop_grammar<double, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::double_>const& result_type;
   result_type operator()() const { return giop::double_; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::Float, Domain, Iterator>
+struct argument_giop_grammar<float, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::float_>const& result_type;
   result_type operator()() const { return giop::float_; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::LongLong, Domain, Iterator>
+struct argument_giop_grammar<long_long, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::long_long>const& result_type;
   result_type operator()() const { return giop::long_long; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::ULongLong, Domain, Iterator>
+struct argument_giop_grammar<unsigned_long_long, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::ulong_long>const& result_type;
   result_type operator()() const { return giop::ulong_long; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::Long, Domain, Iterator>
+struct argument_giop_grammar<long_, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::long_>const& result_type;
   result_type operator()() const { return giop::long_; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::ULong, Domain, Iterator>
+struct argument_giop_grammar<unsigned_long, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::ulong_>const& result_type;
   result_type operator()() const { return giop::ulong_; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::Short, Domain, Iterator>
+struct argument_giop_grammar<short_, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::short_>const& result_type;
   result_type operator()() const { return giop::short_; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::UShort, Domain, Iterator>
+struct argument_giop_grammar<unsigned_short, Domain, Iterator>
 {
   typedef spirit::terminal<spirit::tag::ushort_>const& result_type;
   result_type operator()() const { return giop::ushort_; }
 };
 
 template <typename Domain, typename Iterator>
-struct argument_giop_grammar<morbid::Octet, Domain, Iterator>
+struct argument_giop_grammar<octet, Domain, Iterator>
 {
   typedef spirit::terminal<giop::tag::octet>const& result_type;
   result_type operator()() const { return giop::octet; }

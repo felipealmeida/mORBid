@@ -184,8 +184,8 @@ typename return_traits<R>::type call
 {
   std::cout << "synchronous_call::call" << std::endl;
   namespace mpl = boost::mpl;
-  if(ior.structured_profiles.empty())
-    throw MARSHALL();
+  // if(ior.structured_profiles.empty())
+  //   throw MARSHALL();
 
   iiop::profile_body const* profile_body = 0;
   for(std::vector<structured_ior::variant_type>::const_iterator
@@ -197,8 +197,8 @@ typename return_traits<R>::type call
       break;
   }
 
-  if(!profile_body)
-    throw MARSHALL();
+  // if(!profile_body)
+  //   throw MARSHALL();
 
   std::string host = profile_body->host;
   std::vector<char> object_key = profile_body->object_key;
@@ -300,7 +300,7 @@ typename return_traits<R>::type call
         reply_buffer.resize(reply_buffer.size() + 1024u);
       boost::system::error_code ec;
       std::size_t bytes_read
-        = socket.read_some(boost::asio::buffer(&reply_buffer[0], reply_buffer.size() - offset), ec);
+        = socket.read_some(boost::asio::buffer(&reply_buffer[offset], reply_buffer.size() - offset), ec);
       std::cout << "Read " << bytes_read << " bytes" << std::endl;
       if(ec)
         throw ec;
@@ -311,7 +311,9 @@ typename return_traits<R>::type call
         iterator_type first = reply_buffer.begin()
           ,  last = boost::next(reply_buffer.begin(), offset);
 
-        std::cout << "Should try to parse" << std::endl;
+        std::cout << "Should try to parse " << offset << std::endl;
+
+        assert(std::distance(first, last) == offset);
 
         typedef typename mpl::remove_if
           <ArgsSeq const, is_in_lambda>::type out_args_type_seq_type;
@@ -360,6 +362,8 @@ typename return_traits<R>::type call
           <iiop::parser_domain, iterator_type, arguments_attribute_seq_type
            , arguments_attribute_type>
           arguments_grammar;
+        std::cout << "reading reply with " << typeid(arguments_attribute_type).name()
+                  << std::endl;
         typedef giop::grammars::system_exception_reply_body
           <iiop::parser_domain, iterator_type, system_exception_attribute_type>
           system_exception_grammar;
@@ -389,7 +393,9 @@ typename return_traits<R>::type call
         message_grammar message_grammar_(reply_grammar_);
         namespace qi = boost::spirit::qi;
         message_attribute_type attribute;
-        if(qi::parse(first, last
+        assert(std::distance(first, last) == offset);
+        iterator_type first_ = first;        
+        if(qi::parse(first_, last
                      , giop::compile<iiop::parser_domain>(message_grammar_)
                      , attribute))
         {
@@ -422,7 +428,10 @@ typename return_traits<R>::type call
         }
         else
         {
-          std::cout << "Failed parsing" << std::endl;
+          std::cout << "Failed parsing reply " << std::endl;
+          boost::algorithm::hex(first, last
+                                , std::ostream_iterator<char>(std::cout));
+          std::endl(std::cout);
         }
 
         break;
@@ -433,7 +442,7 @@ typename return_traits<R>::type call
   else
     std::cout << "Failed generating" << std::endl;
 
-  throw MARSHALL();
+  throw std::runtime_error("MARSHALL");
 }
 
 } }
