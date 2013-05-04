@@ -5,132 +5,103 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "out_allprimitives.h"
-#include <CORBA.h>
+#include "out_allprimitives.hpp"
+#include <morbid/corba.hpp>
 
 #include <fstream>
 
-struct out_allprimitives_impl : POA_out_allprimitives
+struct out_allprimitives_impl
 {
-  out_allprimitives_impl(CORBA::ORB_var orb)
+  out_allprimitives_impl(corba::orb orb)
     : foo1_(false), foo2_(false), foo3_(false)
     , foo4_(false), foo5_(false), foo6_(false)
-    , foo7_(false), foo8_(false), foo9_(false)
-    , foo10_(false), foo11_(false)
+    , foo7_(false), foo8_(false)
     , orb(orb) {}
 
-  void foo1(CORBA::Boolean_out b)
+  void foo1(bool& b)
   {
     std::cout << "== foo1" << std::endl;
     assert(!foo1_);
     b = true;
     foo1_ = true;
   }
-  void foo2(CORBA::Char_out c)
+  void foo2(char& c)
   {
     std::cout << "== foo2" << std::endl;
     assert(!foo2_ && foo1_);
     c = 'c';
     foo2_ = true;
   }
-  void foo3(CORBA::Double_out d)
+  void foo3(double& d)
   {
     std::cout << "== foo3" << std::endl;
     assert(!foo3_ && foo2_ && foo1_);
     d = 2.0;
     foo3_ = true;
   }
-  void foo4(CORBA::Float_out f)
+  void foo4(float& f)
   {
     std::cout << "== foo4" << std::endl;
     assert(!foo4_ && foo3_ && foo2_ && foo1_);
     f = 2.0f;
     foo4_ = true;
   }
-  void foo5(CORBA::Long_out l)
+  void foo5(morbid::long_& l)
   {
     std::cout << "== foo5" << std::endl;
     assert(!foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     l = 2l;
     foo5_ = true;
   }
-  void foo6(CORBA::Octet_out s)
+  void foo6(morbid::octet& s)
   {
     std::cout << "== foo6" << std::endl;
     assert(!foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     s = 'c';
     foo6_ = true;
   }
-  void foo7(CORBA::Short_out s)
+  void foo7(morbid::short_& s)
   {
     std::cout << "== foo7" << std::endl;
     assert(!foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
     s = 2;
     foo7_ = true;
-    orb->shutdown(true);
   }
-  // void foo8(String_out str)
-  // {
-  //   std::cout << "== foo8" << std::endl;
-  //   assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   assert(!std::strcmp(str, "qwe"));
-  //   foo8_ = true;
-  //   orb->shutdown(true);
-  // }
-  // void foo9(wchar_t wc)
-  // {
-  //   std::cout << "== foo9" << std::endl;
-  //   assert(!foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   assert(wc == L'q');
-  //   foo9_ = true;
-  // }
-  // void foo10(const wchar_t* str)
-  // {
-  //   std::cout << "== foo10" << std::endl;
-  //   assert(!foo10_ && foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   assert(false);
-  //   foo10_ = true;
-  // }
-  // void foo11(CORBA::Any_ptr)
-  // {
-  //   std::cout << "== foo11" << std::endl;
-  //   assert(!foo11_ && /*foo10_ && foo9_ &&*/ foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
-  //   foo11_ = true;
-  //   orb->shutdown(true);
-  // }
+  void foo8(std::string& str)
+  {
+    std::cout << "== foo8 string: " << str << std::endl;
+    assert(!foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+    str = "abc";
+    foo8_ = true;
+    orb.stop();
+  }
 
   bool foo1_, foo2_, foo3_, foo4_, foo5_
-       , foo6_, foo7_, foo8_, foo9_, foo10_
-       , foo11_;
-  CORBA::ORB_var orb;
+       , foo6_, foo7_, foo8_, foo9_;
+  corba::orb orb;
 };
 
 int main(int argc, char* argv[])
 {
-  CORBA::ORB_var orb = CORBA::ORB_init(argc, argv, "");
+  corba::orb orb;
 
-  CORBA::Object_var poa_obj = orb->resolve_initial_references ("RootPOA");
-  PortableServer::POA_var poa = PortableServer::POA::_narrow (poa_obj);
-  PortableServer::POAManager_var poa_manager = poa->the_POAManager();
-  
   out_allprimitives_impl out_allprimitives(orb);
-
-  PortableServer::ObjectId_var oid = poa->activate_object (&out_allprimitives);
-
-  CORBA::Object_var ref = poa->id_to_reference (oid.in());
-  CORBA::String_var str = orb->object_to_string (ref.in());
-  if(argc > 1)
   {
-    std::ofstream ofs(argv[1]);
-    ofs << str.in() << std::endl;
+    std::ostream_iterator<char> output(std::cout);
+    std::ofstream ofs;
+    if(argc > 1)
+    {
+      ofs.open(argv[1]);
+      output = std::ostream_iterator<char> (ofs);
+    }
+    corba::stringify_object_id
+      (orb, orb.serve_ref< out_allprimitives_concept>
+       (out_allprimitives), output);
   }
-  else
-    std::cout << str.in() << std::endl;
-
+  
   std::cout << "Running" << std::endl;
 
-  poa_manager->activate();
-  orb->run();
+  orb.run();
 
   assert(out_allprimitives.foo7_ && out_allprimitives.foo6_ && out_allprimitives.foo5_
          && out_allprimitives.foo4_ && out_allprimitives.foo3_ && out_allprimitives.foo2_

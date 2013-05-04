@@ -5,14 +5,42 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "out_allprimitives.h"
-#include <CORBA.h>
+#include "out_allprimitives.hpp"
+#include <morbid/corba.hpp>
 
 #include <fstream>
 
+void foo(out_allprimitives i)
+{
+  bool b = false;
+  i.foo1(b);
+  assert(b == true);
+  char c = 'a';
+  i.foo2(c);
+  assert(c == 'c');
+  double d = 1.0;
+  i.foo3(d);
+  assert(d == 2.0);
+  float f = 1.0f;
+  i.foo4(f);
+  assert(f == 2.0f);
+  morbid::long_ l = 1;
+  i.foo5(l);
+  assert(l == 2);
+  morbid::octet octet = 'a';
+  i.foo6(octet);
+  assert(octet == 'c');
+  morbid::short_ s = 1; 
+  i.foo7(s);
+  assert(s == 2);
+  std::string str = "qwe";
+  i.foo8(str);
+  assert(str == "abc");
+}
+
 int main(int argc, char* argv[])
 {
-  CORBA::ORB_var orb = CORBA::ORB_init(argc, argv, "");
+  corba::orb orb;
 
   assert(argc > 1);
 
@@ -22,38 +50,8 @@ int main(int argc, char* argv[])
     std::getline(ifs, ior);
   }
 
-  CORBA::Object_var obj = orb->string_to_object (ior.c_str());
-  out_allprimitives_var out_allprimitives_ = out_allprimitives::_narrow (obj);
-  
-  assert(!CORBA::is_nil(out_allprimitives_));
-  CORBA::Boolean b = false;
-  out_allprimitives_->foo1(b);
-  assert(b == true);
-  CORBA::Char c = 'a';
-  out_allprimitives_->foo2(c);
-  assert(c == 'c');
-  CORBA::Double d = 1.0;
-  out_allprimitives_->foo3(d);
-  assert(d == 2.0);
-  CORBA::Float f = 1.0f;
-  out_allprimitives_->foo4(f);
-  assert(f == 2.0f);
-  CORBA::Long l = 1;
-  out_allprimitives_->foo5(l);
-  assert(l == 2);
-  CORBA::Octet octet = 'a';
-  out_allprimitives_->foo6(octet);
-  assert(octet == 'c');
-  CORBA::Short s = 1; 
-  out_allprimitives_->foo7(s);
-  assert(s == 2);
-  // CORBA::String_var str = "qwe";
-  // out_allprimitives_->foo8(str);
-  // assert(!std::strcmp(str, "abc"));
-  // allprimitives_->foo9(L'q');
-  // allprimitives_->foo10(L"qwe");
-  // CORBA::Any_ptr any(new CORBA::Any);
-  // allprimitives_->foo11(any);
+  out_allprimitives_ref out_allprimitives (orb, ior);
+  foo(out_allprimitives);
 
   std::cout << "Finished" << std::endl;
 }

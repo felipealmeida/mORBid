@@ -67,7 +67,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
   operation_concept_interface_specialization =
     "template <class C, class Base>" 
     << eol
-    << "struct concept_interface< " << (karma::string % "::")[_1 = _r2]
+    << "struct concept_interface< " << -(karma::string % "::")[_1 = _r2]
     << "::" << karma::lit(_r3) << "_concept::" << operation_name[_1 = _val] << "<C>, Base, C> : Base" << eol
     << "{" << eol
     << indent << return_(at_c<1>(_r1)[at_c<0>(_val)])[_1 = at_c<0>(_val)] << karma::space << operation_name[_1 = _val]
@@ -78,7 +78,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
          )
     << ')' << eol
     << indent << "{" << eol
-    << indent << indent << "return call( " << (karma::string % "::")[_1 = _r2]
+    << indent << indent << "return call( " << -(karma::string % "::")[_1 = _r2]
     << "::" << karma::lit(_r3) << "_concept::" << operation_name[_1 = _val] << "<C>(), *this"
     << karma::eps[_a = 0] << (*(", " << args(++_a)))[_1 = at_c<2>(_val)]
     << ");" << eol

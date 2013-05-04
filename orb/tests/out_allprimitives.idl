@@ -14,8 +14,5 @@ interface out_allprimitives
   void foo5(out long a);
   void foo6(out octet a);
   void foo7(out short a);
-  // void foo8(out string a);
-  // void foo9(out wchar a);
-  // void foo10(out wstring a);
-  // void foo11(out any a);
+  void foo8(out string a);
 };
