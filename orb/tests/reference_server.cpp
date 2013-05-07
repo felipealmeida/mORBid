@@ -5,87 +5,83 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "reference.h"
-#include <CORBA.h>
+#include "reference.hpp"
+#include <morbid/corba.hpp>
 
 #include <fstream>
 
-struct some_other_interface_impl : POA_some_other_interface
+struct some_other_interface_impl
 {
-  some_other_interface_impl(CORBA::ORB_var orb)
-    : p(some_interface::_nil()), foo1_(false), foo2_(false), foo3_(false)
+  some_other_interface_impl(corba::orb orb)
+    : foo1_(false), foo2_(false), foo3_(false)
     , foo4_(false)
     , orb(orb)
   {}
 
-  void foo1(some_interface_ptr s)
+  void foo1(some_interface s)
   {
     std::cout << "struct_interface_impl::foo1 called" << std::endl;
-    assert(!foo1_ && !foo2_ && !foo3_ && !foo4_ && CORBA::is_nil(p));
+    assert(!foo1_ && !foo2_ && !foo3_ && !foo4_ && !p);
     foo1_ = true;
     p = s;
-    p->foo();
+    p.foo();
   }
 
-  void foo2(some_interface_ptr& s)
+  void foo2(some_interface& s)
   {
     std::cout << "struct_interface_impl::foo2 called" << std::endl;
     assert(foo1_ && !foo2_ && !foo3_ && !foo4_);
     foo2_ = true;
     s = p;
-    p->foo();
+    p.foo();
   }
 
-  void foo3(some_interface_ptr& s)
+  void foo3(some_interface& s)
   {
     std::cout << "struct_interface_impl::foo3 called" << std::endl;
     assert(foo1_ && foo2_ && !foo3_ && !foo4_);
     foo3_ = true;
     s = p;
-    p->foo();
+    p.foo();
   }
 
-  some_interface_ptr foo4()
+  some_interface foo4()
   {
     std::cout << "struct_interface_impl::foo4 called" << std::endl;
     assert(foo1_ && foo2_ && foo3_ && !foo4_);
     foo4_ = true;
-    p->foo();
-    orb->shutdown(true);
+    p.foo();
+    orb.stop();
     return p;
   }
 
-  some_interface_ptr p;
+  some_interface p;
   bool foo1_, foo2_, foo3_, foo4_;
-  CORBA::ORB_var orb;
+  corba::orb orb;
 };
 
 int main(int argc, char* argv[])
 {
-  CORBA::ORB_var orb = CORBA::ORB_init(argc, argv, "");
+  corba::orb orb;
 
-  CORBA::Object_var poa_obj = orb->resolve_initial_references ("RootPOA");
-  PortableServer::POA_var poa = PortableServer::POA::_narrow (poa_obj);
-  PortableServer::POAManager_var poa_manager = poa->the_POAManager();
-  
   some_other_interface_impl some_other_interface(orb);
 
-  PortableServer::ObjectId_var oid = poa->activate_object (&some_other_interface);
-
-  CORBA::Object_var ref = poa->id_to_reference (oid.in());
-  CORBA::String_var str = orb->object_to_string (ref.in());
-  if(argc > 1)
   {
-    std::ofstream ofs(argv[1]);
-    ofs << str.in() << std::endl;
+    std::ostream_iterator<char> output(std::cout);
+    std::ofstream ofs;
+    if(argc > 1)
+    {
+      ofs.open(argv[1]);
+      output = std::ostream_iterator<char> (ofs);
+    }
+    corba::stringify_object_id
+      (orb, orb.serve_ref< some_other_interface_concept>
+       (some_other_interface), output);
   }
-  else
-    std::cout << str.in() << std::endl;
 
   std::cout << "Running" << std::endl;
 
-  poa_manager->activate();
-  orb->run();
+  orb.run();
 
   assert(some_other_interface.foo1_ && some_other_interface.foo2_ && some_other_interface.foo3_ && some_other_interface.foo4_);
 }

@@ -24,6 +24,12 @@ std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
   return os << "[pair first: " << p.first << " second: " << p.second << ']';
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, std::vector<T> p)
+{
+  return os << "[vector size: " << p.size() << ']';
+}
+
 }
 
 namespace morbid { namespace idl_compiler { namespace generator {
@@ -37,11 +43,20 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
   namespace phoenix = boost::phoenix;
   using karma::_1;
   using karma::_val; using karma::_r1; using karma::_r2;
-  using karma::_a;
+  using karma::_a; using karma::_b;
   using karma::eol;
   using phoenix::at_c;
 
   class_name = karma::string[_1 = at_c<0>(_val)] << "_ref";
+  specialization =
+    (*(karma::skip[karma::string] << karma::lit("}")))[_1 = _r2] << eol
+    << "namespace morbid {" << eol
+    <<  "template <>" << eol
+    << "struct is_remote_reference< " << (+("::" << karma::string))[_1 = _r1] << "_ref >" << eol
+    << "{ typedef ::boost::mpl::true_ type; };" << eol
+    << "}" << eol
+    << (*("namespace " << karma::string << " { "))[_1 = _r2] << eol
+    ;
   start = 
     "struct "
     << class_name[_1 = _val]
@@ -54,8 +69,8 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
     << "private:" << eol
     << common_members[_1 = _a]
     << "};" << eol << eol
-    // << karma::string[_1 = _a] << "::~" << karma::string[_1 = _a] << "() {}" << eol << eol
-    // << "}" << eol
+    << karma::eps[_b = _r2, phoenix::pop_back(_b)]
+    << specialization(_r2, _b)[_1 = _val]
     ;
   operation =
     indent

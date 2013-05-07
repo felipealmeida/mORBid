@@ -9,16 +9,14 @@
 #define MORBID_IN_OUT_TRAITS_HPP
 
 #include <morbid/primitive_types.hpp>
+#include <morbid/reference.hpp>
+#include <morbid/tags.hpp>
 
 #include <boost/integer.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_scalar.hpp>
 
 namespace morbid {
-
-struct primitive_tag {};
-struct struct_tag {};
-struct interface_tag {};
 
 template <typename T, typename Enable = void>
 struct in_traits;
@@ -85,36 +83,28 @@ struct return_traits<T, typename boost::enable_if
   typedef T type;
 };
 
-template <typename T>
-struct in_traits<T, typename boost::enable_if
-                 <boost::is_same<typename T::_morbid_type_kind, interface_tag>
-                 , void>::type>
+template <typename C>
+struct in_traits<reference<C> >
 {
-  typedef typename T::_ptr_type type;
+  typedef reference<C> type;
 };
 
-template <typename T>
-struct out_traits<T, typename boost::enable_if
-                  <boost::is_same<typename T::_morbid_type_kind, interface_tag>
-                  , void>::type>
+template <typename C>
+struct out_traits<reference<C> >
 {
-  typedef typename T::_ptr_type& type;
+  typedef reference<C>& type;
 };
 
-template <typename T>
-struct inout_traits<T, typename boost::enable_if
-                    <boost::is_same<typename T::_morbid_type_kind, interface_tag>
-                    , void>::type>
+template <typename C>
+struct inout_traits<reference<C> >
 {
-  typedef typename T::_ptr_type& type;
+  typedef reference<C>& type;
 };
 
-template <typename T>
-struct return_traits<T, typename boost::enable_if
-                     <boost::is_same<typename T::_morbid_type_kind, interface_tag>
-                      , void>::type>
+template <typename C>
+struct return_traits<reference<C> >
 {
-  typedef typename T::_ptr_type type;
+  typedef reference<C> type;
 };
 
 template <>

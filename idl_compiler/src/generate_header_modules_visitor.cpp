@@ -6,8 +6,6 @@
  */
 
 #include <morbid/idl_compiler/generator/concept_generator.hpp>
-#include <morbid/idl_compiler/generator/local_stub_generator.hpp>
-#include <morbid/idl_compiler/generator/poa_stub_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
 #include <morbid/idl_compiler/generator/struct_generator.hpp>
 #include <morbid/idl_compiler/generator/reference_model_generator.hpp>

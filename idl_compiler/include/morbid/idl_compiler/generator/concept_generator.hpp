@@ -9,6 +9,7 @@
 #define MORBID_IDL_COMPILER_CONCEPT_GENERATOR_HPP
 
 #include <morbid/idl_parser/interface_def.hpp>
+#include <morbid/idl_compiler/generator/empty_reference_generator.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
 #include <morbid/idl_compiler/generator/return.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
@@ -34,6 +35,7 @@ struct header_concept_generator : karma::grammar
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   idl_compiler::generator::return_<OutputIterator, Iterator> return_;
+  idl_compiler::generator::empty_reference_generator<OutputIterator, Iterator> empty_reference;
   karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
   karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;
@@ -41,9 +43,6 @@ struct header_concept_generator : karma::grammar
     parameter_select;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator, std::string(std::vector<std::string>, std::string)> public_members;
-  karma::rule<OutputIterator, std::string()> typedefs;
-  karma::rule<OutputIterator
-              , idl_parser::interface_def<Iterator>()> common_functions;
   karma::rule<OutputIterator
               , idl_parser::op_decl<Iterator>(interface_, std::vector<std::string>, std::string)
               , karma::locals<unsigned int> > operation_concept_interface_specialization;
@@ -60,21 +59,10 @@ struct header_concept_generator : karma::grammar
   karma::rule<OutputIterator
               , idl_compiler::interface_def_type(interface_, std::vector<std::string>)
               , karma::locals<std::string> > start;
+  karma::rule<OutputIterator
+              , idl_compiler::interface_def_type(interface_, std::vector<std::string>)
+              , karma::locals<std::string> > concept_class;
 };
-
-// template <typename OutputIterator, typename Iterator>
-// struct cpp_concept_generator : karma::grammar
-// <OutputIterator, idl_parser::interface_def<Iterator>(interface_, std::vector<std::string>)>
-// {
-//   cpp_concept_generator();
-
-//   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
-//   karma::rule<OutputIterator> indent;
-//   karma::rule<OutputIterator, std::string(std::vector<std::string>)> members;
-//   karma::rule<OutputIterator, std::string()> construct_remote_stub;
-//   karma::rule<OutputIterator
-//               , idl_parser::interface_def<Iterator>(interface_, std::vector<std::string>)> start;
-// };
 
 } } }
 

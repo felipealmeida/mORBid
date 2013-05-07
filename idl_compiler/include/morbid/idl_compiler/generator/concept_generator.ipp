@@ -8,6 +8,7 @@
 #ifndef TECORB_IDL_COMPILER_CONCEPT_GENERATOR_IPP
 #define TECORB_IDL_COMPILER_CONCEPT_GENERATOR_IPP
 
+#include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/concept_generator.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
@@ -15,15 +16,15 @@
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/phoenix.hpp>
 
-namespace std {
+// namespace std {
 
-template <typename T, typename U>
-std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
-{
-  return os << "[pair first: " << p.first << " second: " << p.second << ']';
-}
+// template <typename T, typename U>
+// std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
+// {
+//   return os << "[pair first: " << p.first << " second: " << p.second << ']';
+// }
 
-}
+// }
 
 namespace morbid { namespace idl_compiler { namespace generator {
 
@@ -41,12 +42,11 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
   using karma::eol;
   using phoenix::at_c;
 
-  start =
+  concept_class =
     karma::eps[_a = at_c<0>(_val)]
     << eol
     << "struct " << karma::string[_1 = _a] << "_concept" << eol
     << eol << "{" << eol
-    << common_functions[_1 = _val] << eol
     << indent << "// Start of operations defined in IDL" << eol
     << (*(operation(_r1) << eol))
     [_1 = at_c<1>(_val)]
@@ -54,9 +54,14 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << requirements[_1 = at_c<1>(_val)] << eol
     << public_members(_r2, _a)[_1 = at_c<0>(_val)] << eol
     << indent << "typedef ::morbid::interface_tag _morbid_type_kind;" << eol
+    << indent << empty_reference(_r1)[_1 = _val] << ";" << eol
     << "};" << eol << eol
-    << "typedef ::boost::type_erasure::any< " << karma::string[_1 = _a]
-    << "_concept::regular_requirements> " << karma::string[_1 = _a] << ';' << eol
+    ;
+  start =
+    karma::eps[_a = at_c<0>(_val)]
+    << "struct " << karma::string[_1 = _a] << "_concept;" << eol
+    << "typedef ::morbid::reference< " << karma::string[_1 = _a] << "_concept> " << karma::string[_1 = _a] << ';' << eol
+    << concept_class(_r1, _r2)[_1 = _val]
     << (*(karma::skip[karma::string] << karma::lit("}")))[_1 = _r2] << eol
     << "namespace boost { namespace type_erasure { // specialization of concept_interface" << eol
     << (*operation_concept_interface_specialization(_r1, _r2, _a))[_1 = at_c<1>(_val)]
@@ -154,76 +159,13 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
 
-  common_functions =
-    eol
-    // << indent << "static boost::shared_ptr<"
-    // << karma::string[_1 = at_c<0>(_val)] << ">"
-    // << " _construct_remote_stub" << eol
-    // << indent << "(::morbid::structured_ior const& ior);" << eol
-    // << indent << "static _ptr_type _nil() { return _ptr_type(); }" << eol
-    // << indent << "::morbid::return_traits< ::morbid::string>::type _get_interface() const { return _repository_id; }" << eol
-    // << indent << "static _ptr_type _duplicate(_ptr_type p) { return p; }" << eol
-    ;
   public_members = 
     indent
     << "inline static const char* type_id() { return \"IDL:"
     << (*(karma::string << '/'))[_1 = _r1] << karma::lit(_r2) << ":1.0\"; }" << eol
     ;
-  typedefs =
-    karma::eps
-    // "typedef boost::shared_ptr<"
-    // << karma::string[_1 = _val]
-    // << "> " << karma::string[_1 = _val] << "_ptr;" << eol
-    // << "typedef ::morbid::var<" << karma::string[_1 = _val] << "> "
-    // << karma::string[_1 = _val] << "_var;" << eol
-    // << "typedef " << karma::string[_1 = _val] << "_ptr& "
-    // << karma::string[_1 = _val] << "_out;" << eol
-    ;
   indent = karma::space << karma::space;
-
-  // start.name("header_concept_generator");
-  // karma::debug(start);
-  // common_functions.name("common_functions");
-  // karma::debug(common_functions);
 }
-
-// template <typename OutputIterator, typename Iterator>
-// cpp_stub_generator<OutputIterator, Iterator>::cpp_stub_generator()
-//   : cpp_stub_generator::base_type(start)
-// {
-//   namespace phoenix = boost::phoenix;
-//   using karma::_a;
-//   using karma::_val;
-//   using karma::_1; using karma::_r2; using karma::_r1;
-//   using karma::eol;
-//   using phoenix::at_c;
-  
-//   start = 
-//     karma::string[_1 = at_c<0>(_val)]
-//     << "::~" << karma::string[_1 = at_c<0>(_val)] << "() {}" << eol
-//     << eol
-//     // << construct_remote_stub[_1 = at_c<0>(_val)] << eol
-//     << members(_r2)[_1 = at_c<0>(_val)] << eol
-//     ;
-//   // construct_remote_stub =
-//   //   "boost::shared_ptr<"
-//   //   << karma::string[_1 = _val] << "> "
-//   //   << karma::string[_1 = _val]
-//   //   << "::_construct_remote_stub" << eol
-//   //   << indent << "(::morbid::structured_ior const& ior)" << eol
-//   //   << "{" << eol
-//   //   << indent << "return " << karma::string[_1 = _val]
-//   //   << "_ptr(new remote_stub::" << karma::string[_1 = _val]
-//   //   << "(ior));" << eol
-//   //   << "}" << eol
-//   //   ;
-//   members =
-//     "const char* "
-//     << karma::string[_1 = _val] << "::_repository_id = \"IDL:"
-//     << (karma::string % '/')[_1 = _r1] << ":1.0\";" << eol
-//     ;
-//   indent = karma::space << karma::space;
-// }
 
 } } }
 

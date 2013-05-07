@@ -22,7 +22,7 @@ namespace karma = boost::spirit::karma;
 template <typename OutputIterator, typename Iterator>
 struct header_reference_model_generator : karma::grammar
 <OutputIterator, idl_parser::interface_def<Iterator>(interface_, std::vector<std::string>)
- , karma::locals<std::string> >
+ , karma::locals<std::string, std::vector<std::string> > >
 {
   header_reference_model_generator();
 
@@ -46,7 +46,11 @@ struct header_reference_model_generator : karma::grammar
     operation;
   karma::rule<OutputIterator
               , idl_parser::interface_def<Iterator>(interface_, std::vector<std::string>)
-              , karma::locals<std::string> > start;
+              , karma::locals<std::string, std::vector<std::string> > > start;
+  karma::rule<OutputIterator
+              , idl_parser::interface_def<Iterator>
+              (std::vector<std::string>, std::vector<std::string>)>
+    specialization;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
     synchronous_template_args;
   karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_, unsigned int)> synchronous_args;

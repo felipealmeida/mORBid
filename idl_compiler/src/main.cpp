@@ -15,7 +15,6 @@
 #include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/lookup.hpp>
 #include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
-// #include <morbid/idl_compiler/generate_cpp_modules_visitor.hpp>
 #include <morbid/idl_compiler/common_types.hpp>
 
 #include <boost/program_options.hpp>
@@ -298,6 +297,7 @@ int main(int argc, char** argv)
                << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <morbid/synchronous_call.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
+               << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <boost/integer.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
@@ -306,6 +306,7 @@ int main(int argc, char** argv)
                << karma::lit("#include <boost/fusion/include/vector50.hpp>") << karma::eol
                << karma::lit("#include <boost/type_erasure/any.hpp>") << karma::eol
                << karma::lit("#include <boost/type_erasure/member.hpp>") << karma::eol
+               << karma::lit("#include <boost/type_erasure/concept_interface.hpp>") << karma::eol
                << karma::eol
                );
             if(!r) 

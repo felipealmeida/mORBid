@@ -13,6 +13,7 @@
 #include <morbid/type_tag.hpp>
 #include <morbid/giop/common_terminals.hpp>
 #include <morbid/reference_giop.hpp>
+#include <morbid/reference.hpp>
 
 #include <boost/proto/core.hpp>
 #include <boost/spirit/home/support.hpp>
@@ -124,8 +125,7 @@ struct argument_giop_grammar<T, Domain, Iterator
 };
 
 template <typename T, typename Domain, typename Iterator>
-struct argument_giop_grammar<T, Domain, Iterator
-                             , typename boost::enable_if<boost::is_same<typename T::_morbid_type_kind, interface_tag> >::type>
+struct argument_giop_grammar< reference<T>, Domain, Iterator>
 {
   typedef spirit::terminal<giop::tag::reference>const& result_type;
   result_type operator()() const { return giop::reference; }

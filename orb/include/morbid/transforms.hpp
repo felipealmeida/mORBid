@@ -37,7 +37,7 @@ struct from_unmanaged_to_managed<T, typename boost::enable_if
                                      , void
                                     >::type>
 {
-  typedef typename T::original_type::_ptr_type type;
+  typedef typename T::original_type type;
 };
 
 template <>
