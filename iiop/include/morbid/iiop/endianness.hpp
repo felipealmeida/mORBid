@@ -373,10 +373,7 @@ struct use_directive< ::morbid::iiop::generator_domain
 
 template <>
 struct use_lazy_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::endianness, 1>
-  : mpl::true_
-{
-  //BOOST_MPL_ASSERT((boost::is_same<void, int>));
-};
+  : mpl::true_ {};
 
 // Parser
 template <typename Enable>

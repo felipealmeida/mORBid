@@ -8,6 +8,8 @@
 #ifndef MORBID_ORB_INIT_HPP
 #define MORBID_ORB_INIT_HPP
 
+#include <morbid/reply.hpp>
+#include <morbid/structured_ior.hpp>
 #include <morbid/giop/forward_back_insert_iterator.hpp>
 #include <morbid/ior/grammar/corbaloc.hpp>
 #include <morbid/ior/grammar/ior.hpp>
@@ -16,7 +18,6 @@
 #include <morbid/ior/hex_directive.hpp>
 #include <morbid/iiop/all.hpp>
 #include <morbid/iiop/grammars/profile_body_1_1.hpp>
-#include <morbid/handle_request_body.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/asio/io_service.hpp>
@@ -32,73 +33,24 @@
 
 BOOST_TYPE_ERASURE_MEMBER((morbid)(poa)(has_call), call, 6)
 
-namespace morbid { namespace poa {
+namespace morbid {
+
+namespace mpl = boost::mpl;
+
+template <typename R, typename SeqParam, typename T, typename F>
+void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
+                         , const char* rq_first, const char* rq_last
+                         , bool little_endian, reply& r);
+
+namespace poa {
 
 struct connection;
-
 template <typename C, typename T>
-struct object_registration
-{
-  typedef object_registration<C, T> self_type;
-  typedef typename boost::remove_reference<T>::type value_type;
-  T object;
-
-  object_registration(T object)
-    : object(object) {}
-
-  template <int I, typename Enable = void>
-  struct call_if_not_end;
-
-  template <int I>
-  inline void call_if(std::string const& method
-                      , std::size_t align_offset, const char* first
-                      , const char* last, bool little_endian, reply& r)
-  {
-    typedef typename C::requirements requirements;
-    typedef typename mpl::at_c<requirements, I>::type method_concept;
-    if(method == method_concept::name())
-    {
-      std::cout << "Should call method " << method << std::endl;
-      handle_request_body
-        <typename method_concept::result_type, typename method_concept::arguments>
-        (&object, method_concept(), align_offset, first, last, little_endian, r);
-    }
-    else
-      call_if_not_end<I+1>::do_(*this, method, align_offset, first, last, little_endian, r);
-  }
-
-  template <int I>
-  struct call_if_not_end<I, typename boost::enable_if
-                         <mpl::equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
-  {
-    inline static void do_(self_type& self, std::string const&, std::size_t, const char*, const char*, bool, reply&) {}
-  };
-
-  template <int I>
-  struct call_if_not_end<I, typename boost::enable_if
-                         <mpl::not_equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
-  {
-    inline static void do_(self_type& self, std::string const& method
-                           , std::size_t align_offset, const char* first, const char* last
-                           , bool little_endian, reply& r)
-    {
-      self.call_if<I>(method, align_offset, first, last, little_endian, r);
-    }
-  };
-
-  void call(std::string const& method
-            , std::size_t align_offset, const char* first
-            , const char* last, bool little_endian
-            , reply& r)
-  {
-    namespace fusion = boost::fusion;
-    std::cout << "calling method " << method << std::endl;
-
-    call_if_not_end<0>::do_(*this, method, align_offset, first, last, little_endian, r);
-  }
-};
+struct object_registration;
 
 }
+
+struct orb;
 
 struct orb_impl : boost::enable_shared_from_this<orb_impl>
 {
@@ -154,7 +106,7 @@ struct orb
     std::pair<object_id, bool> pair = impl->object_map.insert
       (std::make_pair(impl->last_id++, orb_impl::object_registration
                       (C::type_id()
-                       , poa::object_registration<C, T&>(servant))));
+                       , poa::object_registration<C, T&>(*this, servant))));
     assert(pair.second);
     std::cout << "Added object " << pair.first->first << std::endl;
     return pair.first;
@@ -287,6 +239,74 @@ structured_ior string_to_structured_ior(Iterator first, Iterator last)
   }
 
   // throw morbid::INVALID_PARAM();
+}
+
+
+namespace poa {
+
+template <typename C, typename T>
+struct object_registration
+{
+  typedef object_registration<C, T> self_type;
+  typedef typename boost::remove_reference<T>::type value_type;
+  struct orb orb_;
+  T object;
+
+  object_registration(struct orb orb, T object)
+    : orb_(orb), object(object) {}
+
+  template <int I, typename Enable = void>
+  struct call_if_not_end;
+
+  template <int I>
+  inline void call_if(std::string const& method
+                      , std::size_t align_offset, const char* first
+                      , const char* last, bool little_endian, reply& r)
+  {
+    typedef typename C::requirements requirements;
+    typedef typename mpl::at_c<requirements, I>::type method_concept;
+    if(method == method_concept::name())
+    {
+      std::cout << "Should call method " << method << std::endl;
+      handle_request_body
+        <typename method_concept::result_type, typename method_concept::arguments>
+        (orb_, &object, method_concept(), align_offset, first, last, little_endian, r);
+    }
+    else
+      call_if_not_end<I+1>::do_(*this, method, align_offset, first, last, little_endian, r);
+  }
+
+  template <int I>
+  struct call_if_not_end<I, typename boost::enable_if
+                         <mpl::equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
+  {
+    inline static void do_(self_type& self, std::string const&, std::size_t, const char*, const char*, bool, reply&) {}
+  };
+
+  template <int I>
+  struct call_if_not_end<I, typename boost::enable_if
+                         <mpl::not_equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
+  {
+    inline static void do_(self_type& self, std::string const& method
+                           , std::size_t align_offset, const char* first, const char* last
+                           , bool little_endian, reply& r)
+    {
+      self.call_if<I>(method, align_offset, first, last, little_endian, r);
+    }
+  };
+
+  void call(std::string const& method
+            , std::size_t align_offset, const char* first
+            , const char* last, bool little_endian
+            , reply& r)
+  {
+    namespace fusion = boost::fusion;
+    std::cout << "calling method " << method << std::endl;
+
+    call_if_not_end<0>::do_(*this, method, align_offset, first, last, little_endian, r);
+  }
+};
+
 }
 
 }

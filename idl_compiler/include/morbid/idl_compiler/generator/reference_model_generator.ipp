@@ -52,8 +52,7 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
     (*(karma::skip[karma::string] << karma::lit("}")))[_1 = _r2] << eol
     << "namespace morbid {" << eol
     <<  "template <>" << eol
-    << "struct is_remote_reference< " << (+("::" << karma::string))[_1 = _r1] << "_ref >" << eol
-    << "{ typedef ::boost::mpl::true_ type; };" << eol
+    << "struct is_remote_reference< " << (+("::" << karma::string))[_1 = _r1] << "_ref > : ::boost::mpl::true_ {};" << eol
     << "}" << eol
     << (*("namespace " << karma::string << " { "))[_1 = _r2] << eol
     ;
@@ -99,8 +98,8 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
         //       << synchronous_template_args(_r1)))[_1 = at_c<2>(_val)]
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
-        << "("
-        << "\"IDL:" << (karma::string % '/')[_1 = _r2] << ":1.0\""
+        << "( _orb_, "
+           "\"IDL:" << (karma::string % '/')[_1 = _r2] << ":1.0\""
         << ", \"" << karma::string[_1 = at_c<1>(_val)]
         << "\", _structured_ior_"
         << eol << indent << indent << indent << indent << ", "

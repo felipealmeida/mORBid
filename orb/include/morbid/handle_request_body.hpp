@@ -218,7 +218,7 @@ struct reply_arguments_generator
 };
 
 template <typename NotInParams, typename ReplyArguments>
-void make_request_reply(reply& r, ReplyArguments& reply_arguments)
+void make_request_reply(struct orb orb, reply& r, ReplyArguments& reply_arguments)
 {
   std::cout << "Generating reply with reply arguments " << typeid(ReplyArguments).name() << std::endl;
   typedef ReplyArguments reply_argument_types;
@@ -244,7 +244,7 @@ void make_request_reply(reply& r, ReplyArguments& reply_arguments)
                                       , 1u /* reply */>
     message_reply_grammar;
   
-  morbid::arguments_traits arguments_traits;
+  morbid::arguments_traits arguments_traits(orb);
   arguments_grammar arguments_grammar_(arguments_traits);
   reply_grammar reply_grammar_(arguments_grammar_);
   message_reply_grammar message_grammar_(reply_grammar_);
@@ -272,7 +272,7 @@ void make_request_reply(reply& r, ReplyArguments& reply_arguments)
 }
 
 template <typename R, typename SeqParam, typename F, typename T, typename Args>
-void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<void>)
+void handle_request_reply(struct orb orb, F f, T* self, reply& r, Args& args, mpl::identity<void>)
 {
   fusion::single_view<T*> self_view(self);
   fusion::joint_view<fusion::single_view<T*> const, Args> new_args(self_view, args);
@@ -298,11 +298,11 @@ void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<void
 
   reply_argument_types reply_arguments = fusion::fold(identity_arguments, std::pair<mpl::int_<0>, fusion::nil>()
                                                       , reply_arguments_generator<argument_types>(args));
-  make_request_reply<not_in_params>(r, reply_arguments);
+  make_request_reply<not_in_params>(orb, r, reply_arguments);
 }
 
 template <typename R, typename SeqParam, typename F, typename T, typename Args>
-void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<R>)
+void handle_request_reply(struct orb orb, F f, T* self, reply& r, Args& args, mpl::identity<R>)
 {
   fusion::single_view<T*> self_view(self);
   fusion::joint_view<fusion::single_view<T*> const, Args> new_args(self_view, args);
@@ -338,11 +338,11 @@ void handle_request_reply(F f, T* self, reply& r, Args& args, mpl::identity<R>)
                                                       , reply_arguments_generator
                                                       <args_with_result_type>
                                                       (args_with_result));
-  make_request_reply<not_in_params>(r, reply_arguments);
+  make_request_reply<not_in_params>(orb, r, reply_arguments);
 }
 
 template <typename R, typename SeqParam, typename T, typename F>
-void handle_request_body(T* self, F f, std::size_t align_offset
+void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
                          , const char* rq_first, const char* rq_last
                          , bool little_endian, reply& r)
 {
@@ -360,7 +360,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
 
   parse_argument_types parse_arguments;
 
-  morbid::arguments_traits arguments_traits;
+  morbid::arguments_traits arguments_traits(orb);
   typedef giop::grammars::arguments<iiop::parser_domain
                                     , const char*, not_out_params
                                     , parse_argument_types>
@@ -423,7 +423,7 @@ void handle_request_body(T* self, F f, std::size_t align_offset
     // Calling function with arguments
     fusion::fused<F> fused(f);
     // Create reply
-    handle_request_reply<R, SeqParam>(fused, self, r, arguments.second
+    handle_request_reply<R, SeqParam>(orb, fused, self, r, arguments.second
                                       , mpl::identity<R>());
   }
   else

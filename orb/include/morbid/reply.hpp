@@ -8,6 +8,8 @@
 #ifndef MORBID_REPLY_HPP
 #define MORBID_REPLY_HPP
 
+#include <vector>
+
 namespace morbid {
 
 struct reply

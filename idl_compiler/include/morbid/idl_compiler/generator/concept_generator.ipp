@@ -55,11 +55,13 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << public_members(_r2, _a)[_1 = at_c<0>(_val)] << eol
     << indent << "typedef ::morbid::interface_tag _morbid_type_kind;" << eol
     << indent << empty_reference(_r1)[_1 = _val] << ";" << eol
+    << indent << "typedef " << karma::string[_1 = _a] << "_ref remote_reference;" << eol
     << "};" << eol << eol
     ;
   start =
     karma::eps[_a = at_c<0>(_val)]
     << "struct " << karma::string[_1 = _a] << "_concept;" << eol
+    << "struct " << karma::string[_1 = _a] << "_ref;" << eol
     << "typedef ::morbid::reference< " << karma::string[_1 = _a] << "_concept> " << karma::string[_1 = _a] << ';' << eol
     << concept_class(_r1, _r2)[_1 = _val]
     << (*(karma::skip[karma::string] << karma::lit("}")))[_1 = _r2] << eol

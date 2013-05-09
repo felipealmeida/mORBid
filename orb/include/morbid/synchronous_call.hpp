@@ -180,7 +180,7 @@ void return_value(mpl::identity<void>, OutResult const& seq, OutSeq const& out
 
 template <typename R, typename ArgsSeq>
 typename return_traits<R>::type call
-  (const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args)
+ (struct orb orb, const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args)
 {
   std::cout << "synchronous_call::call" << std::endl;
   namespace mpl = boost::mpl;
@@ -260,7 +260,7 @@ typename return_traits<R>::type call
                                       , 0u /* request */>
     message_header_grammar;
 
-  morbid::arguments_traits arguments_traits;
+  morbid::arguments_traits arguments_traits(orb);
   arguments_grammar arguments_grammar_(arguments_traits);
   request_header_grammar request_header_grammar_(arguments_grammar_);
   message_header_grammar message_header_grammar_(request_header_grammar_);
@@ -374,7 +374,7 @@ typename return_traits<R>::type call
                                             , iterator_type, message_attribute_type, 1u /* Reply */>
           message_grammar;
         namespace phoenix = boost::phoenix;
-        morbid::arguments_traits arguments_traits;
+        morbid::arguments_traits arguments_traits(orb);
         arguments_grammar arguments_grammar_(arguments_traits);
         system_exception_grammar system_exception_grammar_;
 

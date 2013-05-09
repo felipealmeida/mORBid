@@ -9,17 +9,16 @@
 #define MORBID_ORB_REFERENCE_HPP
 
 #include <morbid/tags.hpp>
+#include <morbid/structured_ior.hpp>
 
 #include <boost/type_erasure/any.hpp>
 #include <boost/mpl/bool.hpp>
+#include <boost/optional.hpp>
 
 namespace morbid {
 
 template <typename T>
-struct is_remote_reference
-{
-  typedef boost::mpl::true_ type;
-};
+struct is_remote_reference : boost::mpl::false_ {};
 
 template <typename C>
 struct reference
@@ -32,35 +31,52 @@ struct reference
 
   reference()
     : any_type( typename C::empty_reference() )
-    , remote(false)
   {}
 
   template <typename T>
   reference(reference<T> const& other)
     : any_type(*(typename reference<T>::any_type*)&other)
-    , remote(other.remote)
+    , _sior(other._sior)
   {}
   template <typename T>
   reference(reference<T>& other)
     : any_type(*(typename reference<T>::any_type*)&other)
-    , remote(other.remote)
+    , _sior(other._sior)
   {}
 
   template <typename T>
   reference(T const& object)
     : any_type(object)
-    , remote(is_remote_reference<T>::type::value)
-  {}
+  {
+    mpl::if_<is_remote_reference<T>, with_remote
+             , without_remote>::type::call(*this, object);
+  }
 
   template <typename T>
   reference(T& object)
     : any_type(object)
-    , remote(is_remote_reference<T>::type::value)
-  {}
+  {
+    mpl::if_<is_remote_reference<T>, with_remote
+             , without_remote>::type::call(*this, object);
+  }
+
+  struct with_remote
+  {
+    template <typename T>
+    static void call(reference& self, T& object)
+    {
+      self._sior = object._structured_ior();
+    }
+  };
+  struct without_remote
+  {
+    template <typename T>
+    static void call(reference& self, T& object) {}
+  };
 
   bool operator!() const { return true; }
 
-  bool remote;
+  boost::optional<structured_ior> _sior;
 };
 
 template <typename C>
