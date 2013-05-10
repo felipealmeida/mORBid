@@ -291,6 +291,8 @@ typename return_traits<R>::type call
     boost::asio::write(socket, boost::asio::buffer(buffer)
                        , boost::asio::transfer_all());
 
+    std::cout << "Sent for " << method << ". Waiting reply" << std::endl;
+
     std::vector<char> reply_buffer(1024u);
     std::size_t offset = 0;
     std::vector<char>::iterator first;

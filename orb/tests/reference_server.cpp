@@ -20,17 +20,28 @@ struct some_other_interface_impl
 
   void foo1(some_interface s)
   {
-    std::cout << "struct_interface_impl::foo1 called" << std::endl;
-    assert(!foo1_ && !foo2_ && !foo3_ && !foo4_ && !p);
+    std::cout << "some_other_interface_impl::foo1 called" << std::endl;
+    assert(!!s);
+    assert(!p);
+    assert(!foo4_);
+    assert(!foo3_);
+    assert(!foo2_);
+    assert(!foo1_);
     foo1_ = true;
     p = s;
+    assert(!!p);
     p.foo();
   }
 
   void foo2(some_interface& s)
   {
-    std::cout << "struct_interface_impl::foo2 called" << std::endl;
-    assert(foo1_ && !foo2_ && !foo3_ && !foo4_);
+    std::cout << "some_other_interface_impl::foo2 called" << std::endl;
+    assert(!s);
+    assert(!!p);
+    assert(!foo4_);
+    assert(!foo3_);
+    assert(!foo2_);
+    assert(foo1_);
     foo2_ = true;
     s = p;
     p.foo();
@@ -38,8 +49,13 @@ struct some_other_interface_impl
 
   void foo3(some_interface& s)
   {
-    std::cout << "struct_interface_impl::foo3 called" << std::endl;
-    assert(foo1_ && foo2_ && !foo3_ && !foo4_);
+    std::cout << "some_other_interface_impl::foo3 called" << std::endl;
+    assert(!!s);
+    assert(!!p);
+    assert(!foo4_);
+    assert(!foo3_);
+    assert(foo2_);
+    assert(foo1_);
     foo3_ = true;
     s = p;
     p.foo();
@@ -47,8 +63,12 @@ struct some_other_interface_impl
 
   some_interface foo4()
   {
-    std::cout << "struct_interface_impl::foo4 called" << std::endl;
-    assert(foo1_ && foo2_ && foo3_ && !foo4_);
+    std::cout << "some_other_interface_impl::foo4 called" << std::endl;
+    assert(!!p);
+    assert(!foo4_);
+    assert(foo3_);
+    assert(foo2_);
+    assert(foo1_);
     foo4_ = true;
     p.foo();
     orb.stop();
@@ -83,5 +103,8 @@ int main(int argc, char* argv[])
 
   orb.run();
 
-  assert(some_other_interface.foo1_ && some_other_interface.foo2_ && some_other_interface.foo3_ && some_other_interface.foo4_);
+  assert(some_other_interface.foo1_);
+  assert(some_other_interface.foo2_);
+  assert(some_other_interface.foo3_);
+  assert(some_other_interface.foo4_);
 }

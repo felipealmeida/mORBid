@@ -5,32 +5,22 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef TECORB_IDL_COMPILER_EMPTY_REFERENCE_GENERATOR_IPP
-#define TECORB_IDL_COMPILER_EMPTY_REFERENCE_GENERATOR_IPP
+#ifndef TECORB_IDL_COMPILER_PROXY_REFERENCE_GENERATOR_IPP
+#define TECORB_IDL_COMPILER_PROXY_REFERENCE_GENERATOR_IPP
 
-#include <morbid/idl_compiler/generator/empty_reference_generator.hpp>
+#include <morbid/idl_compiler/generator/proxy_reference_generator.hpp>
 #include <morbid/idl_parser/interface_def.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/phoenix.hpp>
-
-namespace std {
-
-template <typename T, typename U>
-std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
-{
-  return os << "[pair first: " << p.first << " second: " << p.second << ']';
-}
-
-}
 
 namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
-empty_reference_generator<OutputIterator, Iterator>::empty_reference_generator()
-  : empty_reference_generator::base_type(start)
+proxy_reference_generator<OutputIterator, Iterator>::proxy_reference_generator()
+  : proxy_reference_generator::base_type(start)
 {
   namespace phoenix = boost::phoenix;
   using karma::_1;
@@ -40,11 +30,14 @@ empty_reference_generator<OutputIterator, Iterator>::empty_reference_generator()
   using phoenix::at_c;
 
   start = eol
-    << "struct empty_reference" << eol
+    << "template <typename T>" << eol
+    << "struct proxy_reference" << eol
     << "{" << eol
+    << indent << "proxy_reference(boost::reference_wrapper<T> ref) : _ptr(&boost::unwrap_ref(ref)) {}" << eol
     << indent << "// Start of operations defined in IDL" << eol
     << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
+    << indent << "T* _ptr;" << eol
     << "}" << eol << eol
     ;
   operation =
@@ -57,18 +50,23 @@ empty_reference_generator<OutputIterator, Iterator>::empty_reference_generator()
     << karma::space
     << karma::string[_1 = at_c<1>(_val)]
     << "("
-    << -(parameter_select(_r1) % ", ")[_1 = at_c<2>(_val)]
+    << -((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
     << ")" << eol
     << indent << "{" << eol
-    << indent << indent << "assert(false && \"Called for empty reference, method: \\\""
-    << karma::string[_1 = at_c<1>(_val)] << "\\\"\");" << eol
+    << indent << indent << "return _ptr->" << karma::string[_1 = at_c<1>(_val)]
+    << "("
+    << karma::eps[_a = 0]
+    << -(synchronous_args(++_a) % (eol << indent << indent << indent << indent << ", "))[_1 = at_c<2>(_val)]
+    << ");"
+    << eol
     << indent << "}" << eol
     << ";"
     ;
+  synchronous_args %= "arg" << karma::lit(_r1);
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   indent = karma::space << karma::space;
-    
-  start.name("empty_reference_generator");
+
+  start.name("proxy_reference_generator");
   operation.name("operation");
   karma::debug(start);
   karma::debug(operation);

@@ -18,43 +18,46 @@
 namespace morbid { namespace transforms {
 
 template <typename T, typename Enable = void>
-struct from_unmanaged_to_managed;
-
-template <typename T>
-struct from_unmanaged_to_managed<T, typename boost::disable_if
-                                    <boost::is_same<typename type_kind<typename T::original_type>::type, interface_tag>
-                                     , void
-                                    >::type>
-{
-  typedef typename boost::remove_const<
-    typename boost::remove_reference
-    <typename T::original_type>::type>::type type;
-};
-
-template <typename T>
-struct from_unmanaged_to_managed<T, typename boost::enable_if
-                                    <boost::is_same<typename type_kind<typename T::original_type>::type, interface_tag>
-                                     , void
-                                    >::type>
+struct from_unmanaged_to_managed
 {
   typedef typename T::original_type type;
 };
 
-template <>
-struct from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::in_tag>, void>
-{
-  typedef std::string type;
-};
+// template <typename T>
+// struct from_unmanaged_to_managed<T, typename boost::disable_if
+//                                     <boost::is_same<typename type_kind<typename T::original_type>::type, interface_tag>
+//                                      , void
+//                                     >::type>
+// {
+//   typedef typename boost::remove_const<
+//     typename boost::remove_reference
+//     <typename T::original_type>::type>::type type;
+// };
 
-template <>
-struct from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::inout_tag>, void>
-  : from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::in_tag>, void>
-{};
+// template <typename T>
+// struct from_unmanaged_to_managed<T, typename boost::enable_if
+//                                     <boost::is_same<typename type_kind<typename T::original_type>::type, interface_tag>
+//                                      , void
+//                                     >::type>
+// {
+//   typedef typename T::original_type type;
+// };
 
-template <>
-struct from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::out_tag>, void>
-  : from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::in_tag>, void>
-{};
+// template <>
+// struct from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::in_tag>, void>
+// {
+//   typedef std::string type;
+// };
+
+// template <>
+// struct from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::inout_tag>, void>
+//   : from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::in_tag>, void>
+// {};
+
+// template <>
+// struct from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::out_tag>, void>
+//   : from_unmanaged_to_managed<type_tag::value_type_tag<morbid::string, type_tag::in_tag>, void>
+// {};
 
 } }
 

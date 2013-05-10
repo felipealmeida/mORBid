@@ -10,6 +10,7 @@
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_compiler/generator/empty_reference_generator.hpp>
+#include <morbid/idl_compiler/generator/proxy_reference_generator.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
 #include <morbid/idl_compiler/generator/return.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
@@ -36,6 +37,7 @@ struct header_concept_generator : karma::grammar
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   idl_compiler::generator::return_<OutputIterator, Iterator> return_;
   idl_compiler::generator::empty_reference_generator<OutputIterator, Iterator> empty_reference;
+  idl_compiler::generator::proxy_reference_generator<OutputIterator, Iterator> proxy_reference;
   karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
   karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;

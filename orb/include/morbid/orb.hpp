@@ -101,7 +101,7 @@ struct orb
   typedef orb_impl::object_map_iterator object_id;
 
   template <typename C, typename T>
-  object_id serve_ref(T& servant)
+  object_id serve_ref(T& servant) const
   {
     std::pair<object_id, bool> pair = impl->object_map.insert
       (std::make_pair(impl->last_id++, orb_impl::object_registration
@@ -112,20 +112,41 @@ struct orb
     return pair.first;
   }
 
-  // template <typename C, typename T>
-  // void serve_copy( // ::boost::type_erasure::any<typename C::regular_requirements
-  //                  // , ::boost::type_erasure::_self>
-  //                  T servant)
-  // {
-    
-  // }
+  template <typename C, typename T>
+  object_id serve_copy(T servant) const
+  {
+    std::pair<object_id, bool> pair = impl->object_map.insert
+      (std::make_pair(impl->last_id++, orb_impl::object_registration
+                      (C::type_id()
+                       , poa::object_registration<C, T>(*this, servant))));
+    assert(pair.second);
+    std::cout << "Added object " << pair.first->first << std::endl;
+    return pair.first;
+  }
 
 private:
   template <typename OutputIterator>
   friend void stringify_object_id( morbid::orb orb, orb_impl::object_map_iterator object_id, OutputIterator output);
+  friend structured_ior structured_ior_object_id
+    (struct orb orb, orb_impl::object_map_iterator object_id);
 
   boost::shared_ptr<orb_impl> impl;
 };
+
+inline structured_ior structured_ior_object_id
+  (struct orb orb, orb_impl::object_map_iterator object_id)
+{
+  iiop::profile_body profile_body("localhost"
+                                  , orb.impl->local_endpoint.port()
+                                  , std::vector<char>());
+  profile_body.object_key.insert(profile_body.object_key.end()
+                                 , (unsigned char*)&object_id->first
+                                 , (unsigned char*)&object_id->first
+                                 + sizeof(object_id->first));
+  structured_ior ior = {object_id->second.type_id};
+  ior.structured_profiles.push_back(profile_body);
+  return ior;
+}
 
 template <typename OutputIterator>
 void stringify_object_id( morbid::orb orb, orb_impl::object_map_iterator object_id, OutputIterator output)
@@ -238,7 +259,7 @@ structured_ior string_to_structured_ior(Iterator first, Iterator last)
     return sior;
   }
 
-  // throw morbid::INVALID_PARAM();
+  throw std::runtime_error("invalid param");
 }
 
 

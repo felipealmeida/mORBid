@@ -8,7 +8,7 @@ project morbid
  : build-dir bin
  : requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
    <define>BOOST_TYPE_ERASURE_MAX_ARITY=7
-   <toolset>gcc:<cxxflags>-Wunused-local-typedefs
+   <toolset>gcc:<cxxflags>-Wno-unused-local-typedefs # Avoids warnings with concept_check
  : usage-requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
  : default-build <link>static <threading>multi
  ;

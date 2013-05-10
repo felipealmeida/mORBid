@@ -9,6 +9,7 @@
 #define TECORB_IDL_COMPILER_CONCEPT_GENERATOR_IPP
 
 #include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
+#include <morbid/idl_compiler/generator/proxy_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/concept_generator.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
@@ -55,6 +56,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << public_members(_r2, _a)[_1 = at_c<0>(_val)] << eol
     << indent << "typedef ::morbid::interface_tag _morbid_type_kind;" << eol
     << indent << empty_reference(_r1)[_1 = _val] << ";" << eol
+    << indent << proxy_reference(_r1)[_1 = _val] << ";" << eol
     << indent << "typedef " << karma::string[_1 = _a] << "_ref remote_reference;" << eol
     << "};" << eol << eol
     ;
@@ -150,12 +152,12 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     ;
   requirements = indent
     << "typedef boost::mpl::vector< "
-    << ((operation_name << "<>") % ", ")[_1 = _val]
+    << -((operation_name << "<>") % ", ")[_1 = _val]
     << " >" << eol
     << indent << indent << "requirements;" << eol
     << indent
-    << "typedef boost::mpl::vector< ::boost::type_erasure::copy_constructible<>, ::boost::type_erasure::assignable<>"
-    << -(", " << ((operation_name << "<>") % ", ")[_1 = _val] )
+    << "typedef boost::mpl::vector< ::boost::type_erasure::copy_constructible<>, ::boost::type_erasure::relaxed"
+    << (*(", " << operation_name << "<>"))[_1 = _val]
     << " >" << eol
     << indent << indent << "regular_requirements;" << eol
     ;

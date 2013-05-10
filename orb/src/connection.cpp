@@ -33,6 +33,7 @@ namespace morbid { namespace poa {
 
 void connection::start()
 {
+  std::cout << "connection::start " << read_buffer.size() << std::endl;
   socket.async_read_some(boost::asio::mutable_buffers_1(&read_buffer[0], read_buffer.size())
                          , boost::bind(&connection::handle_read, shared_from_this()
                                        , _1, _2));

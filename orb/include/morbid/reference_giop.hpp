@@ -37,13 +37,16 @@ namespace qi = boost::spirit::qi;
 
 struct reference_generator : karma::primitive_generator<reference_generator>
 {
+  reference_generator(struct orb orb)
+    : orb_(orb) {}
+
   template <typename Context, typename Unused>
   struct attribute
   {
     typedef typename boost::uint_t<32>::least type;
   };
 
-b  template <typename OutputIterator, typename Context, typename Delimiter, typename U>
+  template <typename OutputIterator, typename Context, typename Delimiter, typename U>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, U& attr) const
   {
     std::cout << "reference_generator::generate " << typeid(U).name() << std::endl;
@@ -51,7 +54,10 @@ b  template <typename OutputIterator, typename Context, typename Delimiter, type
     structured_ior sior;
     if(!attr._sior)
     {
-      std::abort();
+      std::cout << "serve_copy" << std::endl;
+      orb::object_id id = orb_.serve_copy
+        <typename U::concept_class, typename U::any_type>(attr);
+      sior = structured_ior_object_id(orb_, id);
     }
     else
       sior = *attr._sior;
@@ -91,7 +97,9 @@ b  template <typename OutputIterator, typename Context, typename Delimiter, type
       std::cout << "Failed generating" << std::endl;
       return false;
     }
-  }  
+  }
+
+  struct orb orb_;
 };
 
 struct reference_parser : qi::primitive_parser<reference_parser>
@@ -145,7 +153,6 @@ struct reference_parser : qi::primitive_parser<reference_parser>
                  , giop::compile<iiop::parser_domain>(ior_grammar(giop::native_endian))
                  , r))
     {
-    //   first = first_;
       std::cout << "Parsed OK" << std::endl;
 
       structured_ior sior = {fusion::at_c<0u>(r)};
@@ -169,7 +176,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
       typedef typename Attribute::concept_class::remote_reference ref;
 
       attr = ref(orb_, sior);
-      return false;
+      return true;
     }
     else
       return false;
@@ -188,7 +195,7 @@ struct make_primitive<spirit::terminal_ex<giop::tag::reference, boost::fusion::v
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const
   {
-    return result_type();
+    return result_type(fusion::at_c<0>(term.args));
   }
 };
 
@@ -200,7 +207,7 @@ struct make_primitive<giop::tag::reference, Modifiers>
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const
   {
-    return result_type();
+    return result_type(fusion::at_c<0>(term.args));
   }
 };
 

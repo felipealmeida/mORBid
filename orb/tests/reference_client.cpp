@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
   boost::thread orb_thread(boost::bind(&run_orb, orb));
   
-  some_other_interface.foo1(some_interface);
+  some_other_interface.foo1(boost::ref(some_interface));
   ::some_interface some_interface_out_ref;
   some_other_interface.foo2(some_interface_out_ref);
   some_other_interface.foo3(some_interface_out_ref);
