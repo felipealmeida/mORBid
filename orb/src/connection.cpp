@@ -9,6 +9,7 @@
 #include <morbid/giop/grammars/message_1_0.hpp>
 #include <morbid/giop/grammars/request_1_0.hpp>
 #include <morbid/iiop/all.hpp>
+#include <morbid/ior/hex_directive.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/bind.hpp>
@@ -182,12 +183,18 @@ void connection::process_input()
         assert(rs == size);
         if(!ec)
         {
-          std::cout << "Successful transfer" << std::endl;
+          std::cout << "Successful transfer ";
+          boost::algorithm::hex(r.reply_body.begin(), r.reply_body.end()
+                                , std::ostream_iterator<char>(std::cout));
+          std::endl(std::cout);
           return;
         }
         else
         {
-          std::cout << "Failed transfering" << std::endl;
+          std::cout << "Failed transfering " << std::endl;
+          boost::algorithm::hex(r.reply_body.begin(), r.reply_body.end()
+                                , std::ostream_iterator<char>(std::cout));
+          std::endl(std::cout);
         }
       }
     }

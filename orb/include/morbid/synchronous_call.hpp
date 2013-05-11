@@ -313,7 +313,10 @@ typename return_traits<R>::type call
         iterator_type first = reply_buffer.begin()
           ,  last = boost::next(reply_buffer.begin(), offset);
 
-        std::cout << "Should try to parse " << offset << std::endl;
+        std::cout << "Should try to parse " << offset << " ";
+
+        boost::algorithm::hex(first, last, std::ostream_iterator<char>(std::cout));
+        std::endl(std::cout);
 
         assert(std::distance(first, last) == offset);
 
