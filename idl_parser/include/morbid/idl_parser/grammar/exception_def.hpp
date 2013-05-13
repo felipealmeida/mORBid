@@ -8,13 +8,14 @@
 #ifndef MORBID_IDL_PARSER_GRAMMAR_EXCEPTION_DEF_HPP
 #define MORBID_IDL_PARSER_GRAMMAR_EXCEPTION_DEF_HPP
 
-#include <boost/spirit/home/qi/nonterminal/grammar.hpp>
-#include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
-
+#include <morbid/idl_parser/grammar/member.hpp>
 #include <morbid/idl_parser/grammar/skipper.hpp>
 #include <morbid/idl_parser/exception_def.hpp>
 #include <morbid/idl_parser/token.hpp>
+
+#include <boost/spirit/home/qi/nonterminal/grammar.hpp>
+#include <boost/spirit/home/qi.hpp>
+#include <boost/spirit/home/phoenix.hpp>
 
 namespace morbid { namespace idl_parser { namespace grammar {
 
@@ -33,11 +34,15 @@ struct exception_definition : boost::spirit::qi::grammar
       >> qi::omit[token_value("exception")]
       >> &token_id(boost::wave::T_IDENTIFIER)
       >> token_value
-      >> qi::omit[token_value("{")]
-      >> qi::omit[token_value("}")]
+      >> qi::omit[token_id(boost::wave::T_LEFTBRACE)]
+      >> *member
+      >> qi::omit[token_id(boost::wave::T_RIGHTBRACE)]
       ;
+    start.name("exception_definition");
+    qi::debug(start);
   }
 
+  grammar::member_definition<Iterator> member;
   grammar::type_spec<Iterator> type_spec;
   boost::spirit::qi::rule<Iterator, idl_parser::exception_def()
                           , skipper<Iterator> > start;

@@ -9,6 +9,7 @@
 #define MORBID_IDL_PARSER_EXCEPTION_DEF_HPP
 
 #include <morbid/idl_parser/wave_string.hpp>
+#include <morbid/idl_parser/member.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -20,6 +21,7 @@ namespace morbid { namespace idl_parser {
 struct exception_def
 {
   wave_string name;
+  std::vector<std::vector<member> > members;
 };
 
 inline std::ostream& operator<<(std::ostream& os, exception_def d)
@@ -30,6 +32,7 @@ inline std::ostream& operator<<(std::ostream& os, exception_def d)
 } }
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::exception_def
-                          , (::morbid::idl_parser::wave_string, name));
+                          , (::morbid::idl_parser::wave_string, name)
+                          (std::vector<std::vector< ::morbid::idl_parser::member> >, members));
 
 #endif
