@@ -24,7 +24,7 @@ namespace karma = boost::spirit::karma;
 namespace phoenix = boost::phoenix;
 
 template <typename OutputIterator, typename Iterator>
-struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator>
+struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec
                                   (lookuped_type)>
 {
   type_spec()
@@ -95,7 +95,7 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
   }
 
   generator::scoped_name<OutputIterator, Iterator> scoped_name;
-  karma::rule<OutputIterator, idl_parser::type_spec<Iterator>(lookuped_type)> start;
+  karma::rule<OutputIterator, idl_parser::type_spec(lookuped_type)> start;
   karma::rule<OutputIterator, idl_parser::types::floating_point()> floating_point;
   karma::rule<OutputIterator, idl_parser::types::integer()> integer;
   karma::rule<OutputIterator, idl_parser::types::char_()> char_;
@@ -106,7 +106,7 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec<Iterator
   karma::rule<OutputIterator, idl_parser::types::object()> object;
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_;
-  karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>(lookuped_type_wrapper)> sequence;
+  karma::rule<OutputIterator, idl_parser::types::sequence(lookuped_type_wrapper)> sequence;
   
 };
 

@@ -47,18 +47,21 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
   using karma::eol;
   using phoenix::at_c;
 
-  class_name = karma::string[_1 = at_c<0>(_val)] << "_ref";
+  wave_string %= karma::string;
+  class_name %= karma::string << "_ref";
   specialization =
-    (*(karma::skip[karma::string] << karma::lit("}")))[_1 = _r2] << eol
+    (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
     << "namespace morbid {" << eol
     <<  "template <>" << eol
-    << "struct is_remote_reference< " << (+("::" << karma::string))[_1 = _r1] << "_ref > : ::boost::mpl::true_ {};" << eol
+    << "struct is_remote_reference< "
+    << (+("::" << wave_string))[_1 = _r1]
+    << "_ref > : ::boost::mpl::true_ {};" << eol
     << "}" << eol
-    << (*("namespace " << karma::string << " { "))[_1 = _r2] << eol
+    << (*("namespace " << wave_string << " { "))[_1 = _r2] << eol
     ;
   start = 
     "struct "
-    << class_name[_1 = _val]
+    << class_name[_1 = at_c<0>(_val)]
     << "{" << eol
     << common_functions[_1 = _val]
     << indent << "// Start of operations defined in IDL" << eol
@@ -78,14 +81,14 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
      at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
     )
     [_1 = at_c<0>(_val)]
-    << karma::space << karma::string[_1 = at_c<1>(_val)]
+    << karma::space << wave_string[_1 = at_c<1>(_val)]
     << "("
     << -((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
     << ")" << eol
     << indent << "{" << eol
     << karma::eps[_a = 0]
     << (
-        indent << indent << "std::cout << \"Called " << karma::string[_1 = phoenix::at_c<1>(_val)]
+        indent << indent << "std::cout << \"Called " << wave_string[_1 = phoenix::at_c<1>(_val)]
         << " was called\" << std::endl;" << eol
         << indent << indent << "return ::morbid::synchronous_call::call" << eol
         << indent << indent << indent << "< "
@@ -99,8 +102,8 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
         << "( _orb_, "
-           "\"IDL:" << (karma::string % '/')[_1 = _r2] << ":1.0\""
-        << ", \"" << karma::string[_1 = at_c<1>(_val)]
+           "\"IDL:" << (wave_string % '/')[_1 = _r2] << ":1.0\""
+        << ", \"" << wave_string[_1 = at_c<1>(_val)]
         << "\", _structured_ior_"
         << eol << indent << indent << indent << indent << ", "
         << "boost::fusion::vector"
@@ -116,11 +119,11 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   type_spec_select %= type_spec(at_c<1>(_r1)[_val]);
-  in_tag = karma::string[_1 = "::morbid::type_tag::in_tag"];
-  out_tag = karma::string[_1 = "::morbid::type_tag::out_tag"];
-  inout_tag = karma::string[_1 = "::morbid::type_tag::inout_tag"];
+  in_tag = wave_string[_1 = "::morbid::type_tag::in_tag"];
+  out_tag = wave_string[_1 = "::morbid::type_tag::out_tag"];
+  inout_tag = wave_string[_1 = "::morbid::type_tag::inout_tag"];
   synchronous_template_args = 
-    karma::string[_1 = "::morbid::type_tag::value_type_tag< "]
+    wave_string[_1 = "::morbid::type_tag::value_type_tag< "]
     << type_spec_select(_r1)[_1 = at_c<1>(_val)]
     << ", " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
     << ">"
@@ -134,14 +137,14 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
     << "// Constructors" << eol
     << indent << 
        (
-        class_name[_1 = _val]
+        class_name[_1 = at_c<0>(_val)]
         << "( ::morbid::orb orb, ::morbid::structured_ior const& structured_ior)" << eol
         << indent << indent << " : _orb_(orb), _structured_ior_(structured_ior)" << eol
         << indent << "{}" << eol
        )
     << indent << 
       (
-        class_name[_1 = _val]
+        class_name[_1 = at_c<0>(_val)]
         << "( ::morbid::orb orb, std::string const& ior)" << eol
         << indent << indent << " : _orb_(orb), _structured_ior_( ::morbid::string_to_structured_ior(ior.begin(), ior.end()))" << eol
         << indent << "{}" << eol

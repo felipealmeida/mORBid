@@ -28,14 +28,14 @@ struct lookuped_type_wrapper
   lookuped_type_wrapper(lookuped_type l)
     : l(l) {}
 
-  std::vector<std::string> get_outside_type() const
+  std::vector<idl_parser::wave_string> get_outside_type() const
   {
     typedef modules_tree_type::in_edge_iterator in_edge_iterator;
     typedef boost::property_map<modules_tree_type, module_property_t>
       ::const_type module_map;
     module_map map = get(module_property_t(), *l.modules);
 
-    std::vector<std::string> module_path;
+    std::vector<idl_parser::wave_string> module_path;
     module const& m = *boost::get(map, l.outside_type);
     module_path.push_back(m.name);
 
@@ -68,7 +68,8 @@ struct lookuped_type_wrapper
 } } }
 
 BOOST_FUSION_ADAPT_ADT( ::morbid::idl_compiler::generator::lookuped_type_wrapper
-                        , (std::vector<std::string>, std::vector<std::string>
+                        , (std::vector< ::morbid::idl_parser::wave_string>
+                           , std::vector< ::morbid::idl_parser::wave_string>
                            , obj.get_outside_type(), ::std::abort())
                         (::morbid::idl_compiler::generator::lookuped_type_wrapper::kind_variant
                          , ::morbid::idl_compiler::generator::lookuped_type_wrapper::kind_variant
@@ -92,8 +93,8 @@ struct scoped_name : karma::grammar<OutputIterator, idl_parser::types::scoped_na
     start =
       // I don't care for globally_qualified attribute
       // because the lookuped type _r1 is already qualified
-      (karma::string % "::")[_1 = at_c<0>(_r1)]
-      << "::" << (karma::string % "::")
+      (karma::attr_cast<idl_parser::wave_string>(karma::string) % "::")[_1 = at_c<0>(_r1)]
+      << "::" << (karma::attr_cast<idl_parser::wave_string>(karma::string) % "::")
       [_1 = at_c<1>(_val)]
       // << //((
       // -(is_interface_kind// /* << karma::string[_1 = "_ptr"]*/)

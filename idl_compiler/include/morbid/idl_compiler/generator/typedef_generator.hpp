@@ -24,7 +24,7 @@ namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
 struct typedef_generator : karma::grammar
-  <OutputIterator, idl_compiler::typedef_def_type(lookuped_type)>
+  <OutputIterator, idl_parser::typedef_def(lookuped_type)>
 {
   typedef_generator()
     : typedef_generator::base_type(start)
@@ -47,7 +47,7 @@ struct typedef_generator : karma::grammar
   }
 
   generator::type_spec<OutputIterator, Iterator> type_spec;
-  karma::rule<OutputIterator, idl_compiler::typedef_def_type(lookuped_type)> start;
+  karma::rule<OutputIterator, idl_parser::typedef_def(lookuped_type)> start;
 };
 
 } } }

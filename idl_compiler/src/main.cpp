@@ -205,10 +205,10 @@ int main(int argc, char** argv)
           try
           {
           morbid::idl_parser::wave_string module_open;
-          morbid::idl_compiler::interface_def_type interface;
-          morbid::idl_compiler::typedef_def_type typedef_;
+          morbid::idl_parser::interface_def interface;
+          morbid::idl_parser::typedef_def typedef_;
           morbid::idl_parser::exception_def exception;
-          morbid::idl_compiler::struct_def_type struct_;
+          morbid::idl_parser::struct_def struct_;
           if(boost::spirit::qi::phrase_parse(iterator, last, module_open_grammar
                                              , skipper, module_open))
           {
@@ -257,10 +257,10 @@ int main(int argc, char** argv)
             std::cout << "struct " << struct_ << std::endl;
 
             typedef morbid::idl_compiler::struct_ struct_type;
-            typedef morbid::idl_compiler::struct_member_type struct_member_type;
+            typedef morbid::idl_parser::member member_type;
             struct_type s(struct_);
 
-            for(std::vector<struct_member_type>::const_iterator
+            for(std::vector<member_type>::const_iterator
                   first = s.definition.members.begin()
                   , last = s.definition.members.end()
                   ;first != last; ++first)
@@ -283,8 +283,9 @@ int main(int argc, char** argv)
             std::cout << "interface " << interface << std::endl;
             typedef morbid::idl_compiler::module module;
             typedef morbid::idl_compiler::interface_ interface_type;
-            typedef morbid::idl_compiler::op_decl_type op_decl_type;
-            typedef morbid::idl_compiler::param_decl param_decl;
+            typedef morbid::idl_parser::op_decl op_decl_type;
+            typedef morbid::idl_parser::param_decl param_decl;
+            using morbid::idl_parser::wave_string;
             interface_type i(interface);
 
             // op_decl_type is_a_op_decl = {morbid::idl_parser::types::boolean(), "_is_a"};
@@ -296,7 +297,7 @@ int main(int argc, char** argv)
             // i.definition.op_decls.push_back(is_a_op_decl);
 
             module_map map = get(module_property_t(), modules_tree);
-            std::vector<std::string> modules_names;
+            std::vector<wave_string> modules_names;
             for(std::vector<vertex_descriptor>::const_iterator
                   first = boost::next(current_module.begin(), 2)
                   , last = current_module.end()
@@ -308,9 +309,9 @@ int main(int argc, char** argv)
 
             modules_names.push_back(interface.name);
             i.definition.repoids.push_back("IDL:omg.org/CORBA/Object:1.0");
-            std::string repoid;
+            wave_string repoid;
             namespace karma = boost::spirit::karma;
-            if(!karma::generate(std::back_insert_iterator<std::string>(repoid)
+            if(!karma::generate(std::back_insert_iterator<wave_string>(repoid)
                                 , "IDL:" << (karma::string % '/') << ":1.0"
                                 , modules_names))
               throw std::runtime_error("Failed constructing RepoID");
@@ -331,7 +332,7 @@ int main(int argc, char** argv)
                                   , morbid::idl_compiler::lookup_type_spec
                                   (first->type, current_module, modules_tree)));
               }
-              typedef morbid::idl_compiler::param_decl param_decl;
+              using morbid::idl_parser::param_decl;
               for(std::vector<param_decl>::const_iterator
                     pfirst = first->params.begin()
                     , plast = first->params.end()

@@ -18,13 +18,12 @@
 
 namespace std {
 
-template <typename Iterator>
-std::ostream& operator<<(std::ostream& os
-                         , std::vector< ::morbid::idl_parser::struct_member<Iterator> >const& v)
+inline std::ostream& operator<<(std::ostream& os
+                         , std::vector< ::morbid::idl_parser::member>const& v)
 {
   os << "[vector ";
   std::copy(v.begin(), v.end()
-            , std::ostream_iterator< ::morbid::idl_parser::struct_member<Iterator> >
+            , std::ostream_iterator< ::morbid::idl_parser::member>
             (os, ", "));
   return os << "]";
 }
@@ -38,8 +37,8 @@ namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct struct_definition : boost::spirit::qi::grammar
-  <Iterator, idl_parser::struct_def<Iterator>()
-   , qi::locals<std::vector<struct_member<Iterator> > > >
+  <Iterator, idl_parser::struct_def()
+   , qi::locals<std::vector<member> > >
 {
   struct_definition()
     : struct_definition::base_type(start)
@@ -76,11 +75,11 @@ struct struct_definition : boost::spirit::qi::grammar
   }
 
   grammar::type_spec<Iterator> type_spec;
-  qi::rule<Iterator, std::vector<struct_member<Iterator> >()
-           , qi::locals<idl_parser::type_spec<Iterator>
-                        , std::vector<struct_member<Iterator> > > > members;
-  qi::rule<Iterator, idl_parser::struct_def<Iterator>()
-           , qi::locals<std::vector<struct_member<Iterator> > > > start;
+  qi::rule<Iterator, std::vector<member>()
+           , qi::locals<idl_parser::type_spec
+                        , std::vector<member> > > members;
+  qi::rule<Iterator, idl_parser::struct_def()
+           , qi::locals<std::vector<member> > > start;
 };
 
 } } }

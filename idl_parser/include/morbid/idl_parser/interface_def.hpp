@@ -17,16 +17,14 @@
 
 namespace morbid { namespace idl_parser {
 
-template <typename Iterator>
 struct interface_def
 {
-  std::string name;
-  std::vector<op_decl<Iterator> > op_decls;
-  std::vector<std::string> repoids;
+  wave_string name;
+  std::vector<op_decl> op_decls;
+  std::vector<wave_string> repoids;
 };
 
-template <typename Iterator>
-std::ostream& operator<<(std::ostream& os, interface_def<Iterator> d)
+inline std::ostream& operator<<(std::ostream& os, interface_def d)
 {
   return os << "[interface_def name: " << d.name << "\n"
             << "ops: " << boost::make_iterator_range(d.op_decls.begin()
@@ -37,9 +35,9 @@ std::ostream& operator<<(std::ostream& os, interface_def<Iterator> d)
 
 } }
 
-BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
-                              , (::morbid::idl_parser::interface_def) (Iterator)
-                              , (std::string, name)(std::vector< ::morbid::idl_parser::op_decl<Iterator> >, op_decls)
-                              (std::vector<std::string>, repoids));
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::interface_def
+                          , ( ::morbid::idl_parser::wave_string, name)
+                          (std::vector< ::morbid::idl_parser::op_decl>, op_decls)
+                          (std::vector< ::morbid::idl_parser::wave_string>, repoids));
 
 #endif

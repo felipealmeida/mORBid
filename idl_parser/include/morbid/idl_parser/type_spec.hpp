@@ -8,6 +8,8 @@
 #ifndef MORBID_IDL_PARSER_TYPE_SPEC_HPP
 #define MORBID_IDL_PARSER_TYPE_SPEC_HPP
 
+#include <morbid/idl_parser/wave_string.hpp>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
@@ -22,7 +24,6 @@
 
 namespace morbid { namespace idl_parser {
 
-template <typename Iterator>
 struct type_spec;
 
 namespace types {
@@ -42,6 +43,10 @@ namespace types {
   inline bool operator<(floating_point lhs, floating_point rhs)
   {
     return lhs.type < rhs.type;
+  }
+  inline bool operator==(floating_point lhs, floating_point rhs)
+  {
+    return lhs.type == rhs.type;
   }
   inline std::ostream& operator<<(std::ostream& os, floating_point o)
   {
@@ -77,6 +82,10 @@ namespace types {
   {
     return lhs.type < rhs.type;
   }
+  inline bool operator==(integer lhs, integer rhs)
+  {
+    return lhs.type == rhs.type;
+  }
   inline std::ostream& operator<<(std::ostream& os, integer o)
   {
     switch(o.type)
@@ -98,32 +107,40 @@ namespace types {
   }
   struct char_ {};
   inline bool operator<(char_ lhs, char_ rhs) { return false; }
+  inline bool operator==(char_ lhs, char_ rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, char_ o) { return os << "char"; }
   struct wchar_ {};
   inline bool operator<(wchar_ lhs, wchar_ rhs) { return false; }
+  inline bool operator==(wchar_ lhs, wchar_ rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, wchar_ o) { return os << "wchar"; }
   struct boolean {};
   inline bool operator<(boolean lhs, boolean rhs) { return false; }
+  inline bool operator==(boolean lhs, boolean rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, boolean o) { return os << "boolean"; }
   struct octet {};
   inline bool operator<(octet lhs, octet rhs) { return false; }
+  inline bool operator==(octet lhs, octet rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, octet o) { return os << "octet"; }
   struct any {};
   inline bool operator<(any lhs, any rhs) { return false; }
+  inline bool operator==(any lhs, any rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, any o) { return os << "any"; }
   struct object {};
   inline bool operator<(object lhs, object rhs) { return false; }
+  inline bool operator==(object lhs, object rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, object o) { return os << "Object"; }
   struct value_base {};
   inline bool operator<(value_base lhs, value_base rhs) { return false; }
+  inline bool operator==(value_base lhs, value_base rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, value_base o) { return os << "ValueBase"; }
   struct void_ {}; // for op_param_decl
   inline bool operator<(void_ lhs, void_ rhs) { return false; }
+  inline bool operator==(void_ lhs, void_ rhs) { return true; }
   inline std::ostream& operator<<(std::ostream& os, void_ o) { return os << "void"; }
   struct scoped_name
   {
     bool globally_qualified;
-    std::vector<std::string> identifiers; // identifier | "::" identifier | scoped_name "::" identifier
+    std::vector<wave_string> identifiers; // identifier | "::" identifier | scoped_name "::" identifier
   };
   inline bool operator<(scoped_name const& lhs, scoped_name const& rhs)
   {
@@ -131,12 +148,14 @@ namespace types {
         || (lhs.globally_qualified == rhs.globally_qualified
             && lhs.identifiers < rhs.identifiers);
   }
+  inline bool operator==(scoped_name const& lhs, scoped_name const& rhs)
+  { return !(lhs < rhs) && !(rhs < lhs); }
   inline std::ostream& operator<<(std::ostream& os, scoped_name o)
   {
     os << "[scoped_name ";
     if(o.globally_qualified)
       os << "::";
-    for(std::vector<std::string>::const_iterator
+    for(std::vector<wave_string>::const_iterator
           first = o.identifiers.begin()
           , last = o.identifiers.end()
           ;first != last; ++first)
@@ -147,29 +166,9 @@ namespace types {
     }
     return os << ']';
   }
-  template <typename Iterator>
-  struct sequence
-  {
-    type_spec<Iterator> type;
-
-    sequence() {}
-    sequence(type_spec<Iterator> o)
-      : type(o) {}
-  };
-  template <typename Iterator>
-  bool operator<(sequence<Iterator> const& lhs, sequence<Iterator> const& rhs)
-  {
-    return lhs.type < rhs.type;
-  }
-  template <typename Iterator>
-  std::ostream& operator<<(std::ostream& os, sequence<Iterator> o)
-  {
-    return os << "[sequence of " << o.type << "]";
-  }
-
+  struct sequence;
 }
 
-template <typename Iterator>
 struct type_spec
 {
   typedef boost::variant<types::floating_point, types::integer, types::char_
@@ -177,7 +176,7 @@ struct type_spec
                          , types::any, types::object, types::value_base
                          , types::void_
                          , types::scoped_name
-                         , boost::recursive_wrapper<types::sequence<Iterator> > >
+                         , boost::recursive_wrapper<types::sequence> >
     variant_type;
   variant_type type;
   type_spec(variant_type v)
@@ -206,37 +205,62 @@ struct type_spec
   type_spec(types::scoped_name o)
     : type(o)
   {}
-  type_spec(types::sequence<Iterator> o)
+  type_spec(types::sequence const& o)
     : type(o)
   {}
 };
 
-template <typename Iterator>
-bool operator<(type_spec<Iterator> const& lhs, type_spec<Iterator> const& rhs)
+inline bool operator<(type_spec const& lhs, type_spec const& rhs)
 {
   return lhs.type < rhs.type;
 }
 
-template <typename Iterator>
-std::ostream& operator<<(std::ostream& os, type_spec<Iterator> d)
+inline bool operator==(type_spec const& lhs, type_spec const& rhs)
+{
+  return lhs.type == rhs.type;
+}
+
+inline std::ostream& operator<<(std::ostream& os, type_spec d)
 {
   return os << "[type_spec type: " << d.type << "]";
 }
 
+namespace types {
+
+  struct sequence
+  {
+    type_spec type;
+
+    sequence() {}
+    sequence(type_spec o)
+      : type(o) {}
+  };
+  inline bool operator<(sequence const& lhs, sequence const& rhs)
+  {
+    return lhs.type < rhs.type;
+  }
+  inline bool operator==(sequence const& lhs, sequence const& rhs)
+  {
+    return lhs.type == rhs.type;
+  }
+  inline std::ostream& operator<<(std::ostream& os, sequence o)
+  {
+    return os << "[sequence of " << o.type << "]";
+  }
+
+}
+
 } }
 
-BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
-                              , (::morbid::idl_parser::type_spec)(Iterator)
-                              , (typename ::morbid::idl_parser::type_spec<Iterator>::variant_type, type)
-                              );
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::type_spec
+                          , (::morbid::idl_parser::type_spec::variant_type, type));
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::scoped_name
                           , (bool, globally_qualified)
-                          (std::vector<std::string>, identifiers));
+                          (std::vector< ::morbid::idl_parser::wave_string>, identifiers));
 
-BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
-                              , (::morbid::idl_parser::types::sequence)(Iterator)
-                              , (::morbid::idl_parser::type_spec<Iterator>, type));
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::sequence
+                          , (::morbid::idl_parser::type_spec, type));
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::types::floating_point
                           , (::morbid::idl_parser::types::floating_point::floating_enum, type));

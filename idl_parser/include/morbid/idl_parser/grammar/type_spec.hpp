@@ -45,7 +45,7 @@ struct scoped_name : boost::spirit::qi::grammar
 
 template <typename Iterator>
 struct type_spec : boost::spirit::qi::grammar
-  <Iterator, idl_parser::type_spec<Iterator>()>
+  <Iterator, idl_parser::type_spec()>
 {
   type_spec()
     : type_spec::base_type(start)
@@ -93,9 +93,9 @@ struct type_spec : boost::spirit::qi::grammar
   }
 
   grammar::scoped_name<Iterator> scoped_name;
-  boost::spirit::qi::rule<Iterator, idl_parser::type_spec<Iterator>()> start;
-  boost::spirit::qi::rule<Iterator, idl_parser::type_spec<Iterator>()> simple_type_spec;
-  boost::spirit::qi::rule<Iterator, types::sequence<Iterator>()> sequence;
+  boost::spirit::qi::rule<Iterator, idl_parser::type_spec()> start;
+  boost::spirit::qi::rule<Iterator, idl_parser::type_spec()> simple_type_spec;
+  boost::spirit::qi::rule<Iterator, types::sequence()> sequence;
 };
 
 } } }

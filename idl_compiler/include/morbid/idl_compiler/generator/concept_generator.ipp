@@ -46,7 +46,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
   concept_class =
     karma::eps[_a = at_c<0>(_val)]
     << eol
-    << "struct " << karma::string[_1 = _a] << "_concept" << eol
+    << "struct " << wave_string[_1 = _a] << "_concept" << eol
     << eol << "{" << eol
     << indent << "// Start of operations defined in IDL" << eol
     << (*(operation(_r1) << eol))
@@ -57,27 +57,27 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << indent << "typedef ::morbid::interface_tag _morbid_type_kind;" << eol
     << indent << empty_reference(_r1)[_1 = _val] << ";" << eol
     << indent << proxy_reference(_r1)[_1 = _val] << ";" << eol
-    << indent << "typedef " << karma::string[_1 = _a] << "_ref remote_reference;" << eol
+    << indent << "typedef " << wave_string[_1 = _a] << "_ref remote_reference;" << eol
     << "};" << eol << eol
     ;
   start =
     karma::eps[_a = at_c<0>(_val)]
-    << "struct " << karma::string[_1 = _a] << "_concept;" << eol
-    << "struct " << karma::string[_1 = _a] << "_ref;" << eol
-    << "typedef ::morbid::reference< " << karma::string[_1 = _a] << "_concept> " << karma::string[_1 = _a] << ';' << eol
+    << "struct " << wave_string[_1 = _a] << "_concept;" << eol
+    << "struct " << wave_string[_1 = _a] << "_ref;" << eol
+    << "typedef ::morbid::reference< " << wave_string[_1 = _a] << "_concept> " << wave_string[_1 = _a] << ';' << eol
     << concept_class(_r1, _r2)[_1 = _val]
-    << (*(karma::skip[karma::string] << karma::lit("}")))[_1 = _r2] << eol
+    << (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
     << "namespace boost { namespace type_erasure { // specialization of concept_interface" << eol
     << (*operation_concept_interface_specialization(_r1, _r2, _a))[_1 = at_c<1>(_val)]
     << "}}" << eol
-    << (*("namespace " << karma::string << " { "))[_1 = _r2] << eol
+    << (*("namespace " << wave_string << " { "))[_1 = _r2] << eol
     ;
   ;
   operation_concept_interface_specialization =
     "template <class C, class Base>" 
     << eol
-    << "struct concept_interface< " << -(karma::string % "::")[_1 = _r2]
-    << "::" << karma::lit(_r3) << "_concept::" << operation_name[_1 = _val] << "<C>, Base, C> : Base" << eol
+    << "struct concept_interface< " << -(wave_string % "::")[_1 = _r2]
+    << "::" << wave_string[_1 = _r3] << "_concept::" << operation_name[_1 = _val] << "<C>, Base, C> : Base" << eol
     << "{" << eol
     << indent << return_(at_c<1>(_r1)[at_c<0>(_val)])[_1 = at_c<0>(_val)] << karma::space << operation_name[_1 = _val]
     << '('
@@ -87,8 +87,8 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
          )
     << ')' << eol
     << indent << "{" << eol
-    << indent << indent << "return call( " << -(karma::string % "::")[_1 = _r2]
-    << "::" << karma::lit(_r3) << "_concept::" << operation_name[_1 = _val] << "<C>(), *this"
+    << indent << indent << "return call( " << -(wave_string % "::")[_1 = _r2]
+    << "::" << wave_string[_1 = _r3] << "_concept::" << operation_name[_1 = _val] << "<C>(), *this"
     << karma::eps[_a = 0] << (*(", " << args(++_a)))[_1 = at_c<2>(_val)]
     << ");" << eol
     << indent << "}" << eol
@@ -166,9 +166,10 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
   public_members = 
     indent
     << "inline static const char* type_id() { return \"IDL:"
-    << (*(karma::string << '/'))[_1 = _r1] << karma::lit(_r2) << ":1.0\"; }" << eol
+    << (*(wave_string << '/'))[_1 = _r1] << wave_string[_1 = _r2] << ":1.0\"; }" << eol
     ;
   indent = karma::space << karma::space;
+  wave_string %= karma::string;
 }
 
 } } }

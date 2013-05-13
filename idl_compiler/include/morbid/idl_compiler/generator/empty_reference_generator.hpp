@@ -22,20 +22,21 @@ namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
 struct empty_reference_generator : karma::grammar
-<OutputIterator, idl_compiler::interface_def_type(interface_)>
+<OutputIterator, idl_parser::interface_def(interface_)>
 {
   empty_reference_generator();
 
+  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
   idl_compiler::generator::return_<OutputIterator, Iterator> return_;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
+  karma::rule<OutputIterator, idl_parser::param_decl(interface_)>
     parameter_select;
   karma::rule<OutputIterator> indent;
-  karma::rule<OutputIterator, std::string(bool)> class_name;
+  karma::rule<OutputIterator, idl_parser::wave_string(bool)> class_name;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(interface_)> operation;
+              , idl_parser::op_decl(interface_)> operation;
   karma::rule<OutputIterator
-              , idl_compiler::interface_def_type(interface_)> start;
+              , idl_parser::interface_def(interface_)> start;
 };
 
 } } }

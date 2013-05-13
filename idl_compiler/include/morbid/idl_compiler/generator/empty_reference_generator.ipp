@@ -55,18 +55,19 @@ empty_reference_generator<OutputIterator, Iterator>::empty_reference_generator()
     )
     [_1 = at_c<0>(_val)]
     << karma::space
-    << karma::string[_1 = at_c<1>(_val)]
+    << wave_string[_1 = at_c<1>(_val)]
     << "("
     << -(parameter_select(_r1) % ", ")[_1 = at_c<2>(_val)]
     << ")" << eol
     << indent << "{" << eol
     << indent << indent << "assert(false && \"Called for empty reference, method: \\\""
-    << karma::string[_1 = at_c<1>(_val)] << "\\\"\");" << eol
+    << wave_string[_1 = at_c<1>(_val)] << "\\\"\");" << eol
     << indent << "}" << eol
     << ";"
     ;
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   indent = karma::space << karma::space;
+  wave_string %= karma::string;
     
   start.name("empty_reference_generator");
   operation.name("operation");

@@ -32,6 +32,7 @@ exe morbid_idl : idl_compiler/src/main.cpp
  /boost//thread /boost//wave
   : <toolset>gcc:<cxxflags>-Wno-sign-compare
     <include>idl_compiler/include
+    <define>FUSION_MAX_VECTOR_SIZE=12
 #    <define>BOOST_WAVE_SEPARATE_GRAMMAR_INSTANTIATION=0
  ;
 explicit morbid_idl ;

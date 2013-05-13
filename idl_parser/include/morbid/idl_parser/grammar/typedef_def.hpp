@@ -23,7 +23,7 @@ namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct typedef_definition : boost::spirit::qi::grammar
-  <Iterator, idl_parser::typedef_def<Iterator>()>
+  <Iterator, idl_parser::typedef_def()>
 {
   typedef_definition()
     : typedef_definition::base_type(start)
@@ -37,7 +37,7 @@ struct typedef_definition : boost::spirit::qi::grammar
   }
 
   grammar::type_spec<Iterator> type_spec;
-  boost::spirit::qi::rule<Iterator, idl_parser::typedef_def<Iterator>()> start;
+  boost::spirit::qi::rule<Iterator, idl_parser::typedef_def()> start;
 };
 
 } } }

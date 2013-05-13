@@ -11,6 +11,7 @@
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/interface.hpp>
 #include <morbid/idl_compiler/lookuped_type.hpp>
+#include <morbid/idl_parser/wave_string.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
 
@@ -18,16 +19,16 @@ namespace morbid { namespace idl_compiler {
 
 struct typedef_
 {
-  typedef_def_type definition;
+  idl_parser::typedef_def definition;
   lookuped_type lookup;
 
-  typedef_(typedef_def_type definition)
+  typedef_(idl_parser::typedef_def definition)
     : definition(definition) {}
 };
 
 struct find_typedef_by_name
 {
-  find_typedef_by_name(std::string const& name)
+  find_typedef_by_name(idl_parser::wave_string const& name)
     : name(name) {}
 
   bool operator()(typedef_ const& i) const
@@ -35,7 +36,7 @@ struct find_typedef_by_name
     return i.definition.name == name;
   }
 
-  std::string name;
+  idl_parser::wave_string name;
 };
 
 
@@ -45,10 +46,10 @@ struct exception
 
 struct struct_
 {
-  struct_def_type definition;
-  struct_(struct_def_type definition)
+  idl_parser::struct_def definition;
+  struct_(idl_parser::struct_def definition)
     : definition(definition) {}
-  typedef std::map<type_spec, lookuped_type> lookups_type;
+  typedef std::map<idl_parser::type_spec, lookuped_type> lookups_type;
   lookups_type lookups;
 };
 
@@ -59,7 +60,7 @@ inline std::ostream& operator<<(std::ostream& os, struct_ const& s)
 
 struct find_struct_by_name
 {
-  find_struct_by_name(std::string const& name)
+  find_struct_by_name(idl_parser::wave_string const& name)
     : name(name) {}
 
   bool operator()(struct_ const& i) const
@@ -67,16 +68,16 @@ struct find_struct_by_name
     return i.definition.name == name;
   }
 
-  std::string name;
+  idl_parser::wave_string name;
 };
 
 struct module
 {
   module() {}
-  module(std::string name)
+  module(idl_parser::wave_string name)
     : name(name) {}
 
-  std::string name;
+  idl_parser::wave_string name;
   std::vector<idl_compiler::interface_> interfaces;
   std::vector<idl_compiler::typedef_> typedefs;
   std::vector<idl_compiler::exception> exceptions;
@@ -86,7 +87,7 @@ struct module
 } }
 
 BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::struct_
-                           , ( ::morbid::idl_compiler::struct_def_type, definition)
+                           , ( ::morbid::idl_parser::struct_def, definition)
                            (::morbid::idl_compiler::struct_::lookups_type, lookups));
 
 #endif

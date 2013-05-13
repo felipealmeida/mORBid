@@ -24,7 +24,7 @@ namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
 struct struct_generator_generator : karma::grammar
-  <OutputIterator, idl_compiler::struct_def_type(struct_)>
+  <OutputIterator, idl_parser::struct_def(struct_)>
 {
   struct_generator_generator()
     : struct_generator_generator::base_type(start)
@@ -141,11 +141,11 @@ struct struct_generator_generator : karma::grammar
   karma::rule<OutputIterator, idl_parser::types::object()> object_generator;
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base_generator;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_generator;
-  karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>(lookuped_type_wrapper)> sequence_generator;
+  karma::rule<OutputIterator, idl_parser::types::sequence(lookuped_type_wrapper)> sequence_generator;
 
-  karma::rule<OutputIterator, idl_parser::struct_member<Iterator>(struct_)> member_generator;
+  karma::rule<OutputIterator, idl_parser::member(struct_)> member_generator;
   karma::rule<OutputIterator> indent;
-  karma::rule<OutputIterator, idl_compiler::struct_def_type(struct_)> start;
+  karma::rule<OutputIterator, idl_parser::struct_def(struct_)> start;
 };
 
 } } }

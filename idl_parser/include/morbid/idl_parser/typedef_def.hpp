@@ -17,15 +17,13 @@
 
 namespace morbid { namespace idl_parser {
 
-template <typename Iterator>
 struct typedef_def
 {
-  type_spec<Iterator> alias;
-  std::string name;
+  type_spec alias;
+  wave_string name;
 };
 
-template <typename Iterator>
-std::ostream& operator<<(std::ostream& os, typedef_def<Iterator> d)
+inline std::ostream& operator<<(std::ostream& os, typedef_def d)
 {
   return os << "[typedef_def name: " << d.name
             << " alias: " << d.alias
@@ -34,9 +32,8 @@ std::ostream& operator<<(std::ostream& os, typedef_def<Iterator> d)
 
 } }
 
-BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
-                              , (::morbid::idl_parser::typedef_def) (Iterator)
-                              , (::morbid::idl_parser::type_spec<Iterator>, alias)
-                              (std::string, name));
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::typedef_def
+                          , (::morbid::idl_parser::type_spec, alias)
+                          ( ::morbid::idl_parser::wave_string, name));
 
 #endif

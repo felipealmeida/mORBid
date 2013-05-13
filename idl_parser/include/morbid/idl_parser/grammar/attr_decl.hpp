@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef MORBID_IDL_PARSER_GRAMMAR_OP_DECL_HPP
-#define MORBID_IDL_PARSER_GRAMMAR_OP_DECL_HPP
+#ifndef MORBID_IDL_PARSER_GRAMMAR_ATTR_DECL_HPP
+#define MORBID_IDL_PARSER_GRAMMAR_ATTR_DECL_HPP
 
 #include <morbid/idl_parser/grammar/type_spec.hpp>
 
@@ -15,7 +15,7 @@
 #include <boost/spirit/home/phoenix.hpp>
 
 #include <morbid/idl_parser/tokenizer.hpp>
-#include <morbid/idl_parser/op_decl.hpp>
+#include <morbid/idl_parser/attr_decl.hpp>
 
 namespace morbid { namespace idl_parser { namespace grammar {
 
@@ -24,13 +24,15 @@ namespace lex = boost::spirit::lex;
 namespace phoenix = boost::phoenix;
 
 template <typename Iterator>
-struct op_decl : qi::grammar
-<Iterator, idl_parser::op_decl()>
+struct attr_decl : qi::grammar
+<Iterator, idl_parser::attr_decl<Iterator>()>
 {
-  op_decl()
-    : op_decl::base_type(start)
+  attr_decl()
+    : attr_decl::base_type(start)
   {
     using qi::_val;
+
+    typedef idl_parser::op_decl<Iterator> return_type;
 
     // start %= type_spec
     //   >> tok.identifier
@@ -72,8 +74,8 @@ struct op_decl : qi::grammar
   qi::rule<Iterator, boost::variant<idl_parser::direction::in
                                     , idl_parser::direction::out
                                     , idl_parser::direction::inout>()> direction;
-  qi::rule<Iterator, idl_parser::param_decl()> param;
-  qi::rule<Iterator, idl_parser::op_decl()> start;
+  qi::rule<Iterator, idl_parser::param_decl<Iterator>()> param;
+  qi::rule<Iterator, idl_parser::attr_decl<Iterator>()> start;
 };
 
 } } }

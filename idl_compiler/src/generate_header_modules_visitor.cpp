@@ -17,7 +17,7 @@
 namespace morbid { namespace idl_compiler {
 
 template <typename OutputIterator>
-void open_namespace(OutputIterator& iterator, std::string name)
+void open_namespace(OutputIterator& iterator, idl_parser::wave_string name)
 {
   namespace karma = boost::spirit::karma;
   const char namespace_[] = "namespace ";
@@ -80,7 +80,7 @@ void generate_header_modules_visitor::examine_vertex
     }
   }
 
-  std::vector<std::string> modules_name;
+  std::vector<idl_parser::wave_string> modules_name;
   for(std::vector<vertex_descriptor>::const_iterator
         first = state->opened_modules.begin()
         , last = state->opened_modules.end()
@@ -126,14 +126,14 @@ void generate_header_modules_visitor::examine_vertex
   for(std::vector<interface_>::const_iterator first = m.interfaces.begin()
         , last = m.interfaces.end(); first != last; ++first)
   {
-    std::vector<std::string> modules
+    std::vector<idl_parser::wave_string> modules
       (boost::next(modules_name.begin()), modules_name.end());
     bool r = karma::generate(state->iterator, header_concept_generator
                              (phoenix::val(*first), phoenix::val(modules))
                              , first->definition);
     if(!r) throw std::runtime_error("Failed generating header_concept_generator");
 
-    std::vector<std::string> base_name
+    std::vector<idl_parser::wave_string> base_name
       (boost::next(modules_name.begin()), modules_name.end());
     base_name.push_back(first->definition.name);
     // std::vector<std::string> base_name(modules_name);
@@ -225,7 +225,7 @@ std::ostream& operator<<(std::ostream& os, lookuped_type l)
     ::const_type module_map;
   module_map map = get(module_property_t(), *l.modules);
 
-  std::vector<std::string> module_path;
+  std::vector<idl_parser::wave_string> module_path;
   module const& m = *boost::get(map, l.outside_type);
   module_path.push_back(m.name);
 
@@ -244,7 +244,7 @@ std::ostream& operator<<(std::ostream& os, lookuped_type l)
     while(boost::distance(edges));
   }
   std::copy(module_path.rbegin(), module_path.rend()
-            , std::ostream_iterator<std::string>(os, "::"));
+            , std::ostream_iterator<idl_parser::wave_string>(os, "::"));
   return os << ']';
 }
 

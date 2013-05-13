@@ -28,11 +28,12 @@ namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
 struct header_concept_generator : karma::grammar
-  <OutputIterator, idl_compiler::interface_def_type(interface_, std::vector<std::string>)
-   , karma::locals<std::string> >
+  <OutputIterator, idl_parser::interface_def(interface_, std::vector<idl_parser::wave_string>)
+   , karma::locals<idl_parser::wave_string> >
 {
   header_concept_generator();
 
+  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
   idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
   idl_compiler::generator::type_spec<OutputIterator, Iterator> type_spec;
   idl_compiler::generator::return_<OutputIterator, Iterator> return_;
@@ -41,29 +42,29 @@ struct header_concept_generator : karma::grammar
   karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
   karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(interface_)>
+  karma::rule<OutputIterator, idl_parser::param_decl(interface_)>
     parameter_select;
   karma::rule<OutputIterator> indent;
-  karma::rule<OutputIterator, std::string(std::vector<std::string>, std::string)> public_members;
+  karma::rule<OutputIterator, idl_parser::wave_string(std::vector<idl_parser::wave_string>, idl_parser::wave_string)> public_members;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(interface_, std::vector<std::string>, std::string)
+              , idl_parser::op_decl(interface_, std::vector<idl_parser::wave_string>, idl_parser::wave_string)
               , karma::locals<unsigned int> > operation_concept_interface_specialization;
   karma::rule<OutputIterator
-              , idl_parser::param_decl<Iterator>(interface_)> arguments;
+              , idl_parser::param_decl(interface_)> arguments;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>(interface_)
+              , idl_parser::op_decl(interface_)
               , karma::locals<unsigned int> > operation;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(unsigned int)> args;
+  karma::rule<OutputIterator, idl_parser::param_decl(unsigned int)> args;
   karma::rule<OutputIterator
-              , idl_parser::op_decl<Iterator>()> operation_name;
+              , idl_parser::op_decl()> operation_name;
   karma::rule<OutputIterator
-              , std::vector<idl_parser::op_decl<Iterator> >()> requirements;
+              , std::vector<idl_parser::op_decl >()> requirements;
   karma::rule<OutputIterator
-              , idl_compiler::interface_def_type(interface_, std::vector<std::string>)
-              , karma::locals<std::string> > start;
+              , idl_parser::interface_def(interface_, std::vector<idl_parser::wave_string>)
+              , karma::locals<idl_parser::wave_string> > start;
   karma::rule<OutputIterator
-              , idl_compiler::interface_def_type(interface_, std::vector<std::string>)
-              , karma::locals<std::string> > concept_class;
+              , idl_parser::interface_def(interface_, std::vector<idl_parser::wave_string>)
+              , karma::locals<idl_parser::wave_string> > concept_class;
 };
 
 } } }

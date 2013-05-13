@@ -12,8 +12,4 @@ template struct
 morbid::idl_compiler::generator::header_reference_model_generator
  < ::morbid::idl_compiler::output_iterator_type
    , ::morbid::idl_compiler::parser_iterator_type>;
-// template struct
-// morbid::idl_compiler::generator::cpp_remote_stub_generator
-//  < ::morbid::idl_compiler::output_iterator_type
-//    , ::morbid::idl_compiler::parser_iterator_type>;
 

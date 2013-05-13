@@ -22,7 +22,7 @@ namespace phoenix = boost::phoenix;
 
 template <typename OutputIterator, typename Iterator>
 struct parameter : karma::grammar<OutputIterator
-                                  , idl_parser::param_decl<Iterator>(lookuped_type)>
+                                  , idl_parser::param_decl(lookuped_type)>
 {
   parameter()
     : parameter::base_type(start)
@@ -94,10 +94,11 @@ struct parameter : karma::grammar<OutputIterator
     // value_base = karma::string[_1 = "::morbid::ValueBase"];
     void_ = karma::string[_1 = "void"];
     scoped_name =
-      (karma::string % "::")[_1 = at_c<0>(_r2)]
-      << "::" << (karma::string % "::")
+      (wave_string % "::")[_1 = at_c<0>(_r2)]
+      << "::" << (wave_string % "::")
       [_1 = at_c<1>(_val)]
       ;
+    wave_string %= karma::string;
 
     start.name("parameter");
     karma::debug(start);
@@ -113,7 +114,7 @@ struct parameter : karma::grammar<OutputIterator
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_traits;
   karma::rule<OutputIterator, idl_parser::types::scoped_name
               (direction_variant, lookuped_type_wrapper)> scoped_name;
-  karma::rule<OutputIterator, idl_parser::param_decl<Iterator>(lookuped_type)> start;
+  karma::rule<OutputIterator, idl_parser::param_decl(lookuped_type)> start;
   karma::rule<OutputIterator, idl_parser::types::floating_point()> floating_point;
   karma::rule<OutputIterator, idl_parser::types::integer()> integer;
   karma::rule<OutputIterator, idl_parser::types::char_()> char_;
@@ -124,13 +125,13 @@ struct parameter : karma::grammar<OutputIterator
   karma::rule<OutputIterator, idl_parser::types::object()> object;
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_;
-  karma::rule<OutputIterator, idl_parser::types::sequence<Iterator>()> sequence;
-  karma::rule<OutputIterator, idl_parser::type_spec<Iterator>
+  karma::rule<OutputIterator, idl_parser::types::sequence()> sequence;
+  karma::rule<OutputIterator, idl_parser::type_spec
               (boost::variant<idl_parser::direction::in
                , idl_parser::direction::out, idl_parser::direction::inout>
                , lookuped_type)>
   param;
-  
+  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
 };
 
 

@@ -26,7 +26,7 @@ namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
 struct struct_generator : karma::grammar
-  <OutputIterator, idl_compiler::struct_def_type(struct_)>
+  <OutputIterator, idl_parser::struct_def(struct_)>
 {
   struct_generator()
     : struct_generator::base_type(start)
@@ -93,13 +93,13 @@ struct struct_generator : karma::grammar
     struct_generator_generator;
   // generator::struct_parser_generator<OutputIterator, Iterator>
   //   struct_parser_generator;
-  karma::rule<OutputIterator, idl_parser::struct_member<Iterator>(struct_)> mpl_member_type;
-  karma::rule<OutputIterator, idl_parser::struct_member<Iterator>(struct_, unsigned int)> fusion_at;
-  karma::rule<OutputIterator, idl_compiler::struct_def_type(struct_)> mpl_sequence_type;
+  karma::rule<OutputIterator, idl_parser::member(struct_)> mpl_member_type;
+  karma::rule<OutputIterator, idl_parser::member(struct_, unsigned int)> fusion_at;
+  karma::rule<OutputIterator, idl_parser::struct_def(struct_)> mpl_sequence_type;
   karma::rule<OutputIterator> indent;
-  karma::rule<OutputIterator, idl_compiler::struct_def_type(struct_), karma::locals<unsigned int> > morbid_fusion_model;
-  karma::rule<OutputIterator, idl_parser::struct_member<Iterator>(struct_)> member;
-  karma::rule<OutputIterator, idl_compiler::struct_def_type(struct_)> start;
+  karma::rule<OutputIterator, idl_parser::struct_def(struct_), karma::locals<unsigned int> > morbid_fusion_model;
+  karma::rule<OutputIterator, idl_parser::member(struct_)> member;
+  karma::rule<OutputIterator, idl_parser::struct_def(struct_)> start;
 };
 
 } } }

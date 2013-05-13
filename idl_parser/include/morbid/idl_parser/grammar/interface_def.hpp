@@ -18,8 +18,7 @@
 
 namespace std {
 
-template <typename Iterator>
-std::ostream& operator<<(std::ostream& os, std::vector<morbid::idl_parser::op_decl<Iterator> > o)
+inline std::ostream& operator<<(std::ostream& os, std::vector<morbid::idl_parser::op_decl> o)
 {
   return os << boost::make_iterator_range(o.begin(), o.end());
 }
@@ -33,9 +32,9 @@ namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct interface_definition : boost::spirit::qi::grammar
-  <Iterator, idl_parser::interface_def<Iterator>()
+  <Iterator, idl_parser::interface_def()
    , qi::locals<std::string
-                , std::vector<idl_parser::op_decl<Iterator> >
+                , std::vector<idl_parser::op_decl>
                >
   >
 {
@@ -67,9 +66,9 @@ struct interface_definition : boost::spirit::qi::grammar
   }
 
   grammar::op_decl<Iterator> op_decl;
-  boost::spirit::qi::rule<Iterator, idl_parser::interface_def<Iterator>()
+  boost::spirit::qi::rule<Iterator, idl_parser::interface_def()
                           , qi::locals<std::string//boost::iterator_range<base_iterator>
-                                       , std::vector<idl_parser::op_decl<Iterator> > > > start;
+                                       , std::vector<idl_parser::op_decl> > > start;
 };
 
 } } }

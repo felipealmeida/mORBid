@@ -48,12 +48,12 @@ proxy_reference_generator<OutputIterator, Iterator>::proxy_reference_generator()
     )
     [_1 = at_c<0>(_val)]
     << karma::space
-    << karma::string[_1 = at_c<1>(_val)]
+    << wave_string[_1 = at_c<1>(_val)]
     << "("
     << -((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
     << ")" << eol
     << indent << "{" << eol
-    << indent << indent << "return _ptr->" << karma::string[_1 = at_c<1>(_val)]
+    << indent << indent << "return _ptr->" << wave_string[_1 = at_c<1>(_val)]
     << "("
     << karma::eps[_a = 0]
     << -(synchronous_args(++_a) % (eol << indent << indent << indent << indent << ", "))[_1 = at_c<2>(_val)]
@@ -65,6 +65,7 @@ proxy_reference_generator<OutputIterator, Iterator>::proxy_reference_generator()
   synchronous_args %= "arg" << karma::lit(_r1);
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   indent = karma::space << karma::space;
+  wave_string %= karma::string;
 
   start.name("proxy_reference_generator");
   operation.name("operation");

@@ -103,14 +103,14 @@ struct lookup_type_spec_functional
     }
     throw std::runtime_error("Not found type");
   }
-  lookuped_type operator()(idl_parser::types::sequence<parser_iterator_type> const& s) const
+  lookuped_type operator()(idl_parser::types::sequence const& s) const
   {
     return lookuped_type(current_module[0], modules, is_primitive_kind()); // primitive
   }
 };
 
 inline lookuped_type lookup_type_spec
-  (type_spec t, std::vector<vertex_descriptor>const& current_module
+  (idl_parser::type_spec t, std::vector<vertex_descriptor>const& current_module
    , modules_tree_type const& modules)
 {
   return boost::apply_visitor

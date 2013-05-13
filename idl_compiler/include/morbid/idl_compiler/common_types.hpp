@@ -25,6 +25,59 @@
 #include <iterator>
 #include <ostream>
 
+namespace boost { namespace spirit { namespace traits {
+
+template <>
+struct char_type_of< ::morbid::idl_parser::wave_string>
+{
+  typedef char type;
+};
+
+template <>
+struct is_string< ::morbid::idl_parser::wave_string> : mpl::true_ {};
+
+template <typename Domain>
+struct transform_attribute<std::string, ::morbid::idl_parser::wave_string, Domain>
+{
+   typedef ::morbid::idl_parser::wave_string type;
+
+    static type pre(std::string const& val)
+    {
+      type r;
+      r.insert(r.end(), val.begin(), val.end());
+      return r;
+    }
+    static void post(std::string const& val, type attr) {}    // Qi only
+    static void fail(std::string const&) {}                   // Qi only
+};
+
+template <typename Domain>
+struct transform_attribute< ::morbid::idl_parser::wave_string, std::string, Domain>
+{
+    typedef ::morbid::idl_parser::wave_string exposed_type;
+    typedef std::string type;
+
+    static type pre(exposed_type const& val)
+    {
+      type r;
+      r.insert(r.end(), val.begin(), val.end());
+      return r;
+    }
+    static void post(exposed_type const& val, type attr) {}    // Qi only
+    static void fail(exposed_type const&) {}                   // Qi only
+};
+
+template <>
+struct extract_c_string< ::morbid::idl_parser::wave_string>
+{
+    typedef char char_type;
+
+    static char_type const* call (::morbid::idl_parser::wave_string const& s) { return s.c_str(); }
+};
+
+
+} } }
+
 namespace morbid { namespace idl_compiler {
 
 typedef boost::wave::cpplexer::lex_token<> token_type;
@@ -35,13 +88,6 @@ typedef boost::wave::context
 
 typedef context_type::iterator_type parser_iterator_type;
 
-typedef morbid::idl_parser::interface_def<parser_iterator_type> interface_def_type;
-typedef morbid::idl_parser::op_decl<parser_iterator_type> op_decl_type;
-typedef morbid::idl_parser::typedef_def<parser_iterator_type> typedef_def_type;
-typedef morbid::idl_parser::struct_def<parser_iterator_type> struct_def_type;
-typedef morbid::idl_parser::struct_member<parser_iterator_type> struct_member_type;
-typedef morbid::idl_parser::type_spec<parser_iterator_type> type_spec;
-typedef morbid::idl_parser::param_decl<parser_iterator_type> param_decl;
 typedef std::ostream_iterator<char> output_iterator_type;
 
 struct module_property_t
