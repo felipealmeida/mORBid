@@ -25,65 +25,57 @@ namespace phoenix = boost::phoenix;
 
 template <typename Iterator>
 struct op_decl : qi::grammar
-<Iterator, idl_parser::op_decl<Iterator>(), skipper<Iterator> >
+<Iterator, idl_parser::op_decl<Iterator>()>
 {
-  typedef typename Iterator::base_iterator_type base_iterator;
-
-  template <typename TokenDef>
-  op_decl(TokenDef const& tok)
+  op_decl()
     : op_decl::base_type(start)
-    , scoped_name(tok)
-    , type_spec(tok)
   {
     using qi::_val;
 
     typedef idl_parser::op_decl<Iterator> return_type;
 
-    start %= type_spec
-      >> tok.identifier
-      >> qi::omit['(']
-      >> (
-          (&param >> (param % ","))
-          | qi::eps
-         )
-      >> qi::omit[')']
-      >> -qi::omit
-      [
-       tok.raises_keyword
-       >> '('
-       >> (scoped_name % ',')
-       >> ')'
-      ]
-      >> qi::attr(true)
-      ;
-    direction = 
-      tok.in_keyword[_val = idl_parser::direction::in()]
-      | tok.out_keyword[_val = idl_parser::direction::out()]
-      | tok.inout_keyword[_val = idl_parser::direction::inout()]
-      ;
-    param %=
-      direction
-      >> type_spec
-      >> qi::omit[tok.identifier]
-      ;      
-    // start.name("op_decl");
-    // param.name("param");
-    // direction.name("direction");
-    // qi::debug(start);
-    // qi::debug(param);
-    // qi::debug(direction);
+    // start %= type_spec
+    //   >> tok.identifier
+    //   >> qi::omit['(']
+    //   >> (
+    //       (&param >> (param % ","))
+    //       | qi::eps
+    //      )
+    //   >> qi::omit[')']
+    //   >> -qi::omit
+    //   [
+    //    tok.raises_keyword
+    //    >> '('
+    //    >> (scoped_name % ',')
+    //    >> ')'
+    //   ]
+    //   >> qi::attr(true)
+    //   ;
+    // direction = 
+    //   tok.in_keyword[_val = idl_parser::direction::in()]
+    //   | tok.out_keyword[_val = idl_parser::direction::out()]
+    //   | tok.inout_keyword[_val = idl_parser::direction::inout()]
+    //   ;
+    // param %=
+    //   direction
+    //   >> type_spec
+    //   >> qi::omit[tok.identifier]
+    //   ;      
+    // // start.name("op_decl");
+    // // param.name("param");
+    // // direction.name("direction");
+    // // qi::debug(start);
+    // // qi::debug(param);
+    // // qi::debug(direction);
   }
 
   grammar::scoped_name<Iterator> scoped_name;
   grammar::type_spec<Iterator> type_spec;
   qi::rule<Iterator, boost::variant<idl_parser::direction::in
                                     , idl_parser::direction::out
-                                    , idl_parser::direction::inout>()
-           , skipper<Iterator> > direction;
-  qi::rule<Iterator, idl_parser::param_decl<Iterator>()
-           , skipper<Iterator> > param;
-  qi::rule<Iterator, idl_parser::op_decl<Iterator>()
-           , skipper<Iterator> > start;
+                                    , idl_parser::direction::inout>()> direction;
+  qi::rule<Iterator, idl_parser::param_decl<Iterator>()> param;
+  qi::rule<Iterator, idl_parser::op_decl<Iterator>()> start;
 };
 
 } } }

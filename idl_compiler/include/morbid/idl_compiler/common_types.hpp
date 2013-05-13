@@ -18,6 +18,8 @@
 #include <boost/spirit/home/lex/lexer_lexertl.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp>
 
 #include <vector>
 #include <iterator>
@@ -25,14 +27,17 @@
 
 namespace morbid { namespace idl_compiler {
 
-typedef boost::spirit::lex::lexertl::token<std::vector<char>::const_iterator> token_type;
-typedef boost::spirit::lex::lexertl::actor_lexer<token_type> lexer_type;
-        
-typedef lexer_type::iterator_type parser_iterator_type;
+typedef boost::wave::cpplexer::lex_token<> token_type;
+typedef boost::wave::cpplexer::lex_iterator
+  <token_type> lex_iterator_type;
+typedef boost::wave::context
+  <std::vector<char>::const_iterator, lex_iterator_type> context_type;
+
+typedef context_type::iterator_type parser_iterator_type;
+
 typedef morbid::idl_parser::interface_def<parser_iterator_type> interface_def_type;
 typedef morbid::idl_parser::op_decl<parser_iterator_type> op_decl_type;
 typedef morbid::idl_parser::typedef_def<parser_iterator_type> typedef_def_type;
-typedef morbid::idl_parser::exception_def<parser_iterator_type> exception_def_type;
 typedef morbid::idl_parser::struct_def<parser_iterator_type> struct_def_type;
 typedef morbid::idl_parser::struct_member<parser_iterator_type> struct_member_type;
 typedef morbid::idl_parser::type_spec<parser_iterator_type> type_spec;

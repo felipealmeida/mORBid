@@ -63,8 +63,6 @@ bool operator!=(param_decl<Iterator> const& lhs, param_decl<Iterator> const& rhs
 template <typename Iterator>
 struct op_decl
 {
-  typedef typename Iterator::base_iterator_type base_iterator;
-
   type_spec<Iterator> type;
   std::string name;
   std::vector<param_decl<Iterator> > params;

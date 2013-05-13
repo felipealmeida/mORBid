@@ -39,55 +39,48 @@ namespace lex = boost::spirit::lex;
 template <typename Iterator>
 struct struct_definition : boost::spirit::qi::grammar
   <Iterator, idl_parser::struct_def<Iterator>()
-   , qi::locals<std::vector<struct_member<Iterator> > >
-   , skipper<Iterator> >
+   , qi::locals<std::vector<struct_member<Iterator> > > >
 {
-  typedef typename Iterator::base_iterator_type base_iterator;
-
-  template <typename TokenDef>
-  struct_definition(TokenDef const& tok)
+  struct_definition()
     : struct_definition::base_type(start)
-    , type_spec(tok)
   {
-    namespace p = boost::phoenix;
-    using qi::_a; using qi::_b;
-    using qi::_1;
-    using p::at_c;
-    using qi::_val;
+    // namespace p = boost::phoenix;
+    // using qi::_a; using qi::_b;
+    // using qi::_1;
+    // using p::at_c;
+    // using qi::_val;
 
-    members =
-      type_spec[_a = _1]
-      >> (
-          tok.identifier
-          [
-           p::push_back(_b, p::construct<struct_member<Iterator> >(_a, _1))
-          ]
-          % ','
-         )
-      >> qi::char_(';')[_val = _b]
-      ;
-    start =
-      tok.struct_keyword
-      >> tok.identifier[at_c<0>(_val) = _1]
-      >> qi::char_('{')
-      >> *(members[p::insert(_a, p::end(_a), p::begin(_1), p::end(_1))])
-      >> qi::char_('}')
-      >> qi::eps[at_c<1>(_val) = _a]
-      ;
-    start.name("struct_def");
-    qi::debug(start);
-    members.name("members");
-    qi::debug(members);
+    // members =
+    //   type_spec[_a = _1]
+    //   >> (
+    //       tok.identifier
+    //       [
+    //        p::push_back(_b, p::construct<struct_member<Iterator> >(_a, _1))
+    //       ]
+    //       % ','
+    //      )
+    //   >> qi::char_(';')[_val = _b]
+    //   ;
+    // start =
+    //   tok.struct_keyword
+    //   >> tok.identifier[at_c<0>(_val) = _1]
+    //   >> qi::char_('{')
+    //   >> *(members[p::insert(_a, p::end(_a), p::begin(_1), p::end(_1))])
+    //   >> qi::char_('}')
+    //   >> qi::eps[at_c<1>(_val) = _a]
+    //   ;
+    // start.name("struct_def");
+    // qi::debug(start);
+    // members.name("members");
+    // qi::debug(members);
   }
 
   grammar::type_spec<Iterator> type_spec;
   qi::rule<Iterator, std::vector<struct_member<Iterator> >()
            , qi::locals<idl_parser::type_spec<Iterator>
-                        , std::vector<struct_member<Iterator> > > 
-           , skipper<Iterator> > members;
+                        , std::vector<struct_member<Iterator> > > > members;
   qi::rule<Iterator, idl_parser::struct_def<Iterator>()
-           , qi::locals<std::vector<struct_member<Iterator> > >
-           , skipper<Iterator> > start;
+           , qi::locals<std::vector<struct_member<Iterator> > > > start;
 };
 
 } } }

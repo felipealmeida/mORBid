@@ -91,9 +91,18 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
   boost::asio::ip::tcp::endpoint local_endpoint;
 };
 
+struct openbus_type {};
+openbus_type const openbus = {};
+
 struct orb
 {
   orb() : impl(new orb_impl) {}
+  orb(openbus_type, std::string const& host, unsigned short port
+      , std::string const& username, std::string const& password)
+    : impl(new orb_impl)
+  {
+    
+  }
 
   void run() { impl->run(); }
   void stop() { impl->stop(); }

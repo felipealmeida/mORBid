@@ -11,9 +11,11 @@
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>
+#include <boost/wave/token_ids.hpp>
 
-#include <morbid/idl_parser/tokenizer.hpp>
+#include <morbid/idl_parser/token.hpp>
 #include <morbid/idl_parser/typedef_def.hpp>
+#include <morbid/idl_parser/grammar/skipper.hpp>
 
 namespace morbid { namespace idl_parser { namespace grammar {
 
@@ -22,19 +24,27 @@ namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct module_open : boost::spirit::qi::grammar
- <Iterator, std::string(), skipper<Iterator> >
+<Iterator, BOOST_WAVE_STRINGTYPE(), skipper<Iterator> >
 {
-  typedef typename Iterator::base_iterator_type base_iterator;
-
-  template <typename TokenDef>
-  module_open(TokenDef const& tok)
+  module_open()
     : module_open::base_type(start)
   {
-    start %= qi::omit[tok.module_keyword]
-      >> tok.identifier >> qi::omit['{'];
+    using qi::_1;
+    using qi::_val;
+
+    start %=
+      qi::omit[&token_id(boost::wave::T_IDENTIFIER)]
+      >> qi::omit[token_value("module")]
+      >> qi::omit[&token_id(boost::wave::T_IDENTIFIER)]
+      >> token_value
+      >> qi::omit[token_value("{")]
+      ;
+
+    start.name("module_open");
+    qi::debug(start);
   }
 
-  boost::spirit::qi::rule<Iterator, std::string(), skipper<Iterator> > start;
+  boost::spirit::qi::rule<Iterator, BOOST_WAVE_STRINGTYPE(), skipper<Iterator> > start;
 };
 
 } } }

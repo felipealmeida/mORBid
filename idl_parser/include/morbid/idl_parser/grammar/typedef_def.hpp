@@ -23,27 +23,21 @@ namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct typedef_definition : boost::spirit::qi::grammar
-  <Iterator, idl_parser::typedef_def<Iterator>()
-   , skipper<Iterator> >
+  <Iterator, idl_parser::typedef_def<Iterator>()>
 {
-  typedef typename Iterator::base_iterator_type base_iterator;
-
-  template <typename TokenDef>
-  typedef_definition(TokenDef const& tok)
+  typedef_definition()
     : typedef_definition::base_type(start)
-    , type_spec(tok)
   {
-    start %= qi::omit[tok.typedef_keyword]
-      >> type_spec
-      >> tok.identifier;
+    // start %= qi::omit[tok.typedef_keyword]
+    //   >> type_spec
+    //   >> tok.identifier;
 
-    // start.name("typedef_def");
-    // qi::debug(start);
+    // // start.name("typedef_def");
+    // // qi::debug(start);
   }
 
   grammar::type_spec<Iterator> type_spec;
-  boost::spirit::qi::rule<Iterator, idl_parser::typedef_def<Iterator>()
-                          , skipper<Iterator> > start;
+  boost::spirit::qi::rule<Iterator, idl_parser::typedef_def<Iterator>()> start;
 };
 
 } } }

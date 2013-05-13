@@ -25,8 +25,67 @@
 #include <boost/graph/named_function_params.hpp>
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/lex/qi.hpp>
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp>
 
 #include <iostream>
+
+//     struct include_paths
+//     {
+//       include_paths() : seen_separator(false) {}
+
+//       std::vector<std::string> paths;       // stores user paths
+//       std::vector<std::string> syspaths;    // stores system paths
+//       bool seen_separator;        // command line contains a '-I-' option
+
+//       // Function which validates additional tokens from command line.
+//       static void 
+//       validate(boost::any &v, std::vector<std::string> const &tokens)
+//       {
+//         if (v.empty())
+//           v = boost::any(include_paths());
+
+//         include_paths *p = boost::any_cast<include_paths>(&v);
+
+//         BOOST_ASSERT(p);
+//         // Assume only one path per '-I' occurrence.
+//         std::string t = tokens[0];
+//         if (t == "-")
+//         {
+//           // found -I- option, so switch behaviour
+//           p->seen_separator = true;
+//         } 
+//         else if (p->seen_separator)
+//         {
+//           // store this path as a system path
+//           p->syspaths.push_back(t); 
+//         } 
+//         else
+//         {
+//           // store this path as an user path
+//           p->paths.push_back(t);
+//         }            
+//       }
+//     };
+
+// std::ostream& operator<<(std::ostream& os, include_paths const&)
+// {
+//   return os << "include_paths";
+// }
+// std::istream& operator>>(std::istream& is, include_paths&)
+// {
+//   return is;
+// }
+
+// namespace boost { namespace program_options {
+
+//   void validate(boost::any &v, std::vector<std::string> const &s,
+//       ::include_paths *, int) 
+//   {
+//       ::include_paths::validate(v, s);
+//   }
+
+// }}  // namespace boost::program_options
 
 int main(int argc, char** argv)
 {
@@ -35,6 +94,8 @@ int main(int argc, char** argv)
     ("help", "Shows this message")
     ("input,i", boost::program_options::value<std::string>(), "input IDL file")
     ("output,o", boost::program_options::value<std::string>(), "output base filenames")
+    ("include,I", boost::program_options::value<std::vector<std::string> >()
+     , "specify an additional include directory")
     ;
 
   boost::program_options::variables_map vm;
@@ -62,24 +123,57 @@ int main(int argc, char** argv)
       {
         ifs.rdbuf()->sgetn(&buffer[0], buffer.size());
 
-        using morbid::idl_compiler::lexer_type;
-        
-        morbid::idl_parser::tokens<lexer_type> lexer;
+        typedef boost::wave::cpplexer::lex_iterator<
+          boost::wave::cpplexer::lex_token<> >
+          lex_iterator_type;
+        typedef boost::wave::context<
+          std::vector<char>::const_iterator, lex_iterator_type>
+          context_type;
 
-        std::vector<char>::const_iterator buffer_begin = buffer.begin()
-          , buffer_end = buffer.end();
+        context_type ctx(buffer.begin(), buffer.end(), input_file.string().c_str());
+        ctx.set_language
+          (static_cast<boost::wave::language_support>
+           (
+            (int)ctx.get_language()
+            & (int)~boost::wave::support_option_emit_line_directives
+            // & (int)~boost::wave::support_option_insert_whitespace
+            & (int)~boost::wave::support_option_emit_pragma_directives
+           ));
 
-        typedef morbid::idl_compiler::parser_iterator_type iterator_type;
-        iterator_type iterator = lexer.begin(buffer_begin, buffer_end)
-          , last = lexer.end();
+        // add include directories to the include search paths
+        if (vm.count("include"))
+        {
+          std::vector<std::string> ip = vm["include"].as<std::vector<std::string> >();
+          std::vector<std::string>::const_iterator end = ip.end();
 
+          for (std::vector<std::string>::const_iterator cit = ip.begin(); 
+               cit != end; ++cit)
+          {
+            ctx.add_include_path((*cit).c_str());
+          }
+          
+          // // if on the command line was given -I- , this has to be propagated
+          // if (ip.seen_separator) 
+          //   ctx.set_sysinclude_delimiter();
+                 
+          // // add system include directories to the include path
+          // vector<string>::const_iterator sysend = ip.syspaths.end();
+          // for (vector<string>::const_iterator syscit = ip.syspaths.begin(); 
+          //      syscit != sysend; ++syscit)
+          // {
+          //   ctx.add_sysinclude_path((*syscit).c_str());
+          // }
+        }
 
-        morbid::idl_parser::grammar::interface_definition<iterator_type> interface_grammar(lexer);
-        morbid::idl_parser::grammar::module_open<iterator_type> module_open_grammar(lexer);
-        morbid::idl_parser::grammar::typedef_definition<iterator_type> typedef_grammar(lexer);
-        morbid::idl_parser::grammar::exception_definition<iterator_type> exception_grammar(lexer);
-        morbid::idl_parser::grammar::struct_definition<iterator_type> struct_grammar(lexer);
-        morbid::idl_parser::skipper<iterator_type> skipper(lexer);
+        typedef context_type::iterator_type iterator_type;
+        iterator_type iterator = ctx.begin(), last = ctx.end();
+
+        morbid::idl_parser::grammar::interface_definition<iterator_type> interface_grammar;
+        morbid::idl_parser::grammar::module_open<iterator_type> module_open_grammar;
+        morbid::idl_parser::grammar::typedef_definition<iterator_type> typedef_grammar;
+        morbid::idl_parser::grammar::exception_definition<iterator_type> exception_grammar;
+        morbid::idl_parser::grammar::struct_definition<iterator_type> struct_grammar;
+        morbid::idl_parser::grammar::skipper<iterator_type> skipper;
         namespace qi = boost::spirit::qi;
         namespace lex = boost::spirit::lex;
         namespace phoenix = boost::phoenix;
@@ -108,22 +202,25 @@ int main(int argc, char** argv)
         
         do
         {
-          std::string module_open;
+          try
+          {
+          morbid::idl_parser::wave_string module_open;
           morbid::idl_compiler::interface_def_type interface;
           morbid::idl_compiler::typedef_def_type typedef_;
-          morbid::idl_compiler::exception_def_type exception;
+          morbid::idl_parser::exception_def exception;
           morbid::idl_compiler::struct_def_type struct_;
-          if(boost::spirit::qi::phrase_parse(iterator, last, module_open_grammar, skipper, module_open))
+          if(boost::spirit::qi::phrase_parse(iterator, last, module_open_grammar
+                                             , skipper, module_open))
           {
             std::cout << "Opened module " << module_open << std::endl;
             current_module.push_back
               (add_vertex(module_property_type
-                          (boost::shared_ptr<module_type>(new module_type(module_open)))
+                          (boost::shared_ptr<module_type>(new module_type(module_open.c_str())))
                           , modules_tree));
             add_edge(*boost::prior(current_module.end(), 2)
                      , current_module.back(), modules_tree);
           }
-          else if(boost::spirit::qi::phrase_parse(iterator, last, qi::char_('}') >> ';', skipper))
+          else if(boost::spirit::qi::parse(iterator, last, qi::char_('}') >> ';'))
           {
             if(current_module.size() > 1)
             {
@@ -133,7 +230,7 @@ int main(int argc, char** argv)
             else
               throw std::runtime_error("Error, closing non existant module");
           }
-          else if(boost::spirit::qi::phrase_parse(iterator, last, typedef_grammar >> qi::omit[';'], skipper, typedef_))
+          else if(boost::spirit::qi::parse(iterator, last, typedef_grammar >> qi::omit[';'], typedef_))
           {
             std::cout << "typedef " << typedef_ << std::endl;
 
@@ -146,15 +243,16 @@ int main(int argc, char** argv)
             boost::get(map, current_module.back())
               ->typedefs.push_back(t);
           }
-          else if(boost::spirit::qi::phrase_parse(iterator, last
-                                                  , exception_grammar[phoenix::ref(exception) = qi::_1] >> ';'
-                                                  , skipper))
+          else if(boost::spirit::qi::phrase_parse
+                  (iterator, last
+                   , (exception_grammar[phoenix::ref(exception) = qi::_1]
+                      >> morbid::idl_parser::token_value(";"))
+                   , skipper))
           {
             std::cout << "exception " << exception << std::endl;
           }
-          else if(boost::spirit::qi::phrase_parse(iterator, last
-                                                  , struct_grammar[phoenix::ref(struct_) = qi::_1] >> ';'
-                                                  , skipper))
+          else if(boost::spirit::qi::parse(iterator, last
+                                           , struct_grammar[phoenix::ref(struct_) = qi::_1] >> ';'))
           {
             std::cout << "struct " << struct_ << std::endl;
 
@@ -180,7 +278,7 @@ int main(int argc, char** argv)
             boost::get(map, current_module.back())
               ->structs.push_back(s);
           }
-          else if(boost::spirit::qi::phrase_parse(iterator, last, interface_grammar >> qi::omit[';'], skipper, interface))
+          else if(boost::spirit::qi::parse(iterator, last, interface_grammar >> qi::omit[';'], interface))
           {
             std::cout << "interface " << interface << std::endl;
             typedef morbid::idl_compiler::module module;
@@ -254,10 +352,25 @@ int main(int argc, char** argv)
           }
           else
           {
-            throw std::runtime_error("Error: Nothing matched");
+            std::cout << iterator->get_position().get_file()
+                      << ":" << iterator->get_position().get_line() 
+                      << ":" << iterator->get_position().get_column()
+                      << ": syntax error"
+                      << std::endl;
+            return 1;
+          }
+          }
+          catch(boost::wave::preprocess_exception const& e)
+          {
+            std::cout << e.file_name()
+                      << ":" << e.line_no() 
+                      << ":" << e.column_no()
+                      << ": failed preprocessing file " << e.description()
+                      << std::endl;
+            return 1;
           }
         }
-        while(!boost::spirit::qi::phrase_parse(iterator, last, qi::eoi, skipper));
+        while(!boost::spirit::qi::parse(iterator, last, qi::eoi));
 
         std::cout << "Finished file" << std::endl;
         if(current_module.size() != 2)
@@ -346,56 +459,6 @@ int main(int argc, char** argv)
                                   .color_map(color_map));
             }
           }                  
-
-          // {
-          //   output_iterator_type iterator(cpp);
-
-          //   bool r = karma::generate
-          //     (iterator
-          //      , karma::lit("// -*- c++ -*-") << karma::eol
-          //      << "// Generated implementation. DO NOT EDIT" << karma::eol << karma::eol
-          //      << "#include \"" << karma::lit(header_path.filename().native()) << "\"" << karma::eol
-          //      << "#include <morbid/synchronous_call.hpp>" << karma::eol
-          //      << "#include <boost/fusion/include/vector.hpp>" << karma::eol
-          //      << karma::eol
-          //      );
-          //   if(!r) 
-          //     throw std::runtime_error("Failed generating #includes for cpp");
-
-          //   {
-          //     color_map_container_t color_map_container;
-          //     color_map_t color_map(color_map_container);
-          //     morbid::idl_compiler::generate_cpp_modules_visitor cpp_modules_visitor (iterator);
-          //     breadth_first_visit(modules_tree, global_module
-          //                         , boost::visitor(cpp_modules_visitor)
-          //                         .color_map(color_map));
-          //     typedef boost::property_map<modules_tree_type, module_property_t>
-          //       ::type module_map;
-          //     module_map map = get(module_property_t(), modules_tree);
-          //     for(std::size_t l = cpp_modules_visitor.state->opened_modules.size() - 1
-          //           ;l != 0;--l)
-          //     {
-          //       morbid::idl_compiler::module const& m
-          //         = *boost::get(map, cpp_modules_visitor.state->opened_modules[l]);
-                
-          //       *iterator++ = '}';
-          //       *iterator++ = ' ';
-          //       *iterator++ = '/';
-          //       *iterator++ = '/';
-          //       iterator = std::copy(m.name.begin(), m.name.end(), iterator);
-          //       karma::generate(iterator, karma::eol);
-          //     }
-          //   }
-
-          //   {
-          //     color_map_container_t color_map_container;
-          //     color_map_t color_map(color_map_container);
-          //     morbid::idl_compiler::generate_cpp_poa_modules_visitor cpp_poa_modules_visitor (iterator);
-          //     breadth_first_visit(modules_tree, global_module
-          //                         , boost::visitor(cpp_poa_modules_visitor)
-          //                         .color_map(color_map));
-          //   }
-          // }
         }
         else
         {

@@ -8,6 +8,8 @@
 #ifndef MORBID_IDL_PARSER_EXCEPTION_DEF_HPP
 #define MORBID_IDL_PARSER_EXCEPTION_DEF_HPP
 
+#include <morbid/idl_parser/wave_string.hpp>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include <ostream>
@@ -15,22 +17,19 @@
 
 namespace morbid { namespace idl_parser {
 
-template <typename Iterator>
 struct exception_def
 {
-  std::string name;
+  wave_string name;
 };
 
-template <typename Iterator>
-std::ostream& operator<<(std::ostream& os, exception_def<Iterator> d)
+inline std::ostream& operator<<(std::ostream& os, exception_def d)
 {
   return os << "[exception_def name: " << d.name << "]";
 }
 
 } }
 
-BOOST_FUSION_ADAPT_TPL_STRUCT((Iterator)
-                              , (::morbid::idl_parser::exception_def) (Iterator)
-                              , (std::string, name));
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::exception_def
+                          , (::morbid::idl_parser::wave_string, name));
 
 #endif

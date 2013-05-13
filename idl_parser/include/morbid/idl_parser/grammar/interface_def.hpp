@@ -34,37 +34,33 @@ namespace lex = boost::spirit::lex;
 template <typename Iterator>
 struct interface_definition : boost::spirit::qi::grammar
   <Iterator, idl_parser::interface_def<Iterator>()
-   , qi::locals<boost::iterator_range<typename Iterator::base_iterator_type>
+   , qi::locals<std::string
                 , std::vector<idl_parser::op_decl<Iterator> >
                >
-   , skipper<Iterator> >
+  >
 {
-  typedef typename Iterator::base_iterator_type base_iterator;
-
-  template <typename TokenDef>
-  interface_definition(TokenDef const& tok)
+  interface_definition()
     : interface_definition::base_type(start)
-    , op_decl(tok)
   {
-    namespace qi = boost::spirit::qi;
-    namespace lex = boost::spirit::lex;
-    namespace phoenix = boost::phoenix;
+    // namespace qi = boost::spirit::qi;
+    // namespace lex = boost::spirit::lex;
+    // namespace phoenix = boost::phoenix;
 
-    typedef idl_parser::interface_def<Iterator> return_type;
+    // typedef idl_parser::interface_def<Iterator> return_type;
 
-    start %= qi::omit[tok.interface_keyword]
-      >> tok.identifier
-      >> qi::omit
-      [
-       -(
-         ':'
-         >> (tok.identifier % ',')
-        )
-      ]
-      >> qi::omit[qi::char_('{')]
-      >> *(op_decl >> qi::omit[qi::char_(';')])
-      >> qi::omit[qi::char_('}')]
-      ;
+    // start %= qi::omit[tok.interface_keyword]
+    //   >> tok.identifier
+    //   >> qi::omit
+    //   [
+    //    -(
+    //      ':'
+    //      >> (tok.identifier % ',')
+    //     )
+    //   ]
+    //   >> qi::omit[qi::char_('{')]
+    //   >> *(op_decl >> qi::omit[qi::char_(';')])
+    //   >> qi::omit[qi::char_('}')]
+    //   ;
 
     // start.name("interface_def");
     // qi::debug(start);
@@ -72,9 +68,8 @@ struct interface_definition : boost::spirit::qi::grammar
 
   grammar::op_decl<Iterator> op_decl;
   boost::spirit::qi::rule<Iterator, idl_parser::interface_def<Iterator>()
-                          , qi::locals<boost::iterator_range<base_iterator>
-                                       , std::vector<idl_parser::op_decl<Iterator> > >
-                          , skipper<Iterator> > start;
+                          , qi::locals<std::string//boost::iterator_range<base_iterator>
+                                       , std::vector<idl_parser::op_decl<Iterator> > > > start;
 };
 
 } } }

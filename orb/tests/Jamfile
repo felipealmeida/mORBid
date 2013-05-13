@@ -5,6 +5,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 
 import testing ;
+import os ;
 
 project morbid/tests ;
 
@@ -19,6 +20,16 @@ actions donothing
 actions compileidl
 {
   $(install:G=)/morbid_idl -i $(>) -o $(<:S=)
+}
+if [ option.get test-with-openbus : : 1 ]
+{
+  local scs-idl-path-env = [ os.environ SCS_IDL_PATH ] ;
+  path-constant scs-idl-path : $(scs-idl-path-env) ;
+
+  actions compileidl-openbus
+  {
+    $(install:G=)/morbid_idl -i $(>) -o $(<:S=) -I $(scs-idl-path)
+  }
 }
 
 exe allprimitives_client
@@ -131,6 +142,15 @@ alias return_allprimitives : return_allprimitives.output ;
 alias modules_allprimitives : modules_allprimitives.output ;
 alias struct : struct.output ;
 alias reference : reference.output ;
+
+if [ option.get test-with-openbus : : 1 ]
+{
+  local openbus-idl-path-env = [ os.environ OPENBUS_IDL_PATH ] ;
+  path-constant openbus-idl-path : $(openbus-idl-path-env) ;
+
+  make offer_registry.hpp : $(openbus-idl-path)/offer_registry.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
+  alias openbus : [ testing.run openbus_client.cpp /morbid//morbid : : : <implicit-dependency>offer_registry.hpp ] ;
+}
 
 alias tests : /morbid//install allprimitives out_allprimitives inout_allprimitives
  return_allprimitives modules_allprimitives struct #reference

@@ -26,10 +26,13 @@ alias ior : iiop /boost//headers : : : <include>ior/include ;
 exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/concept_generator.cpp
  idl_compiler/src/reference_model_generator.cpp
+ idl_compiler/src/local_stub_generator.cpp
  idl_compiler/src/generate_header_modules_visitor.cpp
  idl_parser /boost//filesystem /boost//program_options
+ /boost//thread /boost//wave
   : <toolset>gcc:<cxxflags>-Wno-sign-compare
     <include>idl_compiler/include
+#    <define>BOOST_WAVE_SEPARATE_GRAMMAR_INSTANTIATION=0
  ;
 explicit morbid_idl ;
 
