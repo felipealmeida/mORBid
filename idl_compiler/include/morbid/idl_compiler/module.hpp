@@ -11,6 +11,7 @@
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/interface.hpp>
 #include <morbid/idl_compiler/lookuped_type.hpp>
+#include <morbid/idl_compiler/kinds.hpp>
 #include <morbid/idl_parser/wave_string.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
@@ -83,6 +84,62 @@ struct module
   std::vector<idl_compiler::exception> exceptions;
   std::vector<idl_compiler::struct_> structs;
 };
+
+inline boost::optional<kind_variant> search_type(module const& m, idl_parser::wave_string const& name)
+{
+  std::cout << "Searching " << name << " at module " << m.name << std::endl;
+
+  std::vector<idl_compiler::interface_>const& interfaces = m.interfaces;
+
+  std::cout << "This module has " << interfaces.size() << " interfaces" << std::endl;
+
+  std::vector<idl_compiler::interface_>::const_iterator interface_iterator
+    = std::find_if(interfaces.begin(), interfaces.end(), find_interface_by_name(name));
+  if(interface_iterator != interfaces.end())
+  {
+    std::cout << "Is a interface" << std::endl;
+    return kind_variant(is_interface_kind());
+  }
+  // else
+  // {
+  //   std::cout << "No interface from this module" << std::endl;
+  // }
+
+  std::vector<idl_compiler::typedef_>const& typedefs = m.typedefs;
+
+  std::cout << "This module has " << typedefs.size() << " typedefs" << std::endl;
+
+  std::vector<idl_compiler::typedef_>::const_iterator typedef_iterator
+    = std::find_if(typedefs.begin(), typedefs.end(), find_typedef_by_name(name));
+  if(typedef_iterator != typedefs.end())
+  {
+    std::cout << "Is a typedef " << typedef_iterator->definition.name << std::endl;
+    return kind_variant(is_typedef_kind());
+  }
+  // else
+  // {
+  //   std::cout << "No typedef from this module" << std::endl;
+  // }
+
+  std::vector<idl_compiler::struct_>const& structs = m.structs;
+
+  std::cout << "This module has " << structs.size() << " structs" << std::endl;
+
+  std::vector<idl_compiler::struct_>::const_iterator struct_iterator
+    = std::find_if(structs.begin(), structs.end(), find_struct_by_name(name));
+  if(struct_iterator != structs.end())
+  {
+    std::cout << "Is a struct " << struct_iterator->definition.name << std::endl;
+    return kind_variant(is_struct_kind());
+  }
+  // else
+  // {
+  //   std::cout << "No struct from this module" << std::endl;
+  // }
+
+  std::cout << "Not found " << name << " at module " << m.name << std::endl;
+  return boost::none;
+}
 
 } }
 

@@ -10,6 +10,7 @@
 
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/lookuped_type.hpp>
+#include <morbid/idl_compiler/errors.hpp>
 
 #include <boost/optional.hpp>
 
@@ -33,6 +34,11 @@ struct lookup_type_spec_functional
   }
   lookuped_type operator()(idl_parser::types::scoped_name const& s) const
   {
+    typedef boost::property_map<modules_tree_type, module_property_t>
+      ::const_type module_map;
+
+    assert(s.identifiers.size() >= 1);
+
     if(s.identifiers.size() == 1 && s.identifiers[0] == "string")
       return lookuped_type(current_module[0], modules, is_interface_kind());
 
@@ -45,63 +51,60 @@ struct lookup_type_spec_functional
     {
       std::cout << "top bottom" << std::endl;
 
-      if(s.identifiers.size() == 1)
+      typedef std::vector<vertex_descriptor>::const_reverse_iterator module_iterator;
+      module_iterator first = current_module.rbegin()
+        , last = boost::prior(current_module.rend());
+      do
       {
-        std::cout << "Just identifier " << std::endl;
-        typedef std::vector<vertex_descriptor>::const_reverse_iterator module_iterator;
-        module_iterator first = current_module.rbegin()
-          , last = boost::prior(current_module.rend());
-        do
+        module_map map = get(module_property_t(), modules);
+
+        idl_compiler::module const& module = *boost::get(map, *first);
+        std::cout << "Current module " << module.name << std::endl;
+
+        std::vector<idl_parser::wave_string>::const_iterator
+          id_first = s.identifiers.begin()
+          , id_last = boost::prior(s.identifiers.end());
+
+        vertex_descriptor v_lookup = *first;
+        bool found = true;
+        while(id_first != id_last && found)
         {
-          typedef boost::property_map<modules_tree_type, module_property_t>
-            ::const_type module_map;
-          module_map map = get(module_property_t(), modules);
+          typedef typename modules_tree_type::out_edge_iterator out_edge_iterator;
+          std::pair<out_edge_iterator, out_edge_iterator> child_modules
+            = out_edges(v_lookup, modules);
 
-          std::vector<idl_compiler::interface_>const&interfaces = boost::get(map, current_module.back())->interfaces;
-          std::vector<idl_compiler::interface_>::const_iterator interface_iterator
-            = std::find_if(interfaces.begin(), interfaces.end(), find_interface_by_name(s.identifiers[0]));
-          if(interface_iterator != interfaces.end())
+          found = false;
+          for(;child_modules.first != child_modules.second
+                ;++child_modules.first)
           {
-            std::cout << "Is a interface" << std::endl;
-            return lookuped_type(*first, modules, is_interface_kind());
+            vertex_descriptor v = target(*child_modules.first, modules);
+            idl_compiler::module const& module = *boost::get(map, v);
+            
+            if(module.name == *id_first)
+            {
+              std::cout << "Found correct module " << module.name << std::endl;
+              ++id_first;
+              found = true;
+              v_lookup = v;
+            }
           }
-          else
-          {
-            std::cout << "No interface from this module" << std::endl;
-          }
-
-          std::vector<idl_compiler::typedef_>const&typedefs = boost::get(map, current_module.back())->typedefs;
-          std::vector<idl_compiler::typedef_>::const_iterator typedef_iterator
-            = std::find_if(typedefs.begin(), typedefs.end(), find_typedef_by_name(s.identifiers[0]));
-          if(typedef_iterator != typedefs.end())
-          {
-            std::cout << "Is a typedef " << typedef_iterator->definition.name << std::endl;
-            return lookuped_type(*first, modules, is_typedef_kind());
-          }
-          else
-          {
-            std::cout << "No typedef from this module" << std::endl;
-          }
-
-          std::vector<idl_compiler::struct_>const&structs = boost::get(map, current_module.back())->structs;
-          std::vector<idl_compiler::struct_>::const_iterator struct_iterator
-            = std::find_if(structs.begin(), structs.end(), find_struct_by_name(s.identifiers[0]));
-          if(struct_iterator != structs.end())
-          {
-            std::cout << "Is a struct " << struct_iterator->definition.name << std::endl;
-            return lookuped_type(*first, modules, is_struct_kind());
-          }
-          else
-          {
-            std::cout << "No typedef from this module" << std::endl;
-          }
-
-          ++first;
         }
-        while(first != last);
+
+        if(found)
+        {
+          idl_compiler::module const& module = *boost::get(map, v_lookup);
+          std::cout << "Found correct module " << module.name << std::endl;
+
+          boost::optional<kind_variant> kind = search_type(module, s.identifiers.back());
+          if(kind)
+            return lookuped_type(v_lookup, modules, *kind);
+        }
+
+        ++first;
       }
+      while(first != last);
     }
-    throw std::runtime_error("Not found type");
+    throw lookup_error(s);
   }
   lookuped_type operator()(idl_parser::types::sequence const& s) const
   {

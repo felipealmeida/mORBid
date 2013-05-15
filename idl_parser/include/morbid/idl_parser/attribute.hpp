@@ -5,8 +5,8 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#ifndef MORBID_IDL_PARSER_MEMBER_HPP
-#define MORBID_IDL_PARSER_MEMBER_HPP
+#ifndef MORBID_IDL_PARSER_ATTRIBUTE_HPP
+#define MORBID_IDL_PARSER_ATTRIBUTE_HPP
 
 #include <morbid/idl_parser/type_spec.hpp>
 #include <morbid/idl_parser/wave_string.hpp>
@@ -19,26 +19,25 @@
 
 namespace morbid { namespace idl_parser {
 
-struct member
+struct attribute
 {
+  bool readonly;
   type_spec type;
   wave_string name;
   boost::wave::util::file_position_type file_position;
-
-  member(type_spec type, wave_string name, boost::wave::util::file_position_type file_position)
-    : type(type), name(name), file_position(file_position) {}
-  member() {}
 };
 
-inline std::ostream& operator<<(std::ostream& os, member m)
+inline std::ostream& operator<<(std::ostream& os, attribute m)
 {
-  return os << "[struct_member name: " << m.name << " type: " << m.type << "]";
+  return os << "[attribute name: " << m.name << " type: " << m.type << " readonly: " << m.readonly << "]";
 }
 
 } }
 
-BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::member
-                          , (::morbid::idl_parser::type_spec, type)
+BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::attribute
+                          , 
+                          (bool, readonly)
+                          (::morbid::idl_parser::type_spec, type)
                           (::morbid::idl_parser::wave_string, name)
                           (::boost::wave::util::file_position_type, file_position));
 

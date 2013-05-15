@@ -56,7 +56,6 @@ struct lookuped_type_wrapper
     std::reverse(module_path.begin(), module_path.end());
     return module_path;
   }
-  typedef lookuped_type::kind_variant kind_variant;
   kind_variant kind() const
   {
     return l.kind;
@@ -71,8 +70,8 @@ BOOST_FUSION_ADAPT_ADT( ::morbid::idl_compiler::generator::lookuped_type_wrapper
                         , (std::vector< ::morbid::idl_parser::wave_string>
                            , std::vector< ::morbid::idl_parser::wave_string>
                            , obj.get_outside_type(), ::std::abort())
-                        (::morbid::idl_compiler::generator::lookuped_type_wrapper::kind_variant
-                         , ::morbid::idl_compiler::generator::lookuped_type_wrapper::kind_variant
+                        (::morbid::idl_compiler::kind_variant
+                         , ::morbid::idl_compiler::kind_variant
                          , obj.kind(), ::std::abort())
                         );
 

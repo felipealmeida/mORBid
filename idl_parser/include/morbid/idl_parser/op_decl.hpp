@@ -13,6 +13,7 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/variant.hpp>
+#include <boost/wave/util/file_position.hpp>
 
 #include <string>
 #include <vector>
@@ -45,6 +46,7 @@ struct param_decl
 {
   boost::variant<direction::in, direction::out, direction::inout> direction;
   type_spec type;
+  boost::wave::util::file_position_type file_position;
 };
 
 inline bool operator<(param_decl const& lhs, param_decl const& rhs)
@@ -69,6 +71,7 @@ struct op_decl
   type_spec type;
   wave_string name;
   std::vector<param_decl> params;
+  boost::wave::util::file_position_type file_position;
   bool user_defined;
 };
 
@@ -115,12 +118,14 @@ inline std::ostream& operator<<(std::ostream& os, op_decl op)
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::param_decl
                           , (::morbid::idl_parser::direction_variant, direction)
-                          (::morbid::idl_parser::type_spec, type));
+                          (::morbid::idl_parser::type_spec, type)
+                          (boost::wave::util::file_position_type, file_position));
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::op_decl
                           , (::morbid::idl_parser::type_spec, type)
                           (::morbid::idl_parser::wave_string, name)
                           (std::vector< ::morbid::idl_parser::param_decl>, params)
+                          (boost::wave::util::file_position_type, file_position)
                           (bool, user_defined));
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::direction::in, BOOST_PP_EMPTY());

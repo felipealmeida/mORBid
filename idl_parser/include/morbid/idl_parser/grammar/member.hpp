@@ -14,33 +14,33 @@
 
 #include <morbid/idl_parser/grammar/type_spec.hpp>
 #include <morbid/idl_parser/grammar/skipper.hpp>
-#include <morbid/idl_parser/tokenizer.hpp>
 #include <morbid/idl_parser/struct_def.hpp>
 
 namespace morbid { namespace idl_parser { namespace grammar {
 
 namespace qi = boost::spirit::qi;
-namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct member_definition
   : qi::grammar<Iterator, std::vector<member>()
-  , qi::locals<idl_parser::type_spec, std::vector<member> >
+  , qi::locals<idl_parser::type_spec, std::vector<member>
+               , boost::wave::util::file_position_type>
   , skipper<Iterator> >
 {
   member_definition() : member_definition::base_type(start)
   {
-    using qi::_a; using qi::_b;
+    using qi::_a; using qi::_b; using qi::_c;
     using qi::_1; using qi::_val;
     namespace p = boost::phoenix;
 
     start =
-      type_spec[_a = _1]
+      &token_position[_c = _1]
+      >> type_spec[_a = _1]
       >> (
           (&token_id(boost::wave::T_IDENTIFIER)
            >> token_value)
           [
-           p::push_back(_b, p::construct<member>(_a, _1))
+           p::push_back(_b, p::construct<member>(_a, _1, _c))
           ]
           % token_id(boost::wave::T_COMMA)
          )
@@ -50,7 +50,8 @@ struct member_definition
 
   grammar::type_spec<Iterator> type_spec;
   qi::rule<Iterator, std::vector<member>()
-           , qi::locals<idl_parser::type_spec, std::vector<member> >
+           , qi::locals<idl_parser::type_spec, std::vector<member>
+                        , boost::wave::util::file_position_type>
            , skipper<Iterator> > start;
 };
 

@@ -11,6 +11,7 @@
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/support.hpp>
 #include <boost/wave/token_ids.hpp>
+#include <boost/wave/util/file_position.hpp>
 
 namespace morbid { namespace idl_parser {
 
@@ -20,6 +21,8 @@ namespace qi = spirit::qi;
 BOOST_SPIRIT_TERMINAL_EX(token_id);
 BOOST_SPIRIT_TERMINAL_EX(token_category);
 BOOST_SPIRIT_TERMINAL_EX(token_value);
+BOOST_SPIRIT_TERMINAL_EX(parse_token_value);
+BOOST_SPIRIT_TERMINAL_EX(token_position);
 
 template <typename Id>
 struct token_id_parser : qi::primitive_parser<token_id_parser<Id> >
@@ -67,7 +70,7 @@ struct token_category_parser : qi::primitive_parser<token_category_parser<Catego
   template <typename U>
   static std::size_t get_category(U c)
   {
-    return c & boost::wave::ExtTokenTypeMask;
+    return c & (boost::wave::ExtTokenTypeMask + boost::wave::PPTokenFlag);
   }
 
   template <typename Iterator, typename Context, typename Skipper, typename Attribute>
@@ -149,6 +152,73 @@ struct token_value_parser : qi::primitive_parser<token_value_parser>
   }
 };
 
+template <typename Subject>
+struct token_value_directive : qi::unary_parser<token_value_directive<Subject> >
+{
+  template <typename Context, typename Iterator>
+  struct attribute
+  {
+    typedef typename std::iterator_traits<Iterator>::value_type::string_type string_type;
+    typedef typename spirit::traits::attribute_of<Subject, Context, typename string_type::iterator>::type type;
+  };
+
+  token_value_directive(Subject const& subject)
+    : subject(subject) {}
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    typedef typename boost::remove_cv<Attribute>::type attribute_type;
+    BOOST_MPL_ASSERT_NOT((boost::is_same<spirit::unused_type, attribute_type>));
+    qi::skip_over(first, last, skipper);
+
+    if(first != last)
+    {
+      typedef typename std::iterator_traits<Iterator>::value_type::string_type string_type;
+      string_type string = first->get_value();
+      typename string_type::iterator first_ = string.begin();
+      bool r = boost::spirit::qi::parse(first_, string.end(), subject, attr);
+      if (r)
+        ++first;
+      return r;
+    }
+    else
+      return false;
+  }  
+  
+  Subject subject;
+};
+
+struct token_position_parser : qi::unary_parser<token_position_parser>
+{
+  template <typename Context, typename Iterator>
+  struct attribute
+  {
+    typedef boost::wave::util::file_position_type type;
+  };
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    typedef typename boost::remove_cv<Attribute>::type attribute_type;
+    BOOST_MPL_ASSERT_NOT((boost::is_same<spirit::unused_type, attribute_type>));
+    qi::skip_over(first, last, skipper);
+
+    if(first != last)
+    {
+      attr = first->get_position();
+      ++first;
+      return true;
+    }
+    else
+      return false;
+  }  
+};
+
 } }
 
 namespace boost { namespace spirit {
@@ -206,6 +276,29 @@ struct make_primitive< ::morbid::idl_parser::tag::token_value, Modifiers>
   }
 };
 
+template <typename Modifiers>
+struct make_primitive< ::morbid::idl_parser::tag::token_position, Modifiers>
+{
+  typedef ::morbid::idl_parser::token_position_parser result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, boost::spirit::unused_type) const
+  {
+    return result_type();
+  }
+};
+
+template <typename Subject, typename Modifiers>
+struct make_directive< ::morbid::idl_parser::tag::parse_token_value, Subject, Modifiers>
+{
+  typedef ::morbid::idl_parser::token_value_directive<Subject> result_type;
+
+  result_type operator()(unused_type, Subject const& subject, unused_type) const
+  {
+    return result_type(subject);
+  }
+};
+
 }
 
 namespace traits {
@@ -214,6 +307,15 @@ template <typename Attribute, typename Context, typename Iterator>
 struct handles_container< ::morbid::idl_parser::token_value_parser, Attribute
                           , Context, Iterator>
  : mpl::true_ {};
+
+template <typename Subject>
+struct has_semantic_action< ::morbid::idl_parser::token_value_directive<Subject> >
+  : unary_has_semantic_action<Subject> {};
+
+template <typename Subject, typename Attribute, typename Context, typename Iterator>
+struct handles_container< ::morbid::idl_parser::token_value_directive<Subject>, Attribute
+                          , Context, Iterator>
+  : unary_handles_container< Subject, Attribute, Context, Iterator> {};
 
 }
 
@@ -238,6 +340,14 @@ struct use_terminal
 template <>
 struct use_terminal
  < qi::domain, morbid::idl_parser::tag::token_value > : mpl::true_ {};
+
+template <>
+struct use_terminal
+ < qi::domain, morbid::idl_parser::tag::token_position > : mpl::true_ {};
+
+template <>
+struct use_directive< qi::domain, ::morbid::idl_parser::tag::parse_token_value>
+ : mpl::true_ {};
 
 } }
 

@@ -12,13 +12,19 @@
 #include <boost/spirit/home/qi.hpp>
 #include <boost/spirit/home/phoenix.hpp>
 
-#include <morbid/idl_parser/tokenizer.hpp>
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_parser/grammar/op_decl.hpp>
+#include <morbid/idl_parser/grammar/attribute.hpp>
+#include <morbid/idl_parser/grammar/skipper.hpp>
 
 namespace std {
 
 inline std::ostream& operator<<(std::ostream& os, std::vector<morbid::idl_parser::op_decl> o)
+{
+  return os << boost::make_iterator_range(o.begin(), o.end());
+}
+
+inline std::ostream& operator<<(std::ostream& os, std::vector< morbid::idl_parser::attribute> const& o)
 {
   return os << boost::make_iterator_range(o.begin(), o.end());
 }
@@ -28,47 +34,68 @@ inline std::ostream& operator<<(std::ostream& os, std::vector<morbid::idl_parser
 namespace morbid { namespace idl_parser { namespace grammar {
 
 namespace qi = boost::spirit::qi;
-namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct interface_definition : boost::spirit::qi::grammar
   <Iterator, idl_parser::interface_def()
-   , qi::locals<std::string
-                , std::vector<idl_parser::op_decl>
-               >
+   , qi::locals< boost::wave::util::file_position_type
+                 , std::vector<idl_parser::op_decl>
+                 , std::vector<idl_parser::attribute> >
+   , skipper<Iterator>
   >
 {
   interface_definition()
     : interface_definition::base_type(start)
   {
-    // namespace qi = boost::spirit::qi;
-    // namespace lex = boost::spirit::lex;
-    // namespace phoenix = boost::phoenix;
+    namespace qi = boost::spirit::qi;
+    namespace phoenix = boost::phoenix;
+    using qi::_a; using qi::_b; using qi::_c;
+    using qi::_1;
 
-    // typedef idl_parser::interface_def<Iterator> return_type;
+    start %= 
+      &(token_position[qi::_a = qi::_1])
+      >> &token_id(boost::wave::T_IDENTIFIER)
+      >> token_value("interface")
+      >> &token_id(boost::wave::T_IDENTIFIER)
+      >> token_value
+      >> qi::omit
+      [
+       -(
+         token_id(boost::wave::T_COLON)
+         >> (scoped_name % token_id(boost::wave::T_COMMA))
+        )
+      ]
+      >> token_id(boost::wave::T_LEFTBRACE)
+      >> qi::omit
+      [
+         *(
+           (
+            op_decl[phoenix::push_back(_b, _1)]
+            | attribute[phoenix::push_back(_c, _1)]
+           )
+           >> token_id(boost::wave::T_SEMICOLON)
+          )
+      ]
+      >> qi::attr(_b)
+      >> qi::attr(_c)
+      >> token_id(boost::wave::T_RIGHTBRACE)
+      >> qi::attr(std::vector<wave_string>())
+      >> qi::attr(qi::_a)
+      >> qi::attr(true) // fully defined
+      ;
 
-    // start %= qi::omit[tok.interface_keyword]
-    //   >> tok.identifier
-    //   >> qi::omit
-    //   [
-    //    -(
-    //      ':'
-    //      >> (tok.identifier % ',')
-    //     )
-    //   ]
-    //   >> qi::omit[qi::char_('{')]
-    //   >> *(op_decl >> qi::omit[qi::char_(';')])
-    //   >> qi::omit[qi::char_('}')]
-    //   ;
-
-    // start.name("interface_def");
-    // qi::debug(start);
+    start.name("interface_def");
+    qi::debug(start);
   }
 
+  grammar::scoped_name<Iterator> scoped_name;
   grammar::op_decl<Iterator> op_decl;
+  grammar::attribute_definition<Iterator> attribute;
   boost::spirit::qi::rule<Iterator, idl_parser::interface_def()
-                          , qi::locals<std::string//boost::iterator_range<base_iterator>
-                                       , std::vector<idl_parser::op_decl> > > start;
+                          , qi::locals< boost::wave::util::file_position_type
+                                        , std::vector<idl_parser::op_decl>
+                                        , std::vector<idl_parser::attribute> >
+                          , skipper<Iterator> > start;
 };
 
 } } }

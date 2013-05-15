@@ -11,6 +11,7 @@
 #include <morbid/idl_parser/type_spec.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/wave/util/file_position.hpp>
 
 #include <ostream>
 #include <string>
@@ -21,6 +22,8 @@ struct typedef_def
 {
   type_spec alias;
   wave_string name;
+  boost::optional<unsigned int> array_size;
+  boost::wave::util::file_position_type file_position;
 };
 
 inline std::ostream& operator<<(std::ostream& os, typedef_def d)
@@ -34,6 +37,8 @@ inline std::ostream& operator<<(std::ostream& os, typedef_def d)
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::typedef_def
                           , (::morbid::idl_parser::type_spec, alias)
-                          ( ::morbid::idl_parser::wave_string, name));
+                          ( ::morbid::idl_parser::wave_string, name)
+                          ( boost::optional<unsigned int>, array_size)
+                          ( boost::wave::util::file_position_type, file_position));
 
 #endif

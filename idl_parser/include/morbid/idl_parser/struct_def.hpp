@@ -12,6 +12,7 @@
 #include <morbid/idl_parser/member.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/wave/util/file_position.hpp>
 
 #include <ostream>
 #include <string>
@@ -22,6 +23,7 @@ struct struct_def
 {
   wave_string name;
   std::vector<member> members;
+  boost::wave::util::file_position_type file_position;
 };
 
 inline std::ostream& operator<<(std::ostream& os, struct_def d)
@@ -35,7 +37,8 @@ inline std::ostream& operator<<(std::ostream& os, struct_def d)
 } }
 
 BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::struct_def
-                          , (std::string, name)
-                          (std::vector< ::morbid::idl_parser::member>, members));
+                          , (::morbid::idl_parser::wave_string, name)
+                          (std::vector< ::morbid::idl_parser::member>, members)
+                          (boost::wave::util::file_position_type, file_position));
 
 #endif

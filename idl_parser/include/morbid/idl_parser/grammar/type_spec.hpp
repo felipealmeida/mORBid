@@ -19,7 +19,6 @@
 namespace morbid { namespace idl_parser { namespace grammar {
 
 namespace qi = boost::spirit::qi;
-namespace lex = boost::spirit::lex;
 
 
 template <typename Iterator>
@@ -68,29 +67,31 @@ struct type_spec : boost::spirit::qi::grammar
       | (token_id(boost::wave::T_UNSIGNED) >> token_id(boost::wave::T_LONG))[_val = types::integer::unsigned_long_int]
       | token_id(boost::wave::T_CHAR)[_val = types::char_()]
       | token_id(boost::wave::T_WCHART)[_val = types::wchar_()]
-      | token_id(boost::wave::T_BOOL)[_val = types::boolean()]
+      | (&token_id(boost::wave::T_IDENTIFIER) >> token_value("boolean"))[_val = types::boolean()]
       | (&token_id(boost::wave::T_IDENTIFIER) >> token_value("octet"))[_val = types::octet()]
       | (&token_id(boost::wave::T_IDENTIFIER) >> token_value("any"))[_val = types::any()]
-      | (&token_id(boost::wave::T_IDENTIFIER) >> token_value("object"))[_val = types::object()]
+      | (&token_id(boost::wave::T_IDENTIFIER) >> token_value("Object"))[_val = types::object()]
       | (&token_id(boost::wave::T_IDENTIFIER) >> token_value("ValueBase"))[_val = types::value_base()]
       | token_id(boost::wave::T_VOID)[_val = types::void_()]
       | scoped_name[_val = _1]
       ;
-    sequence =
-      (qi::omit[&token_id(boost::wave::T_IDENTIFIER) >> token_value("sequence") >> '<']
-       >> simple_type_spec >> qi::omit['>'])
-      [_val = construct<types::sequence>(_1)]
+    sequence %=
+      &token_id(boost::wave::T_IDENTIFIER)
+      >> token_value("sequence")
+      >> (token_id(boost::wave::T_LEFTBRACKET) | token_id(boost::wave::T_LESS))
+      >> simple_type_spec
+      >> (token_id(boost::wave::T_RIGHTBRACKET) | token_id(boost::wave::T_GREATER))
       ;
     start %=
       sequence
       | simple_type_spec
       ;
-    // start.name("type_spec");
-    // qi::debug(start);
-    // sequence.name("sequence");
-    // qi::debug(sequence);
-    // simple_type_spec.name("simple_type_spec");
-    // qi::debug(simple_type_spec);
+    start.name("type_spec");
+    qi::debug(start);
+    sequence.name("sequence");
+    qi::debug(sequence);
+    simple_type_spec.name("simple_type_spec");
+    qi::debug(simple_type_spec);
   }
 
   grammar::scoped_name<Iterator> scoped_name;

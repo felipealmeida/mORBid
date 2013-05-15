@@ -13,7 +13,7 @@
 #include <boost/spirit/home/phoenix.hpp>
 
 #include <morbid/idl_parser/grammar/type_spec.hpp>
-#include <morbid/idl_parser/tokenizer.hpp>
+#include <morbid/idl_parser/grammar/member.hpp>
 #include <morbid/idl_parser/struct_def.hpp>
 
 namespace std {
@@ -33,53 +33,40 @@ inline std::ostream& operator<<(std::ostream& os
 namespace morbid { namespace idl_parser { namespace grammar {
 
 namespace qi = boost::spirit::qi;
-namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct struct_definition : boost::spirit::qi::grammar
   <Iterator, idl_parser::struct_def()
-   , qi::locals<std::vector<member> > >
+   , qi::locals<std::vector<member> >
+   , skipper<Iterator> >
 {
   struct_definition()
     : struct_definition::base_type(start)
   {
-    // namespace p = boost::phoenix;
-    // using qi::_a; using qi::_b;
-    // using qi::_1;
-    // using p::at_c;
-    // using qi::_val;
+    namespace p = boost::phoenix;
+    using qi::_a; using qi::_b;
+    using qi::_1;
+    using p::at_c;
+    using qi::_val;
 
-    // members =
-    //   type_spec[_a = _1]
-    //   >> (
-    //       tok.identifier
-    //       [
-    //        p::push_back(_b, p::construct<struct_member<Iterator> >(_a, _1))
-    //       ]
-    //       % ','
-    //      )
-    //   >> qi::char_(';')[_val = _b]
-    //   ;
-    // start =
-    //   tok.struct_keyword
-    //   >> tok.identifier[at_c<0>(_val) = _1]
-    //   >> qi::char_('{')
-    //   >> *(members[p::insert(_a, p::end(_a), p::begin(_1), p::end(_1))])
-    //   >> qi::char_('}')
-    //   >> qi::eps[at_c<1>(_val) = _a]
-    //   ;
-    // start.name("struct_def");
-    // qi::debug(start);
-    // members.name("members");
-    // qi::debug(members);
+    start =
+      &token_position[at_c<2>(_val) = _1]
+      >> token_id(boost::wave::T_STRUCT)
+      >> &token_id(boost::wave::T_IDENTIFIER)
+      >> token_value[at_c<0>(_val) = _1]
+      >> token_id(boost::wave::T_LEFTBRACE)
+      >> *(members[p::insert(_a, p::end(_a), p::begin(_1), p::end(_1))])
+      >> token_id(boost::wave::T_RIGHTBRACE)
+      >> qi::eps[at_c<1>(_val) = _a]
+      ;
+    start.name("struct_def");
+    qi::debug(start);
   }
 
   grammar::type_spec<Iterator> type_spec;
-  qi::rule<Iterator, std::vector<member>()
-           , qi::locals<idl_parser::type_spec
-                        , std::vector<member> > > members;
+  grammar::member_definition<Iterator> members;
   qi::rule<Iterator, idl_parser::struct_def()
-           , qi::locals<std::vector<member> > > start;
+           , qi::locals<std::vector<member> >, skipper<Iterator> > start;
 };
 
 } } }

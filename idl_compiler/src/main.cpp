@@ -5,12 +5,13 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <morbid/idl_parser/tokenizer.hpp>
 #include <morbid/idl_parser/grammar/interface_def.hpp>
+#include <morbid/idl_parser/grammar/interface_forward_def.hpp>
 #include <morbid/idl_parser/grammar/module_open.hpp>
 #include <morbid/idl_parser/grammar/typedef_def.hpp>
 #include <morbid/idl_parser/grammar/exception_def.hpp>
 #include <morbid/idl_parser/grammar/struct_def.hpp>
+#include <morbid/idl_parser/grammar/constant.hpp>
 #include <morbid/idl_compiler/interface.hpp>
 #include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/lookup.hpp>
@@ -29,63 +30,6 @@
 #include <boost/wave/cpplexer/cpp_lex_iterator.hpp>
 
 #include <iostream>
-
-//     struct include_paths
-//     {
-//       include_paths() : seen_separator(false) {}
-
-//       std::vector<std::string> paths;       // stores user paths
-//       std::vector<std::string> syspaths;    // stores system paths
-//       bool seen_separator;        // command line contains a '-I-' option
-
-//       // Function which validates additional tokens from command line.
-//       static void 
-//       validate(boost::any &v, std::vector<std::string> const &tokens)
-//       {
-//         if (v.empty())
-//           v = boost::any(include_paths());
-
-//         include_paths *p = boost::any_cast<include_paths>(&v);
-
-//         BOOST_ASSERT(p);
-//         // Assume only one path per '-I' occurrence.
-//         std::string t = tokens[0];
-//         if (t == "-")
-//         {
-//           // found -I- option, so switch behaviour
-//           p->seen_separator = true;
-//         } 
-//         else if (p->seen_separator)
-//         {
-//           // store this path as a system path
-//           p->syspaths.push_back(t); 
-//         } 
-//         else
-//         {
-//           // store this path as an user path
-//           p->paths.push_back(t);
-//         }            
-//       }
-//     };
-
-// std::ostream& operator<<(std::ostream& os, include_paths const&)
-// {
-//   return os << "include_paths";
-// }
-// std::istream& operator>>(std::istream& is, include_paths&)
-// {
-//   return is;
-// }
-
-// namespace boost { namespace program_options {
-
-//   void validate(boost::any &v, std::vector<std::string> const &s,
-//       ::include_paths *, int) 
-//   {
-//       ::include_paths::validate(v, s);
-//   }
-
-// }}  // namespace boost::program_options
 
 int main(int argc, char** argv)
 {
@@ -151,28 +95,18 @@ int main(int argc, char** argv)
           {
             ctx.add_include_path((*cit).c_str());
           }
-          
-          // // if on the command line was given -I- , this has to be propagated
-          // if (ip.seen_separator) 
-          //   ctx.set_sysinclude_delimiter();
-                 
-          // // add system include directories to the include path
-          // vector<string>::const_iterator sysend = ip.syspaths.end();
-          // for (vector<string>::const_iterator syscit = ip.syspaths.begin(); 
-          //      syscit != sysend; ++syscit)
-          // {
-          //   ctx.add_sysinclude_path((*syscit).c_str());
-          // }
         }
 
         typedef context_type::iterator_type iterator_type;
         iterator_type iterator = ctx.begin(), last = ctx.end();
 
         morbid::idl_parser::grammar::interface_definition<iterator_type> interface_grammar;
+        morbid::idl_parser::grammar::interface_forward_definition<iterator_type> interface_forward_grammar;
         morbid::idl_parser::grammar::module_open<iterator_type> module_open_grammar;
         morbid::idl_parser::grammar::typedef_definition<iterator_type> typedef_grammar;
         morbid::idl_parser::grammar::exception_definition<iterator_type> exception_grammar;
         morbid::idl_parser::grammar::struct_definition<iterator_type> struct_grammar;
+        morbid::idl_parser::grammar::constant_definition<iterator_type> constant_grammar;
         morbid::idl_parser::grammar::skipper<iterator_type> skipper;
         namespace qi = boost::spirit::qi;
         namespace lex = boost::spirit::lex;
@@ -200,6 +134,7 @@ int main(int argc, char** argv)
         typedef boost::property_map<modules_tree_type, module_property_t>
           ::type module_map;
         
+        using morbid::idl_parser::token_id;
         do
         {
           try
@@ -207,20 +142,53 @@ int main(int argc, char** argv)
           morbid::idl_parser::wave_string module_open;
           morbid::idl_parser::interface_def interface;
           morbid::idl_parser::typedef_def typedef_;
+          morbid::idl_parser::constant constant;
           morbid::idl_parser::exception_def exception;
           morbid::idl_parser::struct_def struct_;
           if(boost::spirit::qi::phrase_parse(iterator, last, module_open_grammar
                                              , skipper, module_open))
           {
             std::cout << "Opened module " << module_open << std::endl;
-            current_module.push_back
-              (add_vertex(module_property_type
-                          (boost::shared_ptr<module_type>(new module_type(module_open.c_str())))
-                          , modules_tree));
-            add_edge(*boost::prior(current_module.end(), 2)
-                     , current_module.back(), modules_tree);
+
+            typedef typename modules_tree_type::out_edge_iterator out_edge_iterator;
+            std::pair<out_edge_iterator, out_edge_iterator> child_modules
+              = out_edges(current_module.back(), modules_tree);
+
+            bool found = false;
+            vertex_descriptor v;
+            for(;child_modules.first != child_modules.second
+                  ;++child_modules.first)
+            {
+              v = target(*child_modules.first, modules_tree);
+              module_map map = get(module_property_t(), modules_tree);
+              morbid::idl_compiler::module const& module = *boost::get(map, v);
+              if(module.name == module_open)
+              {
+                found = true;
+              }
+            }
+
+            if(found)
+            {
+              std::cout << "Module already created, just opening" << std::endl;
+              current_module.push_back(v);
+            }
+            else
+            {
+              std::cout << "Module doesn't exist yet. Creating it" << std::endl;
+              current_module.push_back
+                (add_vertex(module_property_type
+                            (boost::shared_ptr<module_type>(new module_type(module_open.c_str())))
+                            , modules_tree));
+
+              add_edge(*boost::prior(current_module.end(), 2)
+                       , current_module.back(), modules_tree);
+            }
           }
-          else if(boost::spirit::qi::parse(iterator, last, qi::char_('}') >> ';'))
+          else if(boost::spirit::qi::phrase_parse(iterator, last
+                                                  , token_id(boost::wave::T_RIGHTBRACE)
+                                                  >> token_id(boost::wave::T_SEMICOLON)
+                                                  , skipper))
           {
             if(current_module.size() > 1)
             {
@@ -230,18 +198,28 @@ int main(int argc, char** argv)
             else
               throw std::runtime_error("Error, closing non existant module");
           }
-          else if(boost::spirit::qi::parse(iterator, last, typedef_grammar >> qi::omit[';'], typedef_))
+          else if(boost::spirit::qi::phrase_parse(iterator, last
+                                                  , typedef_grammar >> token_id(boost::wave::T_SEMICOLON)
+                                                  , skipper, typedef_))
           {
             std::cout << "typedef " << typedef_ << std::endl;
 
             typedef morbid::idl_compiler::typedef_ typedef_type;
             typedef_type t(typedef_);
-            t.lookup = morbid::idl_compiler::lookup_type_spec
-              (typedef_.alias, current_module, modules_tree);
+            try
+            {
+              t.lookup = morbid::idl_compiler::lookup_type_spec
+                (typedef_.alias, current_module, modules_tree);
+            }
+            catch(morbid::idl_compiler::lookup_error const& e)
+            {
+              throw morbid::idl_compiler::compilation_error("Not found type of typedef", typedef_.file_position);
+            }
 
             module_map map = get(module_property_t(), modules_tree);
-            boost::get(map, current_module.back())
-              ->typedefs.push_back(t);
+            morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
+            std::cout << "Adding typedef " << typedef_.name << " at module " << module.name << std::endl;
+            module.typedefs.push_back(t);
           }
           else if(boost::spirit::qi::phrase_parse
                   (iterator, last
@@ -251,8 +229,10 @@ int main(int argc, char** argv)
           {
             std::cout << "exception " << exception << std::endl;
           }
-          else if(boost::spirit::qi::parse(iterator, last
-                                           , struct_grammar[phoenix::ref(struct_) = qi::_1] >> ';'))
+          else if(boost::spirit::qi::phrase_parse(iterator, last
+                                                  , struct_grammar
+                                                  >> token_id(boost::wave::T_SEMICOLON)
+                                                  , skipper, struct_))
           {
             std::cout << "struct " << struct_ << std::endl;
 
@@ -267,10 +247,17 @@ int main(int argc, char** argv)
             {
               if(s.lookups.find(first->type) == s.lookups.end())
               {
-                s.lookups.insert(std::make_pair
-                                 (first->type
-                                  , morbid::idl_compiler::lookup_type_spec
-                                  (first->type, current_module, modules_tree)));
+                try
+                {                
+                  s.lookups.insert(std::make_pair
+                                   (first->type
+                                    , morbid::idl_compiler::lookup_type_spec
+                                    (first->type, current_module, modules_tree)));
+                }
+                catch(morbid::idl_compiler::lookup_error const& e)
+                {
+                  throw morbid::idl_compiler::compilation_error("Not found type of struct member", first->file_position);
+                }
               }
             }
 
@@ -278,7 +265,16 @@ int main(int argc, char** argv)
             boost::get(map, current_module.back())
               ->structs.push_back(s);
           }
-          else if(boost::spirit::qi::parse(iterator, last, interface_grammar >> qi::omit[';'], interface))
+          else if(boost::spirit::qi::phrase_parse(iterator, last
+                                                  , constant_grammar >> token_id(boost::wave::T_SEMICOLON)
+                                                  , skipper, constant))
+          {
+            std::cout << "Constant name " << constant.name << " = " << constant.value << std::endl;
+          }
+          else if(boost::spirit::qi::phrase_parse(iterator, last
+                                                  , (interface_grammar | interface_forward_grammar)
+                                                  >> token_id(boost::wave::T_SEMICOLON)
+                                                  , skipper, interface))
           {
             std::cout << "interface " << interface << std::endl;
             typedef morbid::idl_compiler::module module;
@@ -287,14 +283,6 @@ int main(int argc, char** argv)
             typedef morbid::idl_parser::param_decl param_decl;
             using morbid::idl_parser::wave_string;
             interface_type i(interface);
-
-            // op_decl_type is_a_op_decl = {morbid::idl_parser::types::boolean(), "_is_a"};
-            // morbid::idl_parser::types::scoped_name string_scoped_name = {false};
-            // string_scoped_name.identifiers.push_back("string");
-            // param_decl param = {morbid::idl_parser::direction::in(), string_scoped_name};
-            // is_a_op_decl.params.push_back(param);
-            // is_a_op_decl.user_defined = false;
-            // i.definition.op_decls.push_back(is_a_op_decl);
 
             module_map map = get(module_property_t(), modules_tree);
             std::vector<wave_string> modules_names;
@@ -327,10 +315,17 @@ int main(int argc, char** argv)
               std::cout << "return type " << first->type << std::endl;
               if(i.lookups.find(first->type) == i.lookups.end())
               {
-                i.lookups.insert(std::make_pair
-                                 (first->type
-                                  , morbid::idl_compiler::lookup_type_spec
-                                  (first->type, current_module, modules_tree)));
+                try
+                {
+                  i.lookups.insert(std::make_pair
+                                   (first->type
+                                    , morbid::idl_compiler::lookup_type_spec
+                                    (first->type, current_module, modules_tree)));
+                }
+                catch(morbid::idl_compiler::lookup_error const& e)
+                {
+                  throw morbid::idl_compiler::compilation_error("Not found type for return of the operation", first->file_position);
+                }
               }
               using morbid::idl_parser::param_decl;
               for(std::vector<param_decl>::const_iterator
@@ -340,10 +335,17 @@ int main(int argc, char** argv)
               {
                 if(i.lookups.find(pfirst->type) == i.lookups.end())
                 {
+                  try
+                  {
                   i.lookups.insert(std::make_pair
                                    (pfirst->type
                                     , morbid::idl_compiler::lookup_type_spec
                                     (pfirst->type, current_module, modules_tree)));
+                  }
+                  catch(morbid::idl_compiler::lookup_error const& e)
+                  {
+                    throw morbid::idl_compiler::compilation_error("Not found type of operation parameter", pfirst->file_position);
+                  }
                 }
               }
             }
@@ -370,10 +372,20 @@ int main(int argc, char** argv)
                       << std::endl;
             return 1;
           }
+          catch(morbid::idl_compiler::compilation_error const& e)
+          {
+            std::cout << e.file_position().get_file()
+                      << ":" << e.file_position().get_line() 
+                      << ":" << e.file_position().get_column()
+                      << ": " << e.error_message()
+                      << ". Error compiling"
+                      << std::endl;
+            return 1;
+          }
         }
-        while(!boost::spirit::qi::parse(iterator, last, qi::eoi));
+        while(!boost::spirit::qi::parse(iterator, last, token_id(boost::wave::T_EOI) | token_id(boost::wave::T_EOF)));
 
-        std::cout << "Finished file" << std::endl;
+        std::cout << "Finished parsing file" << std::endl;
         if(current_module.size() != 2)
           throw std::runtime_error("Error: Not closed all modules");
 
@@ -386,15 +398,12 @@ int main(int argc, char** argv)
         {
           header_path = input_file;
           header_path.replace_extension(".hpp");
-          // impl_path = input_file;
-          // impl_path.replace_extension(".cpp");
         }
 
         boost::filesystem::ofstream header(header_path);
-        // boost::filesystem::ofstream cpp(impl_path);
         typedef std::map<vertex_descriptor, boost::default_color_type> color_map_container_t;
         typedef boost::associative_property_map<color_map_container_t> color_map_t;
-        if(header.is_open()/* && cpp.is_open()*/)
+        if(header.is_open())
         {
           namespace karma = boost::spirit::karma;
           using morbid::idl_compiler::output_iterator_type;

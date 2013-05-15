@@ -20,7 +20,6 @@
 namespace morbid { namespace idl_parser { namespace grammar {
 
 namespace qi = boost::spirit::qi;
-namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct exception_definition : boost::spirit::qi::grammar

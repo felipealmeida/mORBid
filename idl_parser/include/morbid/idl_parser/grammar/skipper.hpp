@@ -24,6 +24,9 @@ struct skipper : boost::spirit::qi::grammar<Iterator>
   {
     start = token_category(boost::wave::WhiteSpaceTokenType)
       | token_category(boost::wave::EOLTokenType)
+      | token_category(static_cast<boost::wave::token_category>
+                       (boost::wave::WhiteSpaceTokenType|boost::wave::AltTokenType))
+
       ;
   }
 

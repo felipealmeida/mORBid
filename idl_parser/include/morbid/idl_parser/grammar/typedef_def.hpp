@@ -13,31 +13,46 @@
 #include <boost/spirit/home/phoenix.hpp>
 
 #include <morbid/idl_parser/grammar/type_spec.hpp>
-#include <morbid/idl_parser/tokenizer.hpp>
+#include <morbid/idl_parser/grammar/integer_literal.hpp>
 #include <morbid/idl_parser/typedef_def.hpp>
 
 namespace morbid { namespace idl_parser { namespace grammar {
 
 namespace qi = boost::spirit::qi;
-namespace lex = boost::spirit::lex;
 
 template <typename Iterator>
 struct typedef_definition : boost::spirit::qi::grammar
-  <Iterator, idl_parser::typedef_def()>
+  <Iterator, idl_parser::typedef_def()
+   , qi::locals<boost::wave::util::file_position_type>
+   , skipper<Iterator> >
 {
   typedef_definition()
     : typedef_definition::base_type(start)
   {
-    // start %= qi::omit[tok.typedef_keyword]
-    //   >> type_spec
-    //   >> tok.identifier;
+    start %=
+      &(token_position[qi::_a = qi::_1])
+      >> token_id(boost::wave::T_TYPEDEF)
+      >> type_spec
+      >> &token_id(boost::wave::T_IDENTIFIER)
+      >> token_value
+      >> 
+      -(token_id(boost::wave::T_LEFTBRACKET)
+        >> &token_category(boost::wave::IntegerLiteralTokenType)
+        >> integer_literal
+        >> token_id(boost::wave::T_RIGHTBRACKET)
+       )
+      >> qi::attr(qi::_a)
+      ;
 
-    // // start.name("typedef_def");
-    // // qi::debug(start);
+    start.name("typedef_def");
+    qi::debug(start);
   }
 
+  grammar::integer_literal_definition<Iterator> integer_literal;
   grammar::type_spec<Iterator> type_spec;
-  boost::spirit::qi::rule<Iterator, idl_parser::typedef_def()> start;
+  boost::spirit::qi::rule<Iterator, idl_parser::typedef_def()
+                          , qi::locals<boost::wave::util::file_position_type>
+                          , skipper<Iterator> > start;
 };
 
 } } }
