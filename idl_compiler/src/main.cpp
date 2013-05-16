@@ -17,6 +17,8 @@
 #include <morbid/idl_compiler/lookup.hpp>
 #include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
 #include <morbid/idl_compiler/common_types.hpp>
+#include <morbid/idl_compiler/generator/concept_generator.hpp>
+#include <morbid/idl_compiler/generator/reference_model_generator.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
@@ -134,8 +136,55 @@ int main(int argc, char** argv)
 
         typedef boost::property_map<modules_tree_type, module_property_t>
           ::type module_map;
+
+        boost::filesystem::path header_path;
+        if(vm.count("output"))
+        {
+          header_path = vm["output"].as<std::string>() + ".hpp";
+        }
+        else
+        {
+          header_path = input_file;
+          header_path.replace_extension(".hpp");
+        }
+
+        boost::filesystem::ofstream header(header_path);
+        typedef std::map<vertex_descriptor, boost::default_color_type> color_map_container_t;
+        typedef boost::associative_property_map<color_map_container_t> color_map_t;
+        if(header.is_open())
+        {
+          namespace karma = boost::spirit::karma;
+          using morbid::idl_compiler::output_iterator_type;
+          output_iterator_type output_iterator(header);
+
+          bool r = karma::generate
+            (output_iterator
+             , karma::lit("// -*- c++ -*-") << karma::eol
+             << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
+             << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
+             << karma::lit("#include <morbid/reply.hpp>") << karma::eol
+             << karma::lit("#include <morbid/structured_ior.hpp>") << karma::eol
+             << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol << karma::eol
+             << karma::lit("#include <morbid/synchronous_call.hpp>") << karma::eol << karma::eol
+             << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
+             << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
+             << karma::lit("#include <morbid/object.hpp>") << karma::eol << karma::eol
+             << karma::lit("#include <boost/integer.hpp>") << karma::eol
+             << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
+             << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
+             << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol
+             << karma::lit("#include <boost/fusion/include/vector40.hpp>") << karma::eol
+             << karma::lit("#include <boost/fusion/include/vector50.hpp>") << karma::eol
+             << karma::lit("#include <boost/type_erasure/any.hpp>") << karma::eol
+             << karma::lit("#include <boost/type_erasure/member.hpp>") << karma::eol
+             << karma::lit("#include <boost/type_erasure/concept_interface.hpp>") << karma::eol
+             << karma::eol
+             );
+          if(!r) 
+            throw std::runtime_error("Failed generating #includes for header");
         
         using morbid::idl_parser::token_id;
+        module_map map = get(module_property_t(), modules_tree);
         do
         {
           try
@@ -151,6 +200,10 @@ int main(int argc, char** argv)
           {
             std::cout << "Opened module " << module_open << std::endl;
 
+            karma::generate(output_iterator
+                            , karma::eol << karma::lit("namespace ") << karma::string << karma::lit(" {") << karma::eol
+                            , module_open);
+
             typedef typename modules_tree_type::out_edge_iterator out_edge_iterator;
             std::pair<out_edge_iterator, out_edge_iterator> child_modules
               = out_edges(current_module.back(), modules_tree);
@@ -161,7 +214,6 @@ int main(int argc, char** argv)
                   ;++child_modules.first)
             {
               v = target(*child_modules.first, modules_tree);
-              module_map map = get(module_property_t(), modules_tree);
               morbid::idl_compiler::module const& module = *boost::get(map, v);
               if(module.name == module_open)
               {
@@ -194,6 +246,7 @@ int main(int argc, char** argv)
             if(current_module.size() > 1)
             {
               std::cout << "Closing module " << current_module.back() << std::endl;
+              karma::generate(output_iterator, karma::eol << karma::lit("}") << karma::eol);
               current_module.pop_back();
             }
             else
@@ -278,7 +331,6 @@ int main(int argc, char** argv)
                                                   , skipper, interface))
           {
             std::cout << "interface " << interface << std::endl;
-            typedef morbid::idl_compiler::module module;
             typedef morbid::idl_compiler::interface_ interface_type;
             typedef morbid::idl_parser::op_decl op_decl_type;
             typedef morbid::idl_parser::param_decl param_decl;
@@ -292,8 +344,8 @@ int main(int argc, char** argv)
                   , last = current_module.end()
                   ;first != last; ++first)
             {
-              module const* mx = &*boost::get(map, *first);
-              modules_names.push_back(mx->name);
+              morbid::idl_compiler::module const& mx = *boost::get(map, *first);
+              modules_names.push_back(mx.name);
             }
 
             modules_names.push_back(interface.name);
@@ -351,8 +403,28 @@ int main(int argc, char** argv)
               }
             }
 
-            boost::get(map, current_module.back())
-              ->interfaces.push_back(i);
+            morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
+            module.interfaces.push_back(i);
+
+            morbid::idl_compiler::generator::header_concept_generator
+              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+              header_concept_generator;
+            morbid::idl_compiler::generator::header_reference_model_generator
+              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+              header_reference_model_generator;
+
+            std::vector<morbid::idl_parser::wave_string> modules
+              (boost::next(modules_names.begin()), modules_names.end());
+            bool r = karma::generate(output_iterator, header_concept_generator
+                                     (phoenix::val(module.interfaces.back()), phoenix::val(modules))
+                                     , (module.interfaces.back().definition));
+            if(!r) throw std::runtime_error("Failed generating header_concept_generator");
+
+            modules.push_back(module.interfaces.back().definition.name);
+            r = karma::generate(output_iterator, header_reference_model_generator
+                                (phoenix::val(module.interfaces.back()), phoenix::val(modules))
+                                , module.interfaces.back().definition);
+            if(!r) throw std::runtime_error("Failed generating header_concept_generator");
           }
           else
           {
@@ -390,78 +462,30 @@ int main(int argc, char** argv)
         if(current_module.size() != 2)
           throw std::runtime_error("Error: Not closed all modules");
 
-        boost::filesystem::path header_path, impl_path;
-        if(vm.count("output"))
-        {
-          header_path = vm["output"].as<std::string>() + ".hpp";
-        }
-        else
-        {
-          header_path = input_file;
-          header_path.replace_extension(".hpp");
-        }
 
-        boost::filesystem::ofstream header(header_path);
-        typedef std::map<vertex_descriptor, boost::default_color_type> color_map_container_t;
-        typedef boost::associative_property_map<color_map_container_t> color_map_t;
-        if(header.is_open())
-        {
-          namespace karma = boost::spirit::karma;
-          using morbid::idl_compiler::output_iterator_type;
-          {
-            output_iterator_type iterator(header);
+              // color_map_container_t color_map_container;
+              // color_map_t color_map(color_map_container);
+              // morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
+              // depth_first_visit(modules_tree, global_module
+              //                   , /*boost::visitor(*/header_modules_visitor/*)*/
+              //                   , /*.color_map(*/color_map/*)*/);
 
-            bool r = karma::generate
-              (iterator
-               , karma::lit("// -*- c++ -*-") << karma::eol
-               << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
-               << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
-               << karma::lit("#include <morbid/reply.hpp>") << karma::eol
-               << karma::lit("#include <morbid/structured_ior.hpp>") << karma::eol
-               << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol << karma::eol
-               << karma::lit("#include <morbid/synchronous_call.hpp>") << karma::eol << karma::eol
-               << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
-               << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
-               << karma::lit("#include <morbid/object.hpp>") << karma::eol << karma::eol
-               << karma::lit("#include <boost/integer.hpp>") << karma::eol
-               << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
-               << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
-               << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol
-               << karma::lit("#include <boost/fusion/include/vector40.hpp>") << karma::eol
-               << karma::lit("#include <boost/fusion/include/vector50.hpp>") << karma::eol
-               << karma::lit("#include <boost/type_erasure/any.hpp>") << karma::eol
-               << karma::lit("#include <boost/type_erasure/member.hpp>") << karma::eol
-               << karma::lit("#include <boost/type_erasure/concept_interface.hpp>") << karma::eol
-               << karma::eol
-               );
-            if(!r) 
-              throw std::runtime_error("Failed generating #includes for header");
-            {
-              color_map_container_t color_map_container;
-              color_map_t color_map(color_map_container);
-              morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
-              depth_first_visit(modules_tree, global_module
-                                , /*boost::visitor(*/header_modules_visitor/*)*/
-                                , /*.color_map(*/color_map/*)*/);
-
-              typedef boost::property_map<modules_tree_type, module_property_t>
-                ::type module_map;
-              module_map map = get(module_property_t(), modules_tree);
-              for(std::size_t l = header_modules_visitor.state->opened_modules.size() - 1
-                    ;l != 0;--l)
-              {
-                morbid::idl_compiler::module const& m
-                  = *boost::get(map, header_modules_visitor.state->opened_modules[l]);
+              // typedef boost::property_map<modules_tree_type, module_property_t>
+              //   ::type module_map;
+              // module_map map = get(module_property_t(), modules_tree);
+              // for(std::size_t l = header_modules_visitor.state->opened_modules.size() - 1
+              //       ;l != 0;--l)
+              // {
+              //   morbid::idl_compiler::module const& m
+              //     = *boost::get(map, header_modules_visitor.state->opened_modules[l]);
                 
-                *iterator++ = '}';
-                *iterator++ = ' ';
-                *iterator++ = '/';
-                *iterator++ = '/';
-                iterator = std::copy(m.name.begin(), m.name.end(), iterator);
-                karma::generate(iterator, karma::eol);
-              }
-            }
-          }                  
+              //   *iterator++ = '}';
+              //   *iterator++ = ' ';
+              //   *iterator++ = '/';
+              //   *iterator++ = '/';
+              //   iterator = std::copy(m.name.begin(), m.name.end(), iterator);
+              //   karma::generate(iterator, karma::eol);
+              // }
         }
         else
         {
