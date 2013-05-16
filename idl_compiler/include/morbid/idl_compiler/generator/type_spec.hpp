@@ -86,7 +86,7 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec
     boolean = karma::string[_1 = "bool"];
     octet = karma::string[_1 = "::morbid::octet"];
     // any = karma::string[_1 = "::morbid::Any"];
-    // object = karma::string[_1 = "::morbid::Object"];
+    object = karma::string[_1 = "::morbid::object"];
     // value_base = karma::string[_1 = "::morbid::ValueBase"];
     void_ = karma::string[_1 = "void"];
     sequence =

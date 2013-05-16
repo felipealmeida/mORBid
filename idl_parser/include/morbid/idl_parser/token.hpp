@@ -45,7 +45,6 @@ struct token_id_parser : qi::primitive_parser<token_id_parser<Id> >
     BOOST_MPL_ASSERT((boost::is_same<spirit::unused_type, attribute_type>));
     qi::skip_over(first, last, skipper);
 
-    std::cout << "Trying to match " << (void*)id << " with " << (void*)first->get_id() << std::endl;
     if(first != last && first->get_id() == id)
       return (++first, true);
     else
@@ -82,7 +81,6 @@ struct token_category_parser : qi::primitive_parser<token_category_parser<Catego
     BOOST_MPL_ASSERT((boost::is_same<spirit::unused_type, attribute_type>));
     qi::skip_over(first, last, skipper);
 
-    std::cout << "Trying to match (category) " << (void*)category << " with " << (void*)get_category(first->get_id()) << std::endl;
     assert(category == get_category(category));
     if(first != last && get_category(first->get_id()) == category)
       return (++first, true);
@@ -114,7 +112,6 @@ struct specific_token_value_parser : qi::primitive_parser<specific_token_value_p
     BOOST_MPL_ASSERT((boost::is_same<spirit::unused_type, attribute_type>));
     qi::skip_over(first, last, skipper);
 
-    std::cout << "Trying to match (value) " << value << " with " << first->get_value() << std::endl;
     if(first != last && first->get_value() == value)
       return (++first, true);
     else

@@ -23,6 +23,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/graph/breadth_first_search.hpp>
+#include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/named_function_params.hpp>
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/lex/qi.hpp>
@@ -421,6 +422,7 @@ int main(int argc, char** argv)
                << karma::lit("#include <morbid/synchronous_call.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
+               << karma::lit("#include <morbid/object.hpp>") << karma::eol << karma::eol
                << karma::lit("#include <boost/integer.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
                << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
@@ -438,9 +440,9 @@ int main(int argc, char** argv)
               color_map_container_t color_map_container;
               color_map_t color_map(color_map_container);
               morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module
-                                  , boost::visitor(header_modules_visitor)
-                                  .color_map(color_map));
+              depth_first_visit(modules_tree, global_module
+                                , /*boost::visitor(*/header_modules_visitor/*)*/
+                                , /*.color_map(*/color_map/*)*/);
 
               typedef boost::property_map<modules_tree_type, module_property_t>
                 ::type module_map;
@@ -458,15 +460,6 @@ int main(int argc, char** argv)
                 iterator = std::copy(m.name.begin(), m.name.end(), iterator);
                 karma::generate(iterator, karma::eol);
               }
-            }
-
-            {
-              color_map_container_t color_map_container;
-              color_map_t color_map(color_map_container);
-              morbid::idl_compiler::generate_header_poa_modules_visitor header_poa_modules_visitor (iterator);
-              breadth_first_visit(modules_tree, global_module
-                                  , boost::visitor(header_poa_modules_visitor)
-                                  .color_map(color_map));
             }
           }                  
         }

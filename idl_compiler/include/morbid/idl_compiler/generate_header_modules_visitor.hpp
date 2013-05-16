@@ -10,11 +10,11 @@
 
 #include <morbid/idl_compiler/common_types.hpp>
 
-#include <boost/graph/breadth_first_search.hpp>
+#include <boost/graph/depth_first_search.hpp>
 
 namespace morbid { namespace idl_compiler {
 
-struct generate_header_modules_visitor : boost::default_bfs_visitor
+struct generate_header_modules_visitor : boost::default_dfs_visitor
 {
   generate_header_modules_visitor(output_iterator_type& iterator)
     : state(new shared_state(iterator))
@@ -29,30 +29,30 @@ struct generate_header_modules_visitor : boost::default_bfs_visitor
     std::vector<vertex_descriptor> opened_modules;
   };
 
-  void examine_vertex(vertex_descriptor v, modules_tree_type const& g);
+  void discover_vertex(vertex_descriptor v, modules_tree_type const& g);
   // void examine_edge(edge_descriptor v, modules_tree_type const& g);
 
   boost::shared_ptr<shared_state> state;
 };
 
-struct generate_header_poa_modules_visitor : boost::default_bfs_visitor
-{
-  generate_header_poa_modules_visitor(output_iterator_type& iterator)
-    : state(new shared_state(iterator))
-  {
-  }
+// struct generate_header_poa_modules_visitor : boost::default_bfs_visitor
+// {
+//   generate_header_poa_modules_visitor(output_iterator_type& iterator)
+//     : state(new shared_state(iterator))
+//   {
+//   }
 
-  struct shared_state
-  {
-    shared_state(output_iterator_type& iterator)
-      : iterator(iterator) {}
-    output_iterator_type& iterator;
-  };
+//   struct shared_state
+//   {
+//     shared_state(output_iterator_type& iterator)
+//       : iterator(iterator) {}
+//     output_iterator_type& iterator;
+//   };
 
-  void examine_vertex(vertex_descriptor v, modules_tree_type const& g);
+//   void examine_vertex(vertex_descriptor v, modules_tree_type const& g);
 
-  boost::shared_ptr<shared_state> state;
-};
+//   boost::shared_ptr<shared_state> state;
+// };
 
 } }
 
