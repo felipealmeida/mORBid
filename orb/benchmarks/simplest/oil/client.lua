@@ -10,17 +10,18 @@ oil.main(function()
 
         local array = require "table"
 
-        local unpack = array.unpack or _G.unpack
-        orb.TypeRepository.registry:register(unpack(parsed))
-
         assert ( _G["MORBID_IOR_PATH"] )
 	
 	simplest = orb:newproxy(assert(oil.readfrom(_G["MORBID_IOR_PATH"]))) -- Get proxy to object
 
+        print "Starting"
+        io.stdout:flush()
+
         local before = os.clock()	
-	for i = 0, 1000000 do
+	for i = 1, 10000 do
            simplest:foo() 
         end
 
 	print("Finished in ", (os.clock() - before))
+        io.stdout:flush()
 end)
