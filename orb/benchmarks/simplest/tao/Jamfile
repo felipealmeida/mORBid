@@ -1,0 +1,37 @@
+# (c) Copyright 2012 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import path ;
+
+make simplestS.h : ../simplest.idl : @tao.compileidl : <test-orb>tao ;
+make simplestS.cpp : simplestS.h : @donothing : <test-orb>tao ;
+make simplestC.h : simplestS.cpp : @donothing : <test-orb>tao ;
+make simplestC.cpp : simplestC.h : @donothing : <test-orb>tao ;
+make simplestC.inl : simplestC.cpp : @donothing : <test-orb>tao ;
+
+actions tao.compileidl
+{
+  tao_idl "$(>)" -o "$(<[0]:D)"
+}
+actions donothing
+{
+}
+
+exe tao_client : ../client.cpp /tao//tao simplestC.cpp /boost//chrono
+ : <implicit-dependency>simplestC.h
+   <implicit-dependency>simplestC.cpp
+   <test-orb>tao
+   <define>USING_TAO
+ ;
+exe tao_server : ../server.cpp /tao//tao simplestS.cpp simplestC.cpp /boost//chrono
+ : <implicit-dependency>simplestS.h
+   <implicit-dependency>simplestS.cpp
+   <implicit-dependency>simplestC.h
+   <implicit-dependency>simplestC.cpp
+   <test-orb>tao
+   <define>USING_TAO
+ ;
+
