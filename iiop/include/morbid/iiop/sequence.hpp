@@ -40,12 +40,12 @@ struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    std::cout << "sequence_parser::parse" << std::endl;
+    // std::cout << "sequence_parser::parse" << std::endl;
 
     unsigned_parser<32u> unsigned_;
     boost::uint_t<32u>::least size;
     bool r = unsigned_.parse(first, last, ctx, skipper, size);
-    std::cout << "sequence size " << size << std::endl;
+    // std::cout << "sequence size " << size << std::endl;
 
     if(!r)
       return false;

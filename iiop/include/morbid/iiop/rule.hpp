@@ -186,7 +186,7 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   rule& operator=(Expr const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
-    std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
+    // std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
     BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
     f = karma::detail::bind_generator<mpl::false_>(spirit::compile< iiop::generator_domain>(expr));
     return *this;
@@ -196,7 +196,7 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   rule& operator%=(Expr const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
-    std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
+    // std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
     BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
     f = karma::detail::bind_generator<mpl::true_>(spirit::compile< iiop::generator_domain>(expr));
     return *this;
@@ -275,10 +275,10 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
        <Params_, params_insert_iterator, endianness_attribute>::type>::type
       params_with_endianness_type;
 
-    std::cout << "inheriting endianness "
-              << fusion::at_c<attribute_argument_index_type::value+1>
-      (caller_context.attributes).endianness
-              << std::endl;
+    // std::cout << "inheriting endianness "
+    //           << fusion::at_c<attribute_argument_index_type::value+1>
+    //   (caller_context.attributes).endianness
+    //           << std::endl;
 
     params_with_endianness_type
       params_with_endianness
@@ -342,7 +342,7 @@ struct rule_parser : qi::primitive_parser<rule_parser<R, Params> >
              , Context& caller_context, Skipper const& skipper
              , Attribute& attr_param) const
   {
-    std::cout << "rule parse" << std::endl;
+    // std::cout << "rule parse" << std::endl;
     if(rule->f)
     {
       // do a preskip if this is an implied lexeme
@@ -414,7 +414,7 @@ struct make_primitive<giop::parameterized_nonterminal
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const
   {
-    std::cout << "rule this: " << &term.ref.get() << std::endl;
+    // std::cout << "rule this: " << &term.ref.get() << std::endl;
     return result_type(term.ref.get(), term.params);
   }
 };
@@ -429,9 +429,9 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
   rule_generator(R const& rule, Params const& params)
     : rule(&rule), params(params)
   {
-    std::cout << "rule_generator::rule_generator rule " << &rule
-              << " this " << this
-              << " this rule " << this->rule << std::endl;
+    // std::cout << "rule_generator::rule_generator rule " << &rule
+    //           << " this " << this
+    //           << " this rule " << this->rule << std::endl;
   }
 
   typedef R rule_type;
@@ -493,12 +493,12 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
     //    <Params, params_insert_iterator, endianness_attribute>::type>::type
     //   params_with_endianness_type;
 
-    std::cout << "inheriting endianness "
-              << fusion::at_c<attribute_argument_index_type::value+1>
-      (caller_context.attributes).endianness
-              << std::endl;
+    // std::cout << "inheriting endianness "
+    //           << fusion::at_c<attribute_argument_index_type::value+1>
+    //   (caller_context.attributes).endianness
+    //           << std::endl;
 
-    std::cout << "params_with_endianness_type " << typeid(params_with_endianness_type).name() << std::endl;
+    // std::cout << "params_with_endianness_type " << typeid(params_with_endianness_type).name() << std::endl;
 
     params_with_endianness_type
       params_with_endianness
@@ -510,8 +510,8 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
     // attributes, without passing values for them.
     context_type context(attr_, params_with_endianness, caller_context);
 
-    std::cout << "generate for rule " << rule << std::endl;
-    std::cout << "generate this " << this << std::endl;
+    // std::cout << "generate for rule " << rule << std::endl;
+    // std::cout << "generate this " << this << std::endl;
 
     // If you are seeing a compilation error here stating that the
     // third parameter can't be converted to a karma::reference
@@ -542,8 +542,8 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
     // attributes, without passing values for them.
     context_type context(attr_, params_, caller_context);
 
-    std::cout << "generate for rule " << rule << std::endl;
-    std::cout << "generate this " << this << std::endl;
+    // std::cout << "generate for rule " << rule << std::endl;
+    // std::cout << "generate this " << this << std::endl;
 
     // If you are seeing a compilation error here stating that the
     // third parameter can't be converted to a karma::reference
@@ -566,8 +566,8 @@ struct rule_generator : karma::primitive_generator<rule_generator<R, Params> >
   bool generate(output_iterator& sink, Context& caller_context
                 , Delimiter const& d, Attr const& attr) const
   {
-    std::cout << "rule_generator::generate " << rule->f
-              << " R " << typeid(R).name() << std::endl;
+    // std::cout << "rule_generator::generate " << rule->f
+    //           << " R " << typeid(R).name() << std::endl;
     if(rule->f)
     {
       typedef typename rule_type::attr_type attr_type;
@@ -637,7 +637,7 @@ struct make_primitive<giop::parameterized_nonterminal
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const
   {
-    std::cout << "rule this: " << &term.ref.get() << std::endl;
+    // std::cout << "rule this: " << &term.ref.get() << std::endl;
     return result_type(term.ref.get(), term.params);
   }
 };

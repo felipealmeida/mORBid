@@ -18,6 +18,8 @@
 #include <cassert>
 #include <cstring>
 
+#include "test_iterations.hpp"
+
 struct simplest_impl : POA_simplest
 {
   simplest_impl(CORBA::ORB_var orb)
@@ -25,8 +27,7 @@ struct simplest_impl : POA_simplest
 
   CORBA::Boolean foo()
   {
-    // std::cout << "foo " << i+1 << std::endl;
-    if(++i == 10000)
+    if(++i == test_iterations)
       orb->shutdown(false);
     return true;
   }
@@ -57,7 +58,7 @@ int main(int argc, char* argv[])
   else
     std::cout << str.in() << std::endl;
 
-  std::cout << "Running" << std::endl;
+  std::cerr << "Running" << std::endl;
 
   poa_manager->activate();
   orb->run();

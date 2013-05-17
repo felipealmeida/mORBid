@@ -13,6 +13,8 @@
 #include <cassert>
 #include <cstring>
 
+#include "test_iterations.hpp"
+
 struct simplest_impl
 {
   simplest_impl(corba::orb orb)
@@ -20,8 +22,7 @@ struct simplest_impl
 
   bool foo()
   {
-    // std::cout << "foo " << i+1 << std::endl;
-    if(++i == 10000)
+    if(++i == test_iterations)
       orb.stop();
     return true;
   }
@@ -43,9 +44,10 @@ int main(int argc, char* argv[])
       output = std::ostream_iterator<char> (ofs);
     }
     corba::stringify_object_id(orb, orb.serve_copy< ::simplest_concept> (simplest_impl(orb)), output);
+    const char nl[] = "\n"; std::copy(nl, nl+1, output);
   }
 
-  std::cout << "Running" << std::endl;
+  std::cerr << "Running" << std::endl;
 
   orb.run();
 }

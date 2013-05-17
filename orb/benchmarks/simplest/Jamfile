@@ -7,7 +7,7 @@
 import testing ;
 import feature ;
 
-feature.feature test-orb : morbid mico tao : composite link-incompatible ;
+feature.feature test-orb : morbid mico tao oil : composite link-incompatible ;
 
 path-constant current : . ;
 path-constant install : ../../../install ;
@@ -33,9 +33,25 @@ actions morbid.compileidl
 }
 actions run-client-server
 {
+  rm -f $(<).ior
+  touch $(<).ior
+
   $(>[2]) $(<).ior > $(<).server &
   server_pid=$!
-  sleep 1
+
+  while [ `wc -l < $(<).ior` -lt 1 ]
+  do
+   echo waiting
+   kill -s 0 $server_pid
+
+   if [ "$?" -ne 0 ]
+   then
+     exit 1
+   fi
+
+   sleep 1
+  done
+
   $(>[1]) $(<).ior > $(<).client
   if [ "$?" -eq 0 ]
   then
@@ -51,6 +67,12 @@ alias mico_server : mico//mico_server ;
 alias tao_client : tao//tao_client ;
 alias tao_server : tao//tao_server ;
 
+if [ option.get benchmark-oil : : 1 ]
+{
+  alias oil_client : oil//client ;
+  alias oil_server : oil//server ;
+}
+
 make morbid_morbid.output : morbid_client morbid_server : @run-client-server ;
 make mico_mico.output : mico_client mico_server : @run-client-server ;
 make morbid_mico.output : morbid_client mico_server : @run-client-server ;
@@ -61,4 +83,25 @@ make tao_morbid.output : tao_client morbid_server : @run-client-server ;
 make mico_tao.output : tao_client mico_server : @run-client-server ;
 make tao_mico.output : mico_client tao_server : @run-client-server ;
 
-alias simplest : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output tao_tao.output tao_morbid.output morbid_tao.output ;
+if [ option.get benchmark-oil : : 1 ]
+{
+  make oil_oil.output : oil_client oil_server : @run-client-server ;
+  make morbid_oil.output : morbid_client oil_server : @run-client-server ;
+  make oil_morbid.output : oil_client morbid_server : @run-client-server ;
+  make mico_oil.output : mico_client oil_server : @run-client-server ;
+  make oil_mico.output : oil_client mico_server : @run-client-server ;
+  make tao_oil.output : tao_client oil_server : @run-client-server ;
+  make oil_tao.output : oil_client tao_server : @run-client-server ;
+}
+
+if [ option.get benchmark-oil : : 1 ]
+{
+  alias simplest : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output tao_tao.output tao_morbid.output morbid_tao.output mico_tao.output tao_mico.output
+  oil_oil.output mico_oil.output oil_mico.output morbid_oil.output oil_morbid.output tao_oil.output oil_tao.output
+ ;
+}
+else
+{
+  alias simplest : morbid_morbid.output mico_mico.output morbid_mico.output mico_morbid.output tao_tao.output tao_morbid.output morbid_tao.output mico_tao.output tao_mico.output ;
+}
+

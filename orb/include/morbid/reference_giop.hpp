@@ -49,12 +49,12 @@ struct reference_generator : karma::primitive_generator<reference_generator>
   template <typename OutputIterator, typename Context, typename Delimiter, typename U>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, U& attr) const
   {
-    std::cout << "reference_generator::generate " << typeid(U).name() << std::endl;
+    // std::cout << "reference_generator::generate " << typeid(U).name() << std::endl;
 
     structured_ior sior;
     if(!attr._sior)
     {
-      std::cout << "serve_copy" << std::endl;
+      // std::cout << "serve_copy" << std::endl;
       orb::object_id id = orb_.serve_copy
         <typename U::concept_class, typename U::any_type>(attr);
       sior = structured_ior_object_id(orb_, id);
@@ -62,7 +62,7 @@ struct reference_generator : karma::primitive_generator<reference_generator>
     else
       sior = *attr._sior;
     
-    std::cout << "is a remote reference size: " << sior.structured_profiles.size() << std::endl;
+    // std::cout << "is a remote reference size: " << sior.structured_profiles.size() << std::endl;
 
     typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
     typedef structured_ior attribute_type;
@@ -89,7 +89,7 @@ struct reference_generator : karma::primitive_generator<reference_generator>
                        )
                        , sior))
     {
-      std::cout << "Success" << std::endl;
+      // std::cout << "Success" << std::endl;
       return true;
     }
     else
@@ -118,7 +118,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    std::cout << "reference_parser::parse " << typeid(Attribute).name() << std::endl;
+    // std::cout << "reference_parser::parse " << typeid(Attribute).name() << std::endl;
 
     typedef structured_ior attribute_type;
     namespace fusion = boost::fusion;
@@ -153,7 +153,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
                  , giop::compile<iiop::parser_domain>(ior_grammar(giop::native_endian))
                  , r))
     {
-      std::cout << "Parsed OK" << std::endl;
+      // std::cout << "Parsed OK" << std::endl;
 
       structured_ior sior = {fusion::at_c<0u>(r)};
     

@@ -71,7 +71,7 @@ struct hex_parser : qi::unary_parser<hex_parser<Subject> >
              , Context& context, Skipper const& skipper
              , Attribute& attr) const
   {
-    std::cout << "hex_parser::parse" << std::endl;
+    // std::cout << "hex_parser::parse" << std::endl;
     BOOST_MPL_ASSERT((boost::is_convertible<typename std::iterator_traits<Iterator>::iterator_category
                       , std::forward_iterator_tag>));
     C data;

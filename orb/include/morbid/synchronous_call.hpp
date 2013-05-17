@@ -143,7 +143,7 @@ template <typename Src, typename DstSeq>
 void aux_copy(Src const& src, DstSeq const& dst_seq
               , mpl::identity<fusion::non_fusion_tag>)
 {
-  std::cout << "Copying from out arg (with type " << typeid(src).name() << ") " << src << std::endl;
+  // std::cerr << "Copying from out arg (with type " << typeid(src).name() << ") " << src << std::endl;
   fusion::at_c<0u>(dst_seq).value = src;
 }
 
@@ -182,7 +182,7 @@ template <typename R, typename ArgsSeq>
 typename return_traits<R>::type call
  (struct orb orb, const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args)
 {
-  std::cout << "synchronous_call::call" << std::endl;
+  // std::cerr << "synchronous_call::call" << std::endl;
   namespace mpl = boost::mpl;
   // if(ior.structured_profiles.empty())
   //   throw MARSHALL();
@@ -200,15 +200,15 @@ typename return_traits<R>::type call
   // if(!profile_body)
   //   throw MARSHALL();
 
-  std::string host = profile_body->host;
-  std::vector<char> object_key = profile_body->object_key;
+  std::string const& host = profile_body->host;
+  std::vector<char> const& object_key = profile_body->object_key;
   unsigned short port = profile_body->port;
 
-  std::cout << "Making synchronous call to " << host << ":" << port
-            << " to object with object_key " << boost::make_iterator_range(object_key.begin(), object_key.end())
-            << " with repoid: " << repoid << " to method " << method
-            << " and args [" << typeid(args).name()
-            << ']' << std::endl;
+  // std::cerr << "Making synchronous call to " << host << ":" << port
+  //           << " to object with object_key " << boost::make_iterator_range(object_key.begin(), object_key.end())
+  //           << " with repoid: " << repoid << " to method " << method
+  //           << " and args [" << typeid(args).name()
+  //           << ']' << std::endl;
 
   namespace fusion = boost::fusion;
   namespace karma = boost::spirit::karma;
@@ -275,23 +275,27 @@ typename return_traits<R>::type call
                      (message_header_grammar_(giop::native_endian))
                      , attribute))
   {
-    std::cout << "Generated" << std::endl;
-    boost::algorithm::hex(buffer.begin(), buffer.end()
-                          , std::ostream_iterator<char>(std::cout));
-    std::cout << std::endl;
+    // std::cerr << "Generated" << std::endl;
+    // boost::algorithm::hex(buffer.begin(), buffer.end()
+    //                       , std::ostream_iterator<char>(std::cerr));
+    // std::cerr << std::endl;
 
-    boost::asio::io_service io_service;
-    boost::asio::ip::tcp::resolver resolver(io_service);
-    boost::asio::ip::tcp::resolver::query query
-      (boost::asio::ip::tcp::endpoint::protocol_type::v4(), host, "");
-    boost::asio::ip::tcp::endpoint remote_endpoint = *resolver.resolve(query);
-    remote_endpoint.port(port);
-    boost::asio::ip::tcp::socket socket(io_service, boost::asio::ip::tcp::endpoint());
-    socket.connect(remote_endpoint);
-    boost::asio::write(socket, boost::asio::buffer(buffer)
+    std::auto_ptr<boost::asio::ip::tcp::socket> socket = orb.get_socket(host, port);
+    if(!socket.get())
+    {
+      boost::asio::io_service& io_service = orb.io_service();
+      boost::asio::ip::tcp::resolver resolver(io_service);
+      boost::asio::ip::tcp::resolver::query query
+        (boost::asio::ip::tcp::endpoint::protocol_type::v4(), host, "");
+      boost::asio::ip::tcp::endpoint remote_endpoint = *resolver.resolve(query);
+      remote_endpoint.port(port);
+      socket.reset(new boost::asio::ip::tcp::socket(io_service, boost::asio::ip::tcp::endpoint()));
+      socket->connect(remote_endpoint);
+    }
+    boost::asio::write(*socket, boost::asio::buffer(buffer)
                        , boost::asio::transfer_all());
 
-    std::cout << "Sent for " << method << ". Waiting reply" << std::endl;
+    // std::cerr << "Sent for " << method << ". Waiting reply" << std::endl;
 
     std::vector<char> reply_buffer(1024u);
     std::size_t offset = 0;
@@ -302,8 +306,8 @@ typename return_traits<R>::type call
         reply_buffer.resize(reply_buffer.size() + 1024u);
       boost::system::error_code ec;
       std::size_t bytes_read
-        = socket.read_some(boost::asio::buffer(&reply_buffer[offset], reply_buffer.size() - offset), ec);
-      std::cout << "Read " << bytes_read << " bytes" << std::endl;
+        = socket->read_some(boost::asio::buffer(&reply_buffer[offset], reply_buffer.size() - offset), ec);
+      // std::cerr << "Read " << bytes_read << " bytes" << std::endl;
       if(ec)
         throw ec;
       else
@@ -313,17 +317,17 @@ typename return_traits<R>::type call
         iterator_type first = reply_buffer.begin()
           ,  last = boost::next(reply_buffer.begin(), offset);
 
-        std::cout << "Should try to parse " << offset << " ";
+        // std::cerr << "Should try to parse " << offset << " ";
 
-        boost::algorithm::hex(first, last, std::ostream_iterator<char>(std::cout));
-        std::endl(std::cout);
+        // boost::algorithm::hex(first, last, std::ostream_iterator<char>(std::cerr));
+        // std::endl(std::cerr);
 
         assert(std::distance(first, last) == offset);
 
         typedef typename mpl::remove_if
           <ArgsSeq const, is_in_lambda>::type out_args_type_seq_type;
 
-        std::cout << "out_args_type_seq_type " << typeid(out_args_type_seq_type).name() << std::endl;
+        // std::cerr << "out_args_type_seq_type " << typeid(out_args_type_seq_type).name() << std::endl;
 
         typedef typename mpl::transform
            <typename fusion::result_of::transform
@@ -335,7 +339,7 @@ typename return_traits<R>::type call
            out_args_type_;
 
         
-        std::cout << "out_args_type_ " << typeid(out_args_type_).name() << std::endl;
+        // std::cerr << "out_args_type_ " << typeid(out_args_type_).name() << std::endl;
 
         typedef typename fusion::result_of::as_vector
           <typename mpl::eval_if
@@ -367,8 +371,8 @@ typename return_traits<R>::type call
           <iiop::parser_domain, iterator_type, arguments_attribute_seq_type
            , arguments_attribute_type>
           arguments_grammar;
-        std::cout << "reading reply with " << typeid(arguments_attribute_type).name()
-                  << std::endl;
+        // std::cerr << "reading reply with " << typeid(arguments_attribute_type).name()
+        //           << std::endl;
         typedef giop::grammars::system_exception_reply_body
           <iiop::parser_domain, iterator_type, system_exception_attribute_type>
           system_exception_grammar;
@@ -404,39 +408,42 @@ typename return_traits<R>::type call
                      , giop::compile<iiop::parser_domain>(message_grammar_)
                      , attribute))
         {
+          assert(first_ == last);
           reply_attribute_type& reply_attr = fusion::at_c<0u>(attribute);
-          std::cout << "Parsed correctly!" << std::endl;
-          std::cout << "Number of service contexts " << fusion::at_c<0u>(reply_attr).size()
-                    << " request id " << fusion::at_c<1u>(reply_attr)
-                    << " reply status " << fusion::at_c<2u>(reply_attr) << std::endl;
+          // std::cerr << "Parsed correctly!" << std::endl;
+          // std::cerr << "Number of service contexts " << fusion::at_c<0u>(reply_attr).size()
+          //           << " request id " << fusion::at_c<1u>(reply_attr)
+          //           << " reply status " << fusion::at_c<2u>(reply_attr) << std::endl;
 
           variant_attribute_type const& result = fusion::at_c<3u>(reply_attr);
           if(system_exception_attribute_type const* attribute
              = boost::get<system_exception_attribute_type>(&result))
           {
-            std::cout << "Parsed system exception correctly, exception id: " << fusion::at_c<0>(*attribute)
-                      << " minor code " << fusion::at_c<1>(*attribute)
-                      << " completion status " << fusion::at_c<2>(*attribute) << std::endl;
+            // std::cerr << "Parsed system exception correctly, exception id: " << fusion::at_c<0>(*attribute)
+            //           << " minor code " << fusion::at_c<1>(*attribute)
+            //           << " completion status " << fusion::at_c<2>(*attribute) << std::endl;
           }
           else if(arguments_attribute_type const* attribute
                   = boost::get<arguments_attribute_type>(&result))
           {
-            std::cout << "NO EXCEPTION" << std::endl;
+            orb.add_socket(host, port, socket);
+
+            // std::cerr << "NO EXCEPTION" << std::endl;
             return return_value(mpl::identity<R>(), *attribute
                                 , fusion::as_vector(fusion::filter_if<is_not_in_lambda>(args))
                                 , mpl::identity<typename fusion::traits::tag_of<arguments_attribute_type>::type>());
           }
           else
           {
-            std::cout << "Some other status" << std::endl;
+            std::cerr << "Some other status" << std::endl;
           }
         }
         else
         {
-          std::cout << "Failed parsing reply " << std::endl;
+          std::cerr << "Failed parsing reply " << std::endl;
           boost::algorithm::hex(first, last
-                                , std::ostream_iterator<char>(std::cout));
-          std::endl(std::cout);
+                                , std::ostream_iterator<char>(std::cerr));
+          std::endl(std::cerr);
         }
 
         break;
@@ -445,7 +452,7 @@ typename return_traits<R>::type call
     while(true);
   }
   else
-    std::cout << "Failed generating" << std::endl;
+    std::cerr << "Failed generating" << std::endl;
 
   throw std::runtime_error("MARSHALL");
 }

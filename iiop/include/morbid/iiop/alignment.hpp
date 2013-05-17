@@ -85,12 +85,12 @@ namespace parser {
 template <std::size_t N, typename Iterator, typename Attributes>
 bool alignment_padding(Iterator& first, Iterator last, Attributes const& attributes)
 {
-  std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes" << std::endl;
+  // std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes" << std::endl;
   alignment_attribute<Iterator> align_from
     = get_alignment_attribute<Attributes, Iterator>::call(attributes);
 
   std::size_t distance = std::distance(align_from.first, first) + align_from.offset;
-  std::cout << "position distance " << distance << std::endl;
+  // std::cout << "position distance " << distance << std::endl;
 
   const std::size_t alignment = N/CHAR_BIT;
 
@@ -98,7 +98,7 @@ bool alignment_padding(Iterator& first, Iterator last, Attributes const& attribu
   int padding = remainder? alignment - remainder : 0;
   for(;padding && first != last; --padding)
   {
-    std::cout << "padding byte" << std::endl;
+    // std::cout << "padding byte" << std::endl;
     ++first;
   }
   return first != last;
@@ -117,7 +117,7 @@ struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    std::cout << "alignment_enabler::parse " << offset << std::endl;
+    // std::cout << "alignment_enabler::parse " << offset << std::endl;
     typedef typename Context::attributes_type attributes_type;
     typedef typename fusion::result_of::find<attributes_type, alignment_attribute<Iterator>
                                              >::type index_iterator_type;
@@ -185,22 +185,22 @@ namespace generator {
 template <std::size_t N, typename OutputIterator, typename Attributes>
 void alignment_padding(OutputIterator& sink, Attributes const& attributes)
 {
-  std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes of alignment" << std::endl;
+  // std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes of alignment" << std::endl;
   typedef typename output_iterator<OutputIterator>::type output_iterator;
   alignment_attribute<output_iterator> align_from
     = get_alignment_attribute<Attributes
                                     , output_iterator>::call(attributes);
 
   std::size_t distance = std::distance(align_from.first, sink.base()) + align_from.offset;
-  std::cout << "alignment_padding distance from start " << distance << std::endl;
+  // std::cout << "alignment_padding distance from start " << distance << std::endl;
   const std::size_t alignment = N/CHAR_BIT;
 
   int remainder = distance % alignment;
   int padding = remainder? alignment - remainder : 0;
-  std::cout << "padding bytes " << padding << std::endl;
+  // std::cout << "padding bytes " << padding << std::endl;
   for(;padding != 0; --padding)
   {
-    std::cout << "padding byte" << std::endl;
+    // std::cout << "padding byte" << std::endl;
     *sink = '\0';
     ++sink;
   }

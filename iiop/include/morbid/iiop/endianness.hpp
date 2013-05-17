@@ -67,7 +67,7 @@ struct generator_endianness
 
   static bool& call(Attributes& attributes)
   {
-    std::cout << "reading endianness " << fusion::at_c<index_type::value>(attributes).endianness << std::endl;
+    // std::cout << "reading endianness " << fusion::at_c<index_type::value>(attributes).endianness << std::endl;
     return fusion::at_c<index_type::value>(attributes).endianness;
   }
 };
@@ -121,13 +121,13 @@ struct endianness_parser : qi::unary_parser<endianness_parser<Subject> >
              , Context& ctx, Skipper const& skipper
              , Attribute& attr, boost::mpl::false_) const
   {
-    std::cout << "endianness_parser::parse already has this attribute" << std::endl;
+    // std::cout << "endianness_parser::parse already has this attribute" << std::endl;
     qi::char_class<spirit::tag::char_code
                    <spirit::tag::char_, octet_encoding> > octet_parser;
     unsigned char endianness;
     if(!octet_parser.parse(first, last, ctx, skipper, endianness))
       return false;
-    std::cout << "endianness read from stream " << (unsigned int)endianness << std::endl;
+    // std::cout << "endianness read from stream " << (unsigned int)endianness << std::endl;
     typedef generator_endianness<typename Context::attributes_type> getter_endianness;
     bool old_endianness = getter_endianness::call(ctx.attributes);
     getter_endianness::call(ctx.attributes) = endianness;
@@ -232,7 +232,7 @@ struct endianness_generator : karma::unary_generator<endianness_generator<Subjec
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
-    std::cout << "endianness_generator::generate" << std::endl;
+    // std::cout << "endianness_generator::generate" << std::endl;
     bool endianness = generator_endianness<typename Context::attributes_type>
       ::call(ctx.attributes);
     karma::any_char<octet_encoding, spirit::unused_type> octet_generator;
@@ -256,7 +256,7 @@ struct specific_endianness_generator : endianness_generator<Subject>
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
-    std::cout << "specific_endianness_generator::generate" << std::endl;
+    // std::cout << "specific_endianness_generator::generate" << std::endl;
     typedef typename Context::attributes_type attributes_type;
     typedef typename fusion::result_of::as_list
       <typename fusion::result_of::push_back

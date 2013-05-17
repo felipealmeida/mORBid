@@ -39,7 +39,7 @@ namespace mpl = boost::mpl;
 
 template <typename R, typename SeqParam, typename T, typename F>
 void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
-                         , const char* rq_first, const char* rq_last
+                         , const char*& rq_first, const char* rq_last
                          , bool little_endian, reply& r);
 
 namespace poa {
@@ -69,7 +69,7 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
   typedef boost::type_erasure::any
     <boost::mpl::vector
      <boost::type_erasure::copy_constructible<>
-      , poa::has_call<void(std::string, std::size_t, const char*
+      , poa::has_call<void(std::string, std::size_t, const char*&
                            , const char*, bool
                            , reply&
                            )>
@@ -83,6 +83,28 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
     object obj;
   };
 
+  std::auto_ptr<boost::asio::ip::tcp::socket> get_socket(std::string const& hostname, unsigned short port)
+  {
+    sockets_type::iterator iterator = sockets.find(std::pair<std::string const&, unsigned short>(hostname, port));
+    if(iterator != sockets.end())
+    {
+      std::auto_ptr<boost::asio::ip::tcp::socket> r(iterator->second);
+      sockets.erase(iterator);
+      return r;
+    }
+    else
+      return std::auto_ptr<boost::asio::ip::tcp::socket>();
+  }
+
+  void add_socket(std::string const& hostname, unsigned short port
+                  , std::auto_ptr<boost::asio::ip::tcp::socket> socket)
+  {
+    sockets[std::make_pair(hostname, port)] = socket.release();
+  }
+
+  typedef std::map<std::pair<std::string, unsigned short>
+                   , boost::asio::ip::tcp::socket*> sockets_type;
+  sockets_type sockets;
   typedef std::map<std::size_t, object_registration> object_map_type;
   typedef object_map_type::iterator object_map_iterator;
   object_map_type object_map;
@@ -117,7 +139,7 @@ struct orb
                       (C::type_id()
                        , poa::object_registration<C, T&>(*this, servant))));
     assert(pair.second);
-    std::cout << "Added object " << pair.first->first << std::endl;
+    // std::cout << "Added object " << pair.first->first << std::endl;
     return pair.first;
   }
 
@@ -129,8 +151,21 @@ struct orb
                       (C::type_id()
                        , poa::object_registration<C, T>(*this, servant))));
     assert(pair.second);
-    std::cout << "Added object " << pair.first->first << std::endl;
+    // std::cout << "Added object " << pair.first->first << std::endl;
     return pair.first;
+  }
+
+  boost::asio::io_service& io_service() const { return impl->io_service; }
+
+  std::auto_ptr<boost::asio::ip::tcp::socket> get_socket(std::string const& hostname, unsigned short port) const
+  {
+    return impl->get_socket(hostname, port);
+  }
+
+  void add_socket(std::string const& hostname, unsigned short port
+                  , std::auto_ptr<boost::asio::ip::tcp::socket> socket) const
+  {
+    impl->add_socket(hostname, port, socket);
   }
 
 private:
@@ -184,7 +219,7 @@ void stringify_object_id( morbid::orb orb, orb_impl::object_map_iterator object_
                                       , (unsigned char*)&object_id->first
                                       , (unsigned char*)&object_id->first
                                       + sizeof(object_id->first));
-  std::cout << "Object key: " << object_id->first << std::endl;
+  // std::cout << "Object key: " << object_id->first << std::endl;
 
   std::vector<char> ior;
   output_iterator_type iterator(ior);
@@ -246,7 +281,7 @@ structured_ior string_to_structured_ior(Iterator first, Iterator last)
                ]
                , r))
   {
-    std::cout << "Success" << std::endl;
+    // std::cout << "Success" << std::endl;
     structured_ior sior = {fusion::at_c<0u>(r)};
     
     for(std::vector<boost::variant<iiop::profile_body, profile_body_1_1_attr, ior::tagged_profile> >::const_iterator
@@ -290,14 +325,14 @@ struct object_registration
 
   template <int I>
   inline void call_if(std::string const& method
-                      , std::size_t align_offset, const char* first
+                      , std::size_t align_offset, const char*& first
                       , const char* last, bool little_endian, reply& r)
   {
     typedef typename C::requirements requirements;
     typedef typename mpl::at_c<requirements, I>::type method_concept;
     if(method == method_concept::name())
     {
-      std::cout << "Should call method " << method << std::endl;
+      // std::cout << "Should call method " << method << std::endl;
       handle_request_body
         <typename method_concept::result_type, typename method_concept::arguments>
         (orb_, &object, method_concept(), align_offset, first, last, little_endian, r);
@@ -310,7 +345,7 @@ struct object_registration
   struct call_if_not_end<I, typename boost::enable_if
                          <mpl::equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
   {
-    inline static void do_(self_type& self, std::string const&, std::size_t, const char*, const char*, bool, reply&) {}
+    inline static void do_(self_type& self, std::string const&, std::size_t, const char*&, const char*, bool, reply&) {}
   };
 
   template <int I>
@@ -318,7 +353,7 @@ struct object_registration
                          <mpl::not_equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
   {
     inline static void do_(self_type& self, std::string const& method
-                           , std::size_t align_offset, const char* first, const char* last
+                           , std::size_t align_offset, const char*& first, const char* last
                            , bool little_endian, reply& r)
     {
       self.call_if<I>(method, align_offset, first, last, little_endian, r);
@@ -326,12 +361,12 @@ struct object_registration
   };
 
   void call(std::string const& method
-            , std::size_t align_offset, const char* first
+            , std::size_t align_offset, const char*& first
             , const char* last, bool little_endian
             , reply& r)
   {
     namespace fusion = boost::fusion;
-    std::cout << "calling method " << method << std::endl;
+    // std::cout << "calling method " << method << std::endl;
 
     call_if_not_end<0>::do_(*this, method, align_offset, first, last, little_endian, r);
   }

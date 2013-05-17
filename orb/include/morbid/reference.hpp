@@ -34,7 +34,7 @@ struct reference
 
   reference()
   {
-    std::cout << "empty reference constructed" << std::endl;
+    // std::cout << "empty reference constructed" << std::endl;
   }
 
   template <typename T>
@@ -42,9 +42,9 @@ struct reference
     : any_type(static_cast<typename reference<T>::any_type const&>(other))
     , _sior(other._sior)
   {
-    std::cout << "Copying reference from " << typeid(T).name() << " to " << typeid(C).name()
-              << " and is empty: " << boost::type_erasure::is_empty(*this)
-              << " and is remote: " << !!_sior << std::endl;
+    // std::cout << "Copying reference from " << typeid(T).name() << " to " << typeid(C).name()
+    //           << " and is empty: " << boost::type_erasure::is_empty(*this)
+    //           << " and is remote: " << !!_sior << std::endl;
   }
 
   template <typename T>
@@ -52,17 +52,17 @@ struct reference
     : any_type(static_cast<typename reference<T>::any_type&>(other))
     , _sior(other._sior)
   {
-    std::cout << "Copying reference from " << typeid(T).name() << " to " << typeid(C).name()
-              << " and is empty: " << boost::type_erasure::is_empty(*this)
-              << " and is remote: " << !!_sior << std::endl;
+    // std::cout << "Copying reference from " << typeid(T).name() << " to " << typeid(C).name()
+    //           << " and is empty: " << boost::type_erasure::is_empty(*this)
+    //           << " and is remote: " << !!_sior << std::endl;
   }
 
   template <typename T>
   reference(T const& object)
     : any_type(object)
   {
-    std::cout << "Creating reference from " << typeid(T).name() << " and is remote? "
-              << is_remote_reference<T>::type::value << std::endl;
+    // std::cout << "Creating reference from " << typeid(T).name() << " and is remote? "
+    //           << is_remote_reference<T>::type::value << std::endl;
     mpl::if_<is_remote_reference<T>, with_remote
              , without_remote>::type::call(*this, object);
   }
@@ -71,8 +71,8 @@ struct reference
   reference(T& object)
     : any_type(object)
   {
-    std::cout << "Creating reference from " << typeid(T).name() << " and is remote? "
-              << is_remote_reference<T>::type::value << std::endl;
+    // std::cout << "Creating reference from " << typeid(T).name() << " and is remote? "
+    //           << is_remote_reference<T>::type::value << std::endl;
     mpl::if_<is_remote_reference<T>, with_remote
              , without_remote>::type::call(*this, object);
   }
@@ -81,8 +81,8 @@ struct reference
   reference(boost::reference_wrapper<T> object)
     : any_type(typename C::template proxy_reference<T>(object))
   {
-    std::cout << "Creating reference from reference_wrapped " << typeid(T).name() << " and is remote? "
-              << is_remote_reference<T>::type::value << std::endl;
+    // std::cout << "Creating reference from reference_wrapped " << typeid(T).name() << " and is remote? "
+    //           << is_remote_reference<T>::type::value << std::endl;
     mpl::if_<is_remote_reference<T>, with_remote
              , without_remote>::type::call(*this, object);
   }

@@ -1,0 +1,73 @@
+# (c) Copyright 2012 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import feature ;
+
+rule idl2lua ( target : sources + )
+{
+  make $(target)
+    : $(sources)
+    : action-idl2lua
+  ;
+}
+
+actions action-idl2lua
+{
+  lua5.1 -e "package.path=package.path..';/home/felipe/dev/tecgraf/openbus2/openbus/build/oil-source-0.5snapshot/lua/?.lua;/home/felipe/dev/tecgraf/openbus2/openbus/build/loop-2snapshot/lua/?.lua'" \
+    /home/felipe/dev/tecgraf/openbus2/openbus/build/oil-source-0.5snapshot/lua/idl2lua.lua \
+    -o $(<) \
+    $(>)
+}
+
+
+rule pre-compile ( target : sources + )
+{
+  make $(target)
+    : $(sources)
+    : @action-pre-compile
+  ;
+
+  make $(target:S=.h)
+    : $(target)
+    : @dummy
+  ;
+
+}
+
+actions action-pre-compile
+{
+  lua5.1 -e "package.path=package.path..';/home/felipe/dev/tecgraf/openbus2/openbus/build/loop-2snapshot/lua/?.lua'" \
+    /home/felipe/dev/tecgraf/openbus2/openbus/build/loop-2snapshot/lua/preloader.lua \
+    -l "?.lua" \
+    -d $(<:D) \
+    -h $(<:S=.h:D=) \
+    -o $(<:D=) \
+    $(>)
+}
+
+actions dummy
+{
+  #does nothing
+}
+
+idl2lua parsed.lua : ../simplest.idl ;
+
+pre-compile server.c : server.lua parsed.lua ;
+pre-compile client.c : client.lua parsed.lua ;
+
+feature.feature morbid-oil-server : no yes : composite link-incompatible ;
+feature.compose <morbid-oil-server>yes : <define>MORBID_OIL_SERVER ;
+
+lib dl : : <link>shared ;
+
+exe server : server.c servlibs.c launcher.c dl /oil//oil
+ : <morbid-oil-server>yes
+   <implicit-dependency>server.h
+ ;
+exe client : client.c servlibs.c launcher.c dl /oil//oil
+ : <implicit-dependency>client.h
+ ;
+

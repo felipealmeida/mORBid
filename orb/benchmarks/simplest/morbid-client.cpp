@@ -6,6 +6,7 @@
  */
 
 #include "simplest.hpp"
+#include "test_iterations.hpp"
 #include <morbid/corba.hpp>
 
 #include <boost/chrono/chrono.hpp>
@@ -19,26 +20,27 @@ int main(int argc, char* argv[])
 {
   corba::orb orb;
 
-  assert(argc > 1);
-
   std::string ior;
+  if(argc > 1)
   {
     std::ifstream ifs(argv[1]);
     std::getline(ifs, ior);
   }
+  else
+    std::getline(std::cin, ior);
+
+  assert(!ior.empty());
 
   ::simplest_ref simplest (orb, ior);
 
   typedef boost::chrono::high_resolution_clock::time_point time_point;
   time_point before = boost::chrono::high_resolution_clock::now();
 
-  for(unsigned int i = 0; i != 10000; ++i)
+  for(unsigned int i = 0; i != test_iterations; ++i)
   {
-    // std::cout << "foo " << (i+1) << std::endl;
     simplest.foo();
-    // std::cout << "returned from foo " << (i+1) << std::endl;
   }
 
-  std::cout << "Time to execute test " << boost::chrono::duration_cast<boost::chrono::milliseconds>
+  std::cout << "Time to execute test " << boost::chrono::duration_cast<boost::chrono::seconds>
     (boost::chrono::high_resolution_clock::now() - before) << std::endl;
 }

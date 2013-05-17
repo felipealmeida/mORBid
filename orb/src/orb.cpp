@@ -172,7 +172,7 @@ void orb_impl::stop()
 
 void orb_impl::handle_accept(boost::shared_ptr<poa::connection> c)
 {
-  std::cout << "handle_accept" << std::endl;
+  // std::cout << "handle_accept" << std::endl;
 
   c->start();
 

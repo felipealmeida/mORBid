@@ -29,7 +29,7 @@ struct unroll_tag {};
 template <typename Iterator, typename Value, std::size_t E>
 bool unroll_copy(Iterator& first, Iterator last, Value& v, unroll_tag<E>, unroll_tag<E>)
 {
-  std::cout << "All copied, value " << v << std::endl;
+  // std::cout << "All copied, value " << v << std::endl;
   return true; 
 }
 
@@ -127,7 +127,7 @@ struct specific_unsigned_parser : qi::primitive_parser<specific_unsigned_parser<
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    std::cout << "specific_unsigned_parser::parse" << std::endl;
+    // std::cout << "specific_unsigned_parser::parse" << std::endl;
     // Should align
     if(!alignment_padding<N>(first, last, ctx.attributes))
       return false;
@@ -151,7 +151,7 @@ struct specific_unsigned_parser : qi::primitive_parser<specific_unsigned_parser<
     {
       r = normal_unsigned_parse<N>(first, last, v);
     }
-    std::cout << "Value read " << v << " expecting value " << value << std::endl;
+    // std::cout << "Value read " << v << " expecting value " << value << std::endl;
     return r && v == value;
   }
 
@@ -282,9 +282,9 @@ template <typename OutputIterator, typename Value, std::size_t N, std::size_t E>
 void unroll_copy(OutputIterator& sink, Value const& v, unroll_tag<N>, unroll_tag<E> e)
 {
   *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
-  std::cout << "copied byte (" << N << ")"
-            << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[N]
-            << std::endl;
+  // std::cout << "copied byte (" << N << ")"
+  //           << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[N]
+  //           << std::endl;
   ++sink;
   unroll_copy(sink, v, unroll_tag<N+1>(), e);
 }
@@ -293,9 +293,9 @@ template <typename OutputIterator, typename Value>
 void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<0>)
 {
   *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[0];
-  std::cout << "copied byte (0) (switched endianness) "
-            << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[0]
-            << std::endl;
+  // std::cout << "copied byte (0) (switched endianness) "
+  //           << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[0]
+  //           << std::endl;
   ++sink;
 }
 
@@ -303,9 +303,9 @@ template <typename OutputIterator, typename Value, std::size_t N>
 void unroll_copy_backward(OutputIterator& sink, Value const& v, unroll_tag<N>)
 {
   *sink = static_cast<unsigned char const*>(static_cast<void const*>(&v))[N];
-  std::cout << "copied byte (" << N <<  ") (switched endianness) "
-            << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[N]
-            << std::endl;
+  // std::cout << "copied byte (" << N <<  ") (switched endianness) "
+  //           << (unsigned int)static_cast<unsigned char const*>(static_cast<void const*>(&v))[N]
+  //           << std::endl;
   ++sink;
   unroll_copy_backward(sink, v, unroll_tag<N-1>());
 }
@@ -343,7 +343,7 @@ struct unsigned_generator : karma::primitive_generator<unsigned_generator<N> >
     // providing any attribute, as the generator doesn't 'know' what
     // number to output. The following assertion fires if this
     // situation is detected in your code.
-    BOOST_SPIRIT_ASSERT_MSG(false, unsigned_not_usable_without_attribute, ());
+    //BOOST_SPIRIT_ASSERT_MSG(false, unsigned_not_usable_without_attribute, ());
     
     return false;
   }
@@ -353,7 +353,7 @@ struct unsigned_generator : karma::primitive_generator<unsigned_generator<N> >
   {
     BOOST_MPL_ASSERT_RELATION(sizeof(U), ==, N/CHAR_BIT);
 
-    std::cout << "generating unsigned of value " << attr << std::endl;
+    // std::cout << "generating unsigned of value " << attr << std::endl;
 
     alignment_padding<N>(sink, ctx.attributes);
     typedef typename attribute<Context, OutputIterator>::type attribute_type;
@@ -389,7 +389,7 @@ struct specific_unsigned_generator : karma::primitive_generator<specific_unsigne
   template <typename OutputIterator, typename Context, typename Delimiter, typename Attr>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, Attr const& attr) const
   {
-    std::cout << "generating unsigned of value (specificied) " << value << std::endl;
+    // std::cout << "generating unsigned of value (specificied) " << value << std::endl;
 
     alignment_padding<N>(sink, ctx.attributes);
     typedef typename attribute<Context, OutputIterator>::type attribute_type;

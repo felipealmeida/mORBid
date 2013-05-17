@@ -1,0 +1,41 @@
+diff -c a/client.c\~ b/client.c
+*** a/client.c	2013-05-17 16:45:28.463855477 -0300
+--- b/client.c	2013-05-17 16:46:17.420125648 -0300
+***************
+*** 52,58 ****
+    0,  0,  4,  0,  0,  0, 14,  0,  0,  0,  4,  0,  0,  0, 14,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,};
+  
+! static const unsigned char opcodes__________bin_orb_benchmarks_simplest_oil_gcc-4_8_0_debug_link-static_threading-multi_parsed[]={
+   27, 76,117, 97, 81,  0,  1,  4,  8,  4,  8,  0, 97,  0,  0,  0,  0,  0,  0,  0,
+   64, 46, 46, 47, 46, 46, 47, 46, 46, 47, 98,105,110, 47,111,114, 98, 47, 98,101,
+  110, 99,104,109, 97,114,107,115, 47,115,105,109,112,108,101,115,116, 47,111,105,
+--- 52,58 ----
+    0,  0,  4,  0,  0,  0, 14,  0,  0,  0,  4,  0,  0,  0, 14,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,};
+  
+! static const unsigned char opcodes_parsed[]={
+   27, 76,117, 97, 81,  0,  1,  4,  8,  4,  8,  0, 97,  0,  0,  0,  0,  0,  0,  0,
+   64, 46, 46, 47, 46, 46, 47, 46, 46, 47, 98,105,110, 47,111,114, 98, 47, 98,101,
+  110, 99,104,109, 97,114,107,115, 47,115,105,109,112,108,101,115,116, 47,111,105,
+***************
+*** 139,146 ****
+  	
+  	if (luaL_loadbuffer(L,(const char*)opcodes_oil_client,sizeof(opcodes_oil_client),"oil.client")) lua_error(L);
+  	lua_setfield(L, -2, "oil.client");
+! 	if (luaL_loadbuffer(L,(const char*)opcodes__________bin_orb_benchmarks_simplest_oil_gcc-4_8_0_debug_link-static_threading-multi_parsed,sizeof(opcodes__________bin_orb_benchmarks_simplest_oil_gcc-4_8_0_debug_link-static_threading-multi_parsed),".........bin.orb.benchmarks.simplest.oil.gcc-4.8.0.debug.link-static.threading-multi.parsed")) lua_error(L);
+! 	lua_setfield(L, -2, ".........bin.orb.benchmarks.simplest.oil.gcc-4.8.0.debug.link-static.threading-multi.parsed");
+  	
+  	lua_pop(L, 1);
+  	return 0;
+--- 139,146 ----
+  	
+  	if (luaL_loadbuffer(L,(const char*)opcodes_oil_client,sizeof(opcodes_oil_client),"oil.client")) lua_error(L);
+  	lua_setfield(L, -2, "oil.client");
+! 	if (luaL_loadbuffer(L,(const char*)opcodes_parsed,sizeof(opcodes_parsed),"parsed")) lua_error(L);
+! 	lua_setfield(L, -2, "parsed");
+  	
+  	lua_pop(L, 1);
+  	return 0;
+
+Diff finished.  Fri May 17 16:47:52 2013

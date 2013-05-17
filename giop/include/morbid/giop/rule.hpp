@@ -102,7 +102,7 @@ struct rule
   {}
   ~rule()
   {
-    std::cout << "~rule " << this << std::endl;
+    // std::cout << "~rule " << this << std::endl;
   }
 
   template <typename Expr>

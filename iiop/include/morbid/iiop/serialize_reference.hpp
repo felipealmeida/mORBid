@@ -15,17 +15,17 @@ namespace morbid { namespace iiop {
 template <typename OutputIterator, typename StructuredIOR>
 void serialize_reference(OutputIterator& iterator, StructuredIOR sior)
 {
-  std::cout << "serializing reference" << std::endl;
+  // std::cout << "serializing reference" << std::endl;
   ior::generator::structured_ior_generator<OutputIterator, structured_ior>
     structured_ior_generator;
   namespace karma = boost::spirit::karma;
   if(karma::generate(iterator, structured_ior_generator(true /*little endian*/), sior))
   {
-    std::cout << "Success generating IOR" << std::endl;
+    // std::cout << "Success generating IOR" << std::endl;
   }
   else
   {
-    std::cout << "Failed generating interface" << std::endl;
+    // std::cout << "Failed generating interface" << std::endl;
     throw MARSHALL();
   }
 }

@@ -81,12 +81,12 @@ struct string_parser : qi::primitive_parser<string_parser>
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    std::cout << "string_parser::parse" << std::endl;
+    // std::cout << "string_parser::parse" << std::endl;
 
     unsigned_parser<32u> unsigned_;
     boost::uint_t<32u>::least size;
     bool r = unsigned_.parse(first, last, ctx, skipper, size);
-    std::cout << "string size " << size << std::endl;
+    // std::cout << "string size " << size << std::endl;
 
     if(!r)
       return false;

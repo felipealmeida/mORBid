@@ -93,7 +93,7 @@ struct make_primitive<morbid::giop::parameterized_nonterminal<D1, rule, Params>,
 template <typename CExpr>
 void test(CExpr const& expr)
 {
-  std::cout << "CExpr " << typeid(expr).name() << std::endl;
+  // std::cout << "CExpr " << typeid(expr).name() << std::endl;
   BOOST_MPL_ASSERT_RELATION(boost::fusion::result_of::size<typename CExpr::elements>::value, ==, 3);
   assert(boost::fusion::result_of::size<typename CExpr::elements>::value == 3);
 }

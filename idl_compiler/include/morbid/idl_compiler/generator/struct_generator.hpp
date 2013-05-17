@@ -61,8 +61,9 @@ struct struct_generator : karma::grammar
       ;
     start =
       eol
-      << "struct "
+      << "template <typename = void> struct "
       << wave_string[_1 = at_c<0>(_val)]
+      << "_struct"
       << '{' << eol
       << indent << "// members" << eol
       << (*(indent << member(_r1) << ';' << eol))[_1 = at_c<1>(_val)]
@@ -71,6 +72,8 @@ struct struct_generator : karma::grammar
       << morbid_fusion_model(_r1)[_1 = _val]
       << struct_generator_generator(_r1)[_1 = _val]
       << "};" << eol << eol
+      << "typedef " << wave_string[_1 = at_c<0>(_val)] << "_struct<> "
+      << wave_string[_1 = at_c<0>(_val)] << ";" << eol
       << "inline ::std::ostream& operator<<( ::std::ostream& os, " << wave_string[_1 = at_c<0>(_val)] << " const& obj)" << eol
       << '{' << eol
       << indent << "return os;" << eol

@@ -46,7 +46,7 @@ struct ref_ior_parser : qi::primitive_parser<ref_ior_parser<T> >
     using boost::phoenix::val;
     if(boost::spirit::qi::parse(first, last, ior_grammar(val(first)), ior_))
     {
-      std::cout << "Parsed IOR successfully" << std::endl;
+      // std::cout << "Parsed IOR successfully" << std::endl;
       iiop::grammar::profile_body_1_1<std::vector<char>::const_iterator> profile_body_grammar;
       bool found = false;
       morbid::iiop::profile_body profile_body;
@@ -62,10 +62,10 @@ struct ref_ior_parser : qi::primitive_parser<ref_ior_parser<T> >
                                       , profile_body_grammar(val(first->profile_data.begin()))
                                       , profile_body))
           {
-            std::cout << "Parsed IIOP profile body information host: " << profile_body.host
-                      << " port: " << profile_body.port 
-                      << " object_key:  " << boost::make_iterator_range(profile_body.object_key.begin()
-                                                                        , profile_body.object_key.end()) << std::endl;
+            // std::cout << "Parsed IIOP profile body information host: " << profile_body.host
+            //           << " port: " << profile_body.port 
+            //           << " object_key:  " << boost::make_iterator_range(profile_body.object_key.begin()
+            //                                                             , profile_body.object_key.end()) << std::endl;
             found = true;
             break;
           }
@@ -81,13 +81,13 @@ struct ref_ior_parser : qi::primitive_parser<ref_ior_parser<T> >
         ior.structured_profiles.push_back(profile_body);
         if(ior_.type_id != T::_repository_id)
         {
-          std::cout << "The type id is not exact, lets ask with is_a" << std::endl;
+          // std::cout << "The type id is not exact, lets ask with is_a" << std::endl;
           Object_ptr p(new ::morbid::remote_stub::Object(ior));
           attr = T::_narrow(p);
         }
         else
         {
-          std::cout << "The type id is exact, we don't need to ask" << std::endl;
+          // std::cout << "The type id is exact, we don't need to ask" << std::endl;
           attr = T::_construct_remote_stub(ior);
         }
         return true;

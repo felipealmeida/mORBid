@@ -24,7 +24,7 @@ Object::~Object() {}
 
 bool Object::_is_a(const char* id)
 {
-  std::cout << "Object::_is_a " << id << std::endl;
+  // std::cout << "Object::_is_a " << id << std::endl;
   using ::morbid::type_tag::value_type_tag;
   using ::morbid::type_tag::in_tag;
   return id == _structured_ior_.type_id

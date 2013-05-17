@@ -49,10 +49,10 @@ int main()
                      (generator_reply_header(phoenix::val(giop::little_endian)))
                      , attribute))
   {
-    std::cout << "Success" << std::endl;
+    // std::cout << "Success" << std::endl;
     
-    boost::algorithm::hex(output.begin(), output.end(), std::ostream_iterator<char>(std::cout));
-    std::endl(std::cout);
+    // boost::algorithm::hex(output.begin(), output.end(), std::ostream_iterator<char>(std::cout));
+    // std::endl(std::cout);
 
     typedef std::vector<char>::const_iterator iterator_type;
     typedef morbid::giop::grammars::reply_1_0<iiop::parser_domain
@@ -70,13 +70,13 @@ int main()
     }
     else
     {
-      std::cout << "Failed" << std::endl;
+      // std::cout << "Failed" << std::endl;
       std::abort();
     }
   }
   else
   {
-    std::cout << "Failed" << std::endl;
+    // std::cout << "Failed" << std::endl;
     std::abort();
   }
 }

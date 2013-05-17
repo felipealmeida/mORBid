@@ -88,9 +88,9 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
     << indent << "{" << eol
     << karma::eps[_a = 0]
     << (
-        indent << indent << "std::cout << \"Called " << wave_string[_1 = phoenix::at_c<1>(_val)]
-        << " was called\" << std::endl;" << eol
-        << indent << indent << "return ::morbid::synchronous_call::call" << eol
+        // indent << indent << "std::cout << \"Called " << wave_string[_1 = phoenix::at_c<1>(_val)]
+        // << " was called\" << std::endl;" << eol
+        indent << indent << "return ::morbid::synchronous_call::call" << eol
         << indent << indent << indent << "< "
         << type_spec
         (

@@ -24,7 +24,7 @@ struct serialize_object_aux
   template <typename OutputIterator>
   static void call(OutputIterator& iterator, T a)
   {
-    std::cout << "serialize primitive object " << typeid(a).name() << std::endl;
+    // std::cout << "serialize primitive object " << typeid(a).name() << std::endl;
     iiop::serialize_object(iterator, true, a);
   }
 };
@@ -58,7 +58,7 @@ struct serialize_object_aux<boost::shared_ptr<T> >
   template <typename OutputIterator>
   static void call(OutputIterator& iterator, boost::shared_ptr<T> r)
   {
-    std::cout << "serializing " << typeid(r).name() << std::endl;
+    // std::cout << "serializing " << typeid(r).name() << std::endl;
     iiop::serialize_reference(iterator, r->_structured_ior());
   }
 };
@@ -66,7 +66,7 @@ struct serialize_object_aux<boost::shared_ptr<T> >
 template <typename OutputIterator, typename T>
 void serialize_object(OutputIterator& iterator, T a)
 {
-  std::cout << "serialize_object " << typeid(a).name() << std::endl;
+  // std::cout << "serialize_object " << typeid(a).name() << std::endl;
   serialize_object_aux<T>::call(iterator, a);
 }
 

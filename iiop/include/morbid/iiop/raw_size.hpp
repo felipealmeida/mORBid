@@ -41,7 +41,7 @@ struct raw_size_generator : karma::unary_generator<raw_size_generator<Size, Subj
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const& d, C& attr) const
   {
-    std::cout << "raw_size_generator::generate" << std::endl;
+    // std::cout << "raw_size_generator::generate" << std::endl;
     std::vector<char> value;
     typedef giop::forward_back_insert_iterator<std::vector<char> > forward_iterator;
     BOOST_MPL_ASSERT((boost::is_same<typename iiop::output_iterator<OutputIterator>::type, forward_iterator>));
@@ -49,7 +49,7 @@ struct raw_size_generator : karma::unary_generator<raw_size_generator<Size, Subj
       <forward_iterator, properties> output_iterator;
     forward_iterator first(value);
     output_iterator buffered_sink (first);
-    std::cout << "Calling generate to buffered sink" << std::endl;
+    // std::cout << "Calling generate to buffered sink" << std::endl;
 
     typedef typename Context::attributes_type attributes_type;
     typedef get_alignment_attribute<attributes_type, forward_iterator> getter_alignment_attribute;
@@ -78,7 +78,7 @@ struct raw_size_generator : karma::unary_generator<raw_size_generator<Size, Subj
     {
       fusion::at_c<alignment_index_type::value>(ctx.attributes) = tmp_alignment;
 
-      std::cout << "Generate succeeded, copying to original sink" << std::endl;
+      // std::cout << "Generate succeeded, copying to original sink" << std::endl;
       size_generator_type size_generator = spirit::compile<generator_domain>(this->size);
       typedef typename spirit::traits::attribute_of<size_generator_type, Context, OutputIterator>::type size_attribute;
       size_attribute size = value.size();
@@ -128,7 +128,7 @@ struct raw_size_parser : qi::unary_parser<raw_size_parser<Size, Subject> >
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    std::cout << "raw size parser" << std::endl;
+    // std::cout << "raw size parser" << std::endl;
     typedef typename spirit::result_of::compile<parser_domain, Size>::type
       size_parser_type;
     size_parser_type size_parser = spirit::compile<parser_domain>(this->size);
@@ -137,7 +137,7 @@ struct raw_size_parser : qi::unary_parser<raw_size_parser<Size, Subject> >
     if(!size_parser.parse(first, last, ctx, skipper, size))
       return false;
 
-    std::cout << "Size of the input for subject " << size << std::endl;
+    // std::cout << "Size of the input for subject " << size << std::endl;
 
     std::size_t dist = std::distance(first, last);
     if(dist < size)

@@ -13,6 +13,8 @@
 #include <tao/corba.h>
 #endif
 
+#include "test_iterations.hpp"
+
 #include <boost/chrono/chrono.hpp>
 #include <boost/chrono/chrono_io.hpp>
 
@@ -24,13 +26,16 @@ int main(int argc, char* argv[])
 {
   CORBA::ORB_var orb = CORBA::ORB_init(argc, argv, "");
 
-  assert(argc > 1);
-
   std::string ior;
+  if(argc > 1)
   {
     std::ifstream ifs(argv[1]);
     std::getline(ifs, ior);
   }
+  else
+    std::getline(std::cin, ior);
+
+  assert(!ior.empty());
 
   CORBA::Object_var obj = orb->string_to_object (ior.c_str());
   simplest_var simplest_ = simplest::_narrow (obj);
@@ -40,13 +45,11 @@ int main(int argc, char* argv[])
   typedef boost::chrono::high_resolution_clock::time_point time_point;
   time_point before = boost::chrono::high_resolution_clock::now();
 
-  for(unsigned int i = 0; i != 10000; ++i)
+  for(unsigned int i = 0; i != test_iterations; ++i)
   {
-    // std::cout << "foo " << (i+1) << std::endl;
     simplest_->foo();
-    // std::cout << "returned from foo " << (i+1) << std::endl;
   }
 
-  std::cout << "Time to execute test " << boost::chrono::duration_cast<boost::chrono::milliseconds>
+  std::cout << "Time to execute test " << boost::chrono::duration_cast<boost::chrono::seconds>
     (boost::chrono::high_resolution_clock::now() - before) << std::endl;
 }

@@ -49,7 +49,7 @@ struct tag
 template <typename NotInParams, typename ReplyArguments>
 void make_request_reply(struct orb orb, reply& r, ReplyArguments& reply_arguments)
 {
-  std::cout << "Generating reply with reply arguments " << typeid(ReplyArguments).name() << std::endl;
+  // std::cout << "Generating reply with reply arguments " << typeid(ReplyArguments).name() << std::endl;
   typedef ReplyArguments reply_argument_types;
 
   typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;
@@ -92,7 +92,7 @@ void make_request_reply(struct orb orb, reply& r, ReplyArguments& reply_argument
                      (message_grammar_(giop::native_endian))
                      , message_attribute))
   {
-    std::cout << "reply generated" << std::endl;
+    // std::cout << "reply generated" << std::endl;
   }
   else
   {
@@ -140,9 +140,9 @@ struct split_arguments_sequence
     typedef typename fusion::result_of::begin<Seq const>::type begin_iterator;
     typedef mpl::iterator_range<begin_iterator, Iter> before_range;
     typedef typename mpl::count_if<before_range, type_tag::is_not_in_type_tag<mpl::_1> >::type not_ins;
-    std::cout << "is NOT in, adding reference from generated args. Type: "
-              << typeid(typename result_::value_type).name()
-              << " not_ins " << not_ins::value << std::endl;
+    // std::cout << "is NOT in, adding reference from generated args. Type: "
+    //           << typeid(typename result_::value_type).name()
+    //           << " not_ins " << not_ins::value << std::endl;
     return typename result_::type(fusion::at<not_ins>(args), s);
   }
 
@@ -159,7 +159,7 @@ struct split_arguments_sequence
 template <typename R, typename SeqParam, typename F, typename T, typename Args>
 void handle_request_reply(struct orb orb, F f, T* self, reply& r, Args& args, mpl::identity<void>)
 {
-  std::cout << "handle_request_reply void return" << std::endl;
+  // std::cout << "handle_request_reply void return" << std::endl;
   fusion::single_view<T*> self_view(self);
   // joint_view requires lvalues
   fusion::joint_view<fusion::single_view<T*> const, Args> new_args(self_view, args);
@@ -187,7 +187,7 @@ void handle_request_reply(struct orb orb, F f, T* self, reply& r, Args& args, mp
                                                            , fusion::nil()
                                                            , split_arguments(args));
   
-  std::cout << "(no result) reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
+  // std::cout << "(no result) reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
   make_request_reply<not_in_params>(orb, r, reply_arguments);
 }
 
@@ -276,9 +276,9 @@ struct merge_arguments_sequence
     typedef typename fusion::result_of::begin<Seq const>::type begin_iterator;
     typedef mpl::iterator_range<begin_iterator, Iter> before_range;
     typedef typename mpl::count_if<before_range, type_tag::is_not_out_type_tag<mpl::_1> >::type not_outs;
-    std::cout << "is NOT out, copying from parsed args. Type: "
-              << typeid(typename result_::next_value_type).name()
-              << " not_outs " << not_outs::value << std::endl;
+    // std::cout << "is NOT out, copying from parsed args. Type: "
+    //           << typeid(typename result_::next_value_type).name()
+    //           << " not_outs " << not_outs::value << std::endl;
     return typename result_::type(fusion::at<not_outs>(args), s);
   }  
 
@@ -287,8 +287,8 @@ struct merge_arguments_sequence
   operator()(S const& s, Iter const& i, mpl::true_) const
   {
     typedef result<merge_arguments_sequence(S const&, Iter const&)> result_;
-    std::cout << "IS out, default constructing argument. Type: "
-              << typeid(typename result_::next_value_type).name() << std::endl;
+    // std::cout << "IS out, default constructing argument. Type: "
+    //           << typeid(typename result_::next_value_type).name() << std::endl;
     return typename result_::type(typename result_::next_value_type(), s);
   }  
 
@@ -304,10 +304,10 @@ struct merge_arguments_sequence
 
 template <typename R, typename SeqParam, typename T, typename F>
 void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
-                         , const char* rq_first, const char* rq_last
+                         , const char*& rq_first, const char* rq_last
                          , bool little_endian, reply& r)
 {
-  std::cout << "handle_request_body " << typeid(f).name() << " align_offset " << align_offset << std::endl;
+  // std::cout << "handle_request_body " << typeid(f).name() << " align_offset " << align_offset << std::endl;
   typedef typename mpl::lambda<type_tag::is_not_out_type_tag<mpl::_1> >::type
     is_not_out_lambda;
   typedef typename mpl::copy_if<SeqParam, is_not_out_lambda>::type not_out_params;
@@ -334,9 +334,9 @@ void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
                (iiop::aligned(align_offset)[arguments_grammar_(giop::endian(little_endian))])
                , parse_arguments))
   {
-    std::cout << "Parsed arguments correctly " << typeid(parse_arguments).name() << std::endl;
-    std::cout << "Arguments parsed " << parse_arguments << std::endl;
-    std::cout << "handle_request_body not_out_params " << typeid(parse_argument_types).name() << std::endl;
+    // std::cout << "Parsed arguments correctly " << typeid(parse_arguments).name() << std::endl;
+    // std::cout << "Arguments parsed " << parse_arguments << std::endl;
+    // std::cout << "handle_request_body not_out_params " << typeid(parse_argument_types).name() << std::endl;
 
     typedef typename mpl::copy_if<SeqParam, type_tag::is_out_type_tag<mpl::_1> >::type out_params;
 
