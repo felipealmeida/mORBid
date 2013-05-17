@@ -35,7 +35,10 @@ struct lookuped_type
     , modules(&modules), kind(kind) {}
 };
 
-std::ostream& operator<<(std::ostream& os, lookuped_type l);
+inline std::ostream& operator<<(std::ostream& os, lookuped_type l)
+{
+  return os << "lookuped_type";
+}
 
 } }
 

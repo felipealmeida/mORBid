@@ -90,7 +90,12 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec
     // value_base = karma::string[_1 = "::morbid::ValueBase"];
     void_ = karma::string[_1 = "void"];
     sequence =
-      karma::lit("::morbid::sequence<")
+      karma::lit("::std::vector< ")
+      << (floating_point | integer | char_ | wchar_ | boolean | octet
+          | any | object | value_base | void_ | scoped_name
+          (phoenix::construct<lookuped_type_wrapper>(_r1, lookup_inside_type()))
+          | fail_sequence
+          )[_1 = phoenix::at_c<0>(phoenix::at_c<0>(_val))]
       << ">";
   }
 
@@ -106,7 +111,8 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec
   karma::rule<OutputIterator, idl_parser::types::object()> object;
   karma::rule<OutputIterator, idl_parser::types::value_base()> value_base;
   karma::rule<OutputIterator, idl_parser::types::void_()> void_;
-  karma::rule<OutputIterator, idl_parser::types::sequence(lookuped_type_wrapper)> sequence;
+  karma::rule<OutputIterator, idl_parser::types::sequence(lookuped_type)> sequence;
+  karma::rule<OutputIterator, idl_parser::types::sequence()> fail_sequence;
   
 };
 

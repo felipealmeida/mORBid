@@ -12,7 +12,6 @@
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/generator/scoped_name.hpp>
 #include <morbid/idl_compiler/generator/struct_generator_generator.hpp>
-// #include <morbid/idl_compiler/generator/struct_parser_generator.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 
@@ -33,10 +32,10 @@ struct struct_generator : karma::grammar
   {
     using phoenix::at_c;
     using karma::eol;
-    using karma::string;
     using karma::_1; using karma::_r1; using karma::_r2;
     using karma::_val; using karma::_a;
 
+    wave_string %= karma::string;
     mpl_member_type =
       type_spec
       (
@@ -50,11 +49,11 @@ struct struct_generator : karma::grammar
       ;
     fusion_at =
       indent << mpl_member_type(_r1)[_1 = _val] << "& _morbid_fusion_at( ::boost::mpl::size_t<"
-      << karma::lit(_r2) << "u>) { return " << karma::string[_1 = at_c<1>(_val)] << "; }" << eol
+      << karma::lit(_r2) << "u>) { return " << wave_string[_1 = at_c<1>(_val)] << "; }" << eol
       << indent << mpl_member_type(_r1)[_1 = _val] << " const& _morbid_fusion_at( ::boost::mpl::size_t<"
-      << karma::lit(_r2) << "u>) const { return " << karma::string[_1 = at_c<1>(_val)] << "; }" << eol
+      << karma::lit(_r2) << "u>) const { return " << wave_string[_1 = at_c<1>(_val)] << "; }" << eol
       ;
-    morbid_fusion_model = //karma::eps
+    morbid_fusion_model = // karma::eps
          indent << "typedef boost::mpl::size_t<" << karma::lit(phoenix::size(at_c<1>(_val))) << "> _morbid_fusion_size;" << eol
       << indent << "typedef " << mpl_sequence_type(_r1)[_1 = _val] << " _morbid_fusion_types;" << eol
       //      << indent << "typedef ::boost::fusion::fusion_sequence_tag tag;" << eol
@@ -63,7 +62,7 @@ struct struct_generator : karma::grammar
     start =
       eol
       << "struct "
-      << string[_1 = at_c<0>(_val)]
+      << wave_string[_1 = at_c<0>(_val)]
       << '{' << eol
       << indent << "// members" << eol
       << (*(indent << member(_r1) << ';' << eol))[_1 = at_c<1>(_val)]
@@ -71,9 +70,8 @@ struct struct_generator : karma::grammar
       << indent << "typedef ::morbid::struct_tag _morbid_type_kind;" << eol
       << morbid_fusion_model(_r1)[_1 = _val]
       << struct_generator_generator(_r1)[_1 = _val]
-      // << struct_parser_generator(_r1)[_1 = _val]
       << "};" << eol << eol
-      << "inline ::std::ostream& operator<<( ::std::ostream& os, " << string[_1 = at_c<0>(_val)] << " const& obj)" << eol
+      << "inline ::std::ostream& operator<<( ::std::ostream& os, " << wave_string[_1 = at_c<0>(_val)] << " const& obj)" << eol
       << '{' << eol
       << indent << "return os;" << eol
       << '}' << eol
@@ -84,15 +82,13 @@ struct struct_generator : karma::grammar
       (
        at_c<1>(_r1)[at_c<0>(_val)]
        )[_1 = at_c<0>(_val)]
-      << karma::space << karma::string[_1 = at_c<1>(_val)]
+      << karma::space << wave_string[_1 = at_c<1>(_val)]
       ;
   }
 
   generator::type_spec<OutputIterator, Iterator> type_spec;
   generator::struct_generator_generator<OutputIterator, Iterator>
     struct_generator_generator;
-  // generator::struct_parser_generator<OutputIterator, Iterator>
-  //   struct_parser_generator;
   karma::rule<OutputIterator, idl_parser::member(struct_)> mpl_member_type;
   karma::rule<OutputIterator, idl_parser::member(struct_, unsigned int)> fusion_at;
   karma::rule<OutputIterator, idl_parser::struct_def(struct_)> mpl_sequence_type;
@@ -100,6 +96,7 @@ struct struct_generator : karma::grammar
   karma::rule<OutputIterator, idl_parser::struct_def(struct_), karma::locals<unsigned int> > morbid_fusion_model;
   karma::rule<OutputIterator, idl_parser::member(struct_)> member;
   karma::rule<OutputIterator, idl_parser::struct_def(struct_)> start;
+  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
 };
 
 } } }

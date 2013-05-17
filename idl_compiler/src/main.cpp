@@ -19,6 +19,9 @@
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/generator/concept_generator.hpp>
 #include <morbid/idl_compiler/generator/reference_model_generator.hpp>
+#include <morbid/idl_compiler/generator/typedef_generator.hpp>
+#include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
+#include <morbid/idl_compiler/generator/struct_generator.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
@@ -170,6 +173,7 @@ int main(int argc, char** argv)
              << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
              << karma::lit("#include <morbid/object.hpp>") << karma::eol << karma::eol
              << karma::lit("#include <boost/integer.hpp>") << karma::eol
+             << karma::lit("#include <boost/spirit/home/karma.hpp>") << karma::eol
              << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
              << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
              << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol
@@ -274,6 +278,15 @@ int main(int argc, char** argv)
             morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
             std::cout << "Adding typedef " << typedef_.name << " at module " << module.name << std::endl;
             module.typedefs.push_back(t);
+
+            morbid::idl_compiler::generator::typedef_generator
+              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+              typedef_generator;
+
+            bool r = karma::generate(output_iterator, typedef_generator
+                                     (phoenix::val(module.typedefs.back().lookup))
+                                     , module.typedefs.back().definition);
+            assert(r);
           }
           else if(boost::spirit::qi::phrase_parse
                   (iterator, last
@@ -316,8 +329,17 @@ int main(int argc, char** argv)
             }
 
             module_map map = get(module_property_t(), modules_tree);
-            boost::get(map, current_module.back())
-              ->structs.push_back(s);
+            morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
+            module.structs.push_back(s);
+            
+            morbid::idl_compiler::generator::struct_generator
+              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+              struct_generator;
+
+            bool r = karma::generate(output_iterator, struct_generator
+                                     (phoenix::val(module.structs.back()))
+                                     , (module.structs.back().definition));
+            if(!r) throw std::runtime_error("Failed generating header_concept_generator");
           }
           else if(boost::spirit::qi::phrase_parse(iterator, last
                                                   , constant_grammar >> token_id(boost::wave::T_SEMICOLON)
@@ -406,25 +428,42 @@ int main(int argc, char** argv)
             morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
             module.interfaces.push_back(i);
 
-            morbid::idl_compiler::generator::header_concept_generator
-              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
-              header_concept_generator;
-            morbid::idl_compiler::generator::header_reference_model_generator
-              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
-              header_reference_model_generator;
+            if(interface.fully_defined)
+            {
+              morbid::idl_compiler::generator::header_concept_generator
+                <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+                header_concept_generator;
+              morbid::idl_compiler::generator::header_reference_model_generator
+                <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+                header_reference_model_generator;
 
-            std::vector<morbid::idl_parser::wave_string> modules
-              (boost::next(modules_names.begin()), modules_names.end());
-            bool r = karma::generate(output_iterator, header_concept_generator
-                                     (phoenix::val(module.interfaces.back()), phoenix::val(modules))
-                                     , (module.interfaces.back().definition));
-            if(!r) throw std::runtime_error("Failed generating header_concept_generator");
+              modules_names.pop_back();
+              bool r = karma::generate(output_iterator, header_concept_generator
+                                       (phoenix::val(module.interfaces.back()), phoenix::val(modules_names))
+                                       , (module.interfaces.back().definition));
+              if(!r) throw std::runtime_error("Failed generating header_concept_generator");
 
-            modules.push_back(module.interfaces.back().definition.name);
-            r = karma::generate(output_iterator, header_reference_model_generator
-                                (phoenix::val(module.interfaces.back()), phoenix::val(modules))
-                                , module.interfaces.back().definition);
-            if(!r) throw std::runtime_error("Failed generating header_concept_generator");
+              modules_names.push_back(module.interfaces.back().definition.name);
+              r = karma::generate(output_iterator, header_reference_model_generator
+                                  (phoenix::val(module.interfaces.back()), phoenix::val(modules_names))
+                                  , module.interfaces.back().definition);
+              if(!r) throw std::runtime_error("Failed generating header_concept_generator");
+            }
+            else
+            {
+              using morbid::idl_parser::wave_string;
+              using karma::_1; using karma::_val;
+              using karma::eol; using karma::string;
+              using karma::attr_cast;
+              namespace fusion = boost::fusion;
+              namespace phoenix = boost::phoenix;
+              karma::generate(output_iterator
+                              , "struct " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_concept;" << eol
+                              << "struct " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref;" << eol
+                              << "typedef ::morbid::reference< " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)]
+                              << "_concept> " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << ";" << eol
+                              , fusion::make_vector(module.interfaces.back().definition.name));
+            }
           }
           else
           {

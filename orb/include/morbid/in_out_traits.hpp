@@ -185,6 +185,12 @@ struct in_traits<octet>
   typedef octet type;
 };
 
+template <typename T>
+struct in_traits<std::vector<T> >
+{
+  typedef std::vector<T>const& type;
+};
+
 template <>
 struct out_traits<std::string>
 {
@@ -263,6 +269,12 @@ struct out_traits<octet>
   typedef octet& type;
 };
 
+template <typename T>
+struct out_traits<std::vector<T> >
+{
+  typedef std::vector<T>& type;
+};
+
 template <>
 struct inout_traits<std::string>
 {
@@ -304,6 +316,9 @@ struct inout_traits<wchar_t> : out_traits<wchar_t> {};
 
 template <>
 struct inout_traits<octet> : out_traits<octet> {};
+
+template <typename T>
+struct inout_traits<std::vector<T> > : out_traits<std::vector<T> > {};
 
 typedef out_traits<bool>::type Boolean_out;
 typedef out_traits<unsigned_short>::type UShort_out;

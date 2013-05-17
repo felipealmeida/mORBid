@@ -34,11 +34,12 @@ struct typedef_generator : karma::grammar
     using karma::_val;
     using karma::_1;
 
+    wave_string = karma::string;
     start =
       "typedef" << karma::space
                 << type_spec(_r1)[_1 = at_c<0>(_val)]
                 << karma::space
-                << karma::string[_1 = at_c<1>(_val)]
+                << wave_string[_1 = at_c<1>(_val)]
                 << ';' << karma::eol
       ;
 
@@ -47,6 +48,7 @@ struct typedef_generator : karma::grammar
   }
 
   generator::type_spec<OutputIterator, Iterator> type_spec;
+  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
   karma::rule<OutputIterator, idl_parser::typedef_def(lookuped_type)> start;
 };
 

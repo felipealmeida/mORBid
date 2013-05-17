@@ -22,37 +22,49 @@ namespace morbid { namespace idl_compiler { namespace generator {
 namespace karma = boost::spirit::karma;
 namespace phoenix = boost::phoenix;
 
+struct lookup_inside_type {};
+
 struct lookuped_type_wrapper
 {
-  lookuped_type_wrapper() {}
+  lookuped_type_wrapper() : inside(false) {}
   lookuped_type_wrapper(lookuped_type l)
-    : l(l) {}
+    : l(l), inside(false) {}
+  lookuped_type_wrapper(lookuped_type l, lookup_inside_type)
+    : l(l), inside(true) {}
 
-  std::vector<idl_parser::wave_string> get_outside_type() const
+  std::vector<idl_parser::wave_string> get_type() const
   {
+    std::cout << "type is inside? " << inside << std::endl;
     typedef modules_tree_type::in_edge_iterator in_edge_iterator;
     typedef boost::property_map<modules_tree_type, module_property_t>
       ::const_type module_map;
     module_map map = get(module_property_t(), *l.modules);
 
+    vertex_descriptor type_ = inside ? *l.inside_type : l.outside_type;
+
     std::vector<idl_parser::wave_string> module_path;
-    module const& m = *boost::get(map, l.outside_type);
+    module const& m = *boost::get(map, type_);
     module_path.push_back(m.name);
 
     std::pair<in_edge_iterator, in_edge_iterator>
-      edges = in_edges(l.outside_type, *l.modules);
-    if(boost::distance(edges))
+      edges = in_edges(type_, *l.modules);
+    assert(boost::distance(edges) == 0 || boost::distance(edges) == 1);
+
+    while(boost::distance(edges))
     {
-      assert(boost::distance(edges) == 1);
-      do
-      {
-        vertex_descriptor v = source(*edges.first, *l.modules);
-        module const& m = *boost::get(map, v);
-        module_path.push_back(m.name);
-        edges = in_edges(v, *l.modules);
-      }
-      while(boost::distance(edges));
+      vertex_descriptor v = source(*edges.first, *l.modules);
+      module const& m = *boost::get(map, v);
+
+      std::cout << "edge name " << m.name << std::endl;
+
+      module_path.push_back(m.name);
+      edges = in_edges(v, *l.modules);
     }
+
+    std::copy(module_path.begin(), module_path.end()
+              , std::ostream_iterator<idl_parser::wave_string>(std::cout, "::"));
+    std::endl(std::cout);
+
     std::reverse(module_path.begin(), module_path.end());
     return module_path;
   }
@@ -62,6 +74,7 @@ struct lookuped_type_wrapper
   }
 
   lookuped_type l;
+  bool inside;
 };
 
 } } }
@@ -69,7 +82,7 @@ struct lookuped_type_wrapper
 BOOST_FUSION_ADAPT_ADT( ::morbid::idl_compiler::generator::lookuped_type_wrapper
                         , (std::vector< ::morbid::idl_parser::wave_string>
                            , std::vector< ::morbid::idl_parser::wave_string>
-                           , obj.get_outside_type(), ::std::abort())
+                           , obj.get_type(), ::std::abort())
                         (::morbid::idl_compiler::kind_variant
                          , ::morbid::idl_compiler::kind_variant
                          , obj.kind(), ::std::abort())
@@ -93,8 +106,8 @@ struct scoped_name : karma::grammar<OutputIterator, idl_parser::types::scoped_na
       // I don't care for globally_qualified attribute
       // because the lookuped type _r1 is already qualified
       (karma::attr_cast<idl_parser::wave_string>(karma::string) % "::")[_1 = at_c<0>(_r1)]
-      << "::" << (karma::attr_cast<idl_parser::wave_string>(karma::string) % "::")
-      [_1 = at_c<1>(_val)]
+      << "::"
+      << karma::attr_cast<idl_parser::wave_string>(karma::string)[_1 = phoenix::back(at_c<1>(_val))]
       // << //((
       // -(is_interface_kind// /* << karma::string[_1 = "_ptr"]*/)
       //     | is_struct_kind

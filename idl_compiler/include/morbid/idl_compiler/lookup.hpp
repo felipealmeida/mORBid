@@ -30,7 +30,16 @@ struct lookup_type_spec_functional
   template <typename T>
   lookuped_type operator()(T) const
   {
+    std::cout << "Primitive type lookuped " << typeid(T).name() << std::endl;
     return lookuped_type(current_module[0], modules, is_primitive_kind()); // primitive
+  }
+  lookuped_type operator()(idl_parser::types::sequence const& s) const
+  {
+    std::cout << "Looking up sequence" << std::endl;
+    lookuped_type t(current_module[0], modules, is_primitive_kind());
+    std::cout << "Looking up inside element" << std::endl;
+    t.inside_type = boost::apply_visitor(*this, s.type.type).outside_type;
+    return t;
   }
   lookuped_type operator()(idl_parser::types::scoped_name const& s) const
   {
@@ -97,7 +106,10 @@ struct lookup_type_spec_functional
 
           boost::optional<kind_variant> kind = search_type(module, s.identifiers.back());
           if(kind)
+          {
+            assert(v_lookup != current_module[0]);
             return lookuped_type(v_lookup, modules, *kind);
+          }
         }
 
         ++first;
@@ -105,10 +117,6 @@ struct lookup_type_spec_functional
       while(first != last);
     }
     throw lookup_error(s);
-  }
-  lookuped_type operator()(idl_parser::types::sequence const& s) const
-  {
-    return lookuped_type(current_module[0], modules, is_primitive_kind()); // primitive
   }
 };
 

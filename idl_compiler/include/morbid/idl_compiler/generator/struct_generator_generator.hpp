@@ -121,7 +121,7 @@ struct struct_generator_generator : karma::grammar
       << indent << indent << indent
       << (
           ((member_generator(_r1) << eol) % (indent << indent << indent << "& "))[_1 = at_c<1>(_val)]
-          | ("karma::eps" << eol)
+          | ("::boost::spirit::karma::eps" << eol)
          ) << indent << indent << indent << ";" << eol
       << indent << '}' << eol
       << indent << "::morbid::giop::rule<Domain, Iterator, Attr( ::morbid::giop::endian)> start;" << eol
