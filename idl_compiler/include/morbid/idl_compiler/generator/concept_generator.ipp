@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -8,7 +8,7 @@
 #ifndef TECORB_IDL_COMPILER_CONCEPT_GENERATOR_IPP
 #define TECORB_IDL_COMPILER_CONCEPT_GENERATOR_IPP
 
-#include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
+// #include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/proxy_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/concept_generator.hpp>
 
@@ -31,8 +31,8 @@ namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
-template <typename OutputIterator, typename Iterator>
-header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
+template <typename OutputIterator>
+header_concept_generator<OutputIterator>::header_concept_generator()
   : header_concept_generator::base_type(start)
 {
   namespace phoenix = boost::phoenix;
@@ -55,8 +55,9 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << requirements[_1 = at_c<1>(_val)] << eol
     << public_members(_r2, _a)[_1 = at_c<0>(_val)] << eol
     << indent << "typedef ::morbid::interface_tag _morbid_type_kind;" << eol
-    << indent << empty_reference(_r1)[_1 = _val] << ";" << eol
-    << indent << proxy_reference(_r1)[_1 = _val] << ";" << eol
+    // << indent << empty_reference(_r1)[_1 = _val] << ";" << eol
+    // << indent << proxy_reference(_r1)[_1 = _val] << ";" << eol
+    << indent << "template <typename T> struct proxy_reference;" << eol
     << indent << "typedef " << wave_string[_1 = _a] << "_ref remote_reference;" << eol
     << "};" << eol << eol
     ;
@@ -66,35 +67,7 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
     << "struct " << wave_string[_1 = _a] << "_ref;" << eol
     << "typedef ::morbid::reference< " << wave_string[_1 = _a] << "_concept> " << wave_string[_1 = _a] << ';' << eol
     << concept_class(_r1, _r2)[_1 = _val]
-    << (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
-    << "namespace boost { namespace type_erasure { // specialization of concept_interface" << eol
-    << (*operation_concept_interface_specialization(_r1, _r2, _a))[_1 = at_c<1>(_val)]
-    << "}}" << eol
-    << (*("namespace " << wave_string << " { "))[_1 = _r2] << eol
     ;
-  ;
-  operation_concept_interface_specialization =
-    "template <class C, class Base>" 
-    << eol
-    << "struct concept_interface< " << -(wave_string % "::")[_1 = _r2]
-    << "::" << wave_string[_1 = _r3] << "_concept::" << operation_name[_1 = _val] << "<C>, Base, C> : Base" << eol
-    << "{" << eol
-    << indent << return_(at_c<1>(_r1)[at_c<0>(_val)])[_1 = at_c<0>(_val)] << karma::space << operation_name[_1 = _val]
-    << '('
-    << -(
-         (("typename as_param<Base, " << parameter_select(_r1)
-           << " >::type arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
-         )
-    << ')' << eol
-    << indent << "{" << eol
-    << indent << indent << "return call( " << -(wave_string % "::")[_1 = _r2]
-    << "::" << wave_string[_1 = _r3] << "_concept::" << operation_name[_1 = _val] << "<C>(), *this"
-    << karma::eps[_a = 0] << (*(", " << args(++_a)))[_1 = at_c<2>(_val)]
-    << ");" << eol
-    << indent << "}" << eol
-    << "};" << eol
-    ;
-
   operation_name = karma::stream[_1 = at_c<1>(_val)];
   args = "arg" << karma::lit(_r1);
   in_tag = karma::string[_1 = " ::morbid::type_tag::in_tag"];
@@ -112,19 +85,26 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
   operation =
     -(
       // karma::eps(at_c<3>(_val))
-      indent << "template <typename C = ::boost::type_erasure::_self>" << eol
-      << indent << "struct " << operation_name[_1 = _val] << eol
-      << indent << '{' << eol
-      << indent << indent << "typedef " << return_
+      indent << "template <typename C = ::boost::type_erasure::_self, typename R = "
+      << return_
       (
        at_c<1>(_r1)[at_c<0>(_val)]
       )
       [_1 = at_c<0>(_val)]
-      << " result_type;" << eol
+      << (*(", typename A" << karma::lit(_a++) << " = "
+            << parameter_select(_r1)))[_1 = at_c<2>(_val)]
+      << " >" << eol
+      << indent << "struct " << operation_name[_1 = _val] << eol
+      << indent << '{' << eol
+      << indent << indent << "typedef R result_type;" << eol
       // apply
       << indent << indent << "static result_type apply(C& self"
+      << karma::eps[_a = 0]
       << -(
-           (*(", " << parameter_select(_r1) << " arg" << karma::lit(++_a)))[_1 = at_c<2>(_val)]
+           (*(", A"
+              << karma::lit(_a)
+              << karma::attr_cast<idl_parser::param_decl>(karma::eps)
+              << " arg" << karma::lit(++_a)))[_1 = at_c<2>(_val)]
           )
       << ")" << eol
       << indent << indent << "{" << eol
@@ -136,7 +116,11 @@ header_concept_generator<OutputIterator, Iterator>::header_concept_generator()
       << indent << indent << "template <typename This_>" << eol
       << indent << indent << "result_type operator()(This_* self"
       << -(
-           (*(", " << parameter_select(_r1) << " arg" << karma::lit(++_a)))[_1 = at_c<2>(_val)]
+           (*(", A"
+              << karma::lit(_a)
+              << karma::attr_cast<idl_parser::param_decl>(karma::eps)
+              << " arg" << karma::lit(++_a)))[_1 = at_c<2>(_val)]
+           //           (*(", " << parameter_select(_r1) << " arg" << karma::lit(++_a)))[_1 = at_c<2>(_val)]
           )
       << ")" << eol
       << indent << indent << "{" << eol

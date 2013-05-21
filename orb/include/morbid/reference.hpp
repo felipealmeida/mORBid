@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -23,8 +23,7 @@ template <typename T>
 struct is_remote_reference : boost::mpl::false_ {};
 
 template <typename C>
-struct reference
-  : boost::type_erasure::any<typename C::regular_requirements>
+struct reference : boost::type_erasure::any<typename C::regular_requirements>
 {
   typedef reference<C> self_type;
   typedef interface_tag _morbid_type_kind;
@@ -102,7 +101,7 @@ struct reference
   };
 
   bool operator!() const { return boost::type_erasure::is_empty(*this); }
-  typedef bool(self_type::*unspecified_bool_type)();
+  typedef bool(self_type::*unspecified_bool_type)() const;
   
   operator unspecified_bool_type() const
   {

@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -22,6 +22,7 @@
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
 #include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/struct_generator.hpp>
+#include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
@@ -172,6 +173,7 @@ int main(int argc, char** argv)
              << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
              << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
              << karma::lit("#include <morbid/object.hpp>") << karma::eol << karma::eol
+             << karma::lit("#include <morbid/lazy_eval.hpp>") << karma::eol << karma::eol
              << karma::lit("#include <boost/integer.hpp>") << karma::eol
              << karma::lit("#include <boost/spirit/home/karma.hpp>") << karma::eol
              << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
@@ -430,12 +432,8 @@ int main(int argc, char** argv)
 
             if(interface.fully_defined)
             {
-              morbid::idl_compiler::generator::header_concept_generator
-                <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+              morbid::idl_compiler::generator::header_concept_generator<output_iterator_type>
                 header_concept_generator;
-              morbid::idl_compiler::generator::header_reference_model_generator
-                <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
-                header_reference_model_generator;
 
               modules_names.pop_back();
               bool r = karma::generate(output_iterator, header_concept_generator
@@ -443,11 +441,6 @@ int main(int argc, char** argv)
                                        , (module.interfaces.back().definition));
               if(!r) throw std::runtime_error("Failed generating header_concept_generator");
 
-              modules_names.push_back(module.interfaces.back().definition.name);
-              r = karma::generate(output_iterator, header_reference_model_generator
-                                  (phoenix::val(module.interfaces.back()), phoenix::val(modules_names))
-                                  , module.interfaces.back().definition);
-              if(!r) throw std::runtime_error("Failed generating header_concept_generator");
             }
             else
             {
@@ -501,30 +494,20 @@ int main(int argc, char** argv)
         if(current_module.size() != 2)
           throw std::runtime_error("Error: Not closed all modules");
 
+        color_map_container_t color_map_container;
+        color_map_t color_map(color_map_container);
 
-              // color_map_container_t color_map_container;
-              // color_map_t color_map(color_map_container);
-              // morbid::idl_compiler::generate_header_modules_visitor header_modules_visitor (iterator);
-              // depth_first_visit(modules_tree, global_module
-              //                   , /*boost::visitor(*/header_modules_visitor/*)*/
-              //                   , /*.color_map(*/color_map/*)*/);
+        morbid::idl_compiler::generate_header_modules_visitor
+          header_modules_visitor(output_iterator);
+        depth_first_visit(modules_tree, global_module, header_modules_visitor
+                          , color_map);
 
-              // typedef boost::property_map<modules_tree_type, module_property_t>
-              //   ::type module_map;
-              // module_map map = get(module_property_t(), modules_tree);
-              // for(std::size_t l = header_modules_visitor.state->opened_modules.size() - 1
-              //       ;l != 0;--l)
-              // {
-              //   morbid::idl_compiler::module const& m
-              //     = *boost::get(map, header_modules_visitor.state->opened_modules[l]);
-                
-              //   *iterator++ = '}';
-              //   *iterator++ = ' ';
-              //   *iterator++ = '/';
-              //   *iterator++ = '/';
-              //   iterator = std::copy(m.name.begin(), m.name.end(), iterator);
-              //   karma::generate(iterator, karma::eol);
-              // }
+        color_map_container.clear();
+        morbid::idl_compiler::generate_reference_model_visitor
+          generate_reference_model_visitor(output_iterator);
+        depth_first_visit(modules_tree, global_module, generate_reference_model_visitor
+                          , color_map);
+
         }
         else
         {

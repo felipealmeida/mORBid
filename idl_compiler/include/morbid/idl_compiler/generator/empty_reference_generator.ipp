@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -28,8 +28,8 @@ namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
-template <typename OutputIterator, typename Iterator>
-empty_reference_generator<OutputIterator, Iterator>::empty_reference_generator()
+template <typename OutputIterator>
+empty_reference_generator<OutputIterator>::empty_reference_generator()
   : empty_reference_generator::base_type(start)
 {
   namespace phoenix = boost::phoenix;

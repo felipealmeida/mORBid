@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -23,7 +23,7 @@ namespace morbid { namespace idl_compiler { namespace generator {
 namespace karma = boost::spirit::karma;
 namespace phoenix = boost::phoenix;
 
-template <typename OutputIterator, typename Iterator>
+template <typename OutputIterator>
 struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec
                                   (lookuped_type)>
 {
@@ -99,7 +99,7 @@ struct type_spec : karma::grammar<OutputIterator, idl_parser::type_spec
       << ">";
   }
 
-  generator::scoped_name<OutputIterator, Iterator> scoped_name;
+  generator::scoped_name<OutputIterator> scoped_name;
   karma::rule<OutputIterator, idl_parser::type_spec(lookuped_type)> start;
   karma::rule<OutputIterator, idl_parser::types::floating_point()> floating_point;
   karma::rule<OutputIterator, idl_parser::types::integer()> integer;

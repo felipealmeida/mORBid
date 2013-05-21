@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -90,7 +90,7 @@ BOOST_FUSION_ADAPT_ADT( ::morbid::idl_compiler::generator::lookuped_type_wrapper
 
 namespace morbid { namespace idl_compiler { namespace generator {
 
-template <typename OutputIterator, typename Iterator>
+template <typename OutputIterator>
 struct scoped_name : karma::grammar<OutputIterator, idl_parser::types::scoped_name
                                     (lookuped_type_wrapper)>
 {

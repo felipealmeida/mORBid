@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -20,15 +20,15 @@ namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
-template <typename OutputIterator, typename Iterator>
+template <typename OutputIterator>
 struct proxy_reference_generator : karma::grammar
 <OutputIterator, idl_parser::interface_def(interface_)>
 {
   proxy_reference_generator();
 
   karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
-  idl_compiler::generator::parameter<OutputIterator, Iterator> parameter;
-  idl_compiler::generator::return_<OutputIterator, Iterator> return_;
+  idl_compiler::generator::parameter<OutputIterator> parameter;
+  idl_compiler::generator::return_<OutputIterator> return_;
   karma::rule<OutputIterator, idl_parser::param_decl(interface_)>
     parameter_select;
   karma::rule<OutputIterator> indent;

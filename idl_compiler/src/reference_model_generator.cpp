@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -10,6 +10,5 @@
 
 template struct
 morbid::idl_compiler::generator::header_reference_model_generator
- < ::morbid::idl_compiler::output_iterator_type
-   , ::morbid::idl_compiler::parser_iterator_type>;
+ < ::morbid::idl_compiler::output_iterator_type >;
 

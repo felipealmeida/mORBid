@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -18,8 +18,8 @@ namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
-template <typename OutputIterator, typename Iterator>
-proxy_reference_generator<OutputIterator, Iterator>::proxy_reference_generator()
+template <typename OutputIterator>
+proxy_reference_generator<OutputIterator>::proxy_reference_generator()
   : proxy_reference_generator::base_type(start)
 {
   namespace phoenix = boost::phoenix;
@@ -31,7 +31,9 @@ proxy_reference_generator<OutputIterator, Iterator>::proxy_reference_generator()
 
   start = eol
     << "template <typename T>" << eol
-    << "struct proxy_reference" << eol
+    << "struct "
+    << wave_string[_1 = at_c<0>(_val)]
+    << "::proxy_reference" << eol
     << "{" << eol
     << indent << "proxy_reference(boost::reference_wrapper<T> ref) : _ptr(&boost::unwrap_ref(ref)) {}" << eol
     << indent << "// Start of operations defined in IDL" << eol
@@ -69,8 +71,8 @@ proxy_reference_generator<OutputIterator, Iterator>::proxy_reference_generator()
 
   start.name("proxy_reference_generator");
   operation.name("operation");
-  karma::debug(start);
-  karma::debug(operation);
+  // karma::debug(start);
+  // karma::debug(operation);
 }
 
 } } }

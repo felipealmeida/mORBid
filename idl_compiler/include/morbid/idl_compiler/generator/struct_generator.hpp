@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -25,7 +25,8 @@ namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator, typename Iterator>
 struct struct_generator : karma::grammar
-  <OutputIterator, idl_parser::struct_def(struct_)>
+  <OutputIterator, idl_parser::struct_def(struct_)
+   , karma::locals<unsigned int> >
 {
   struct_generator()
     : struct_generator::base_type(start)
@@ -59,14 +60,26 @@ struct struct_generator : karma::grammar
       //      << indent << "typedef ::boost::fusion::fusion_sequence_tag tag;" << eol
       << (*fusion_at(_r1, _a++))[_1 = at_c<1>(_val)]
       ;
+    template_parameter =
+      ", typename A"
+      << karma::lit(_r2)
+      << " = "
+      << type_spec
+         (
+          at_c<1>(_r1)[at_c<0>(_val)]
+         )[_1 = at_c<0>(_val)]
+      ;
     start =
       eol
-      << "template <typename = void> struct "
+      << "template <typename = void"
+      << (*template_parameter(_r1, _a++))[_1 = at_c<1>(_val)]
+      << "> struct "
       << wave_string[_1 = at_c<0>(_val)]
       << "_struct"
       << '{' << eol
       << indent << "// members" << eol
-      << (*(indent << member(_r1) << ';' << eol))[_1 = at_c<1>(_val)]
+      << karma::eps[_a = 0]
+      << (*(indent << member(_r1, _a++) << ';' << eol))[_1 = at_c<1>(_val)]
       << indent << "// members end" << eol << eol
       << indent << "typedef ::morbid::struct_tag _morbid_type_kind;" << eol
       << morbid_fusion_model(_r1)[_1 = _val]
@@ -81,24 +94,27 @@ struct struct_generator : karma::grammar
       ;
     indent = karma::space << karma::space;
     member =
-      type_spec
-      (
-       at_c<1>(_r1)[at_c<0>(_val)]
-       )[_1 = at_c<0>(_val)]
+      // type_spec
+      // (
+      //  at_c<1>(_r1)[at_c<0>(_val)]
+      //  )[_1 = at_c<0>(_val)]
+      "A" << karma::lit(_r2)
       << karma::space << wave_string[_1 = at_c<1>(_val)]
       ;
   }
 
-  generator::type_spec<OutputIterator, Iterator> type_spec;
-  generator::struct_generator_generator<OutputIterator, Iterator>
+  generator::type_spec<OutputIterator> type_spec;
+  generator::struct_generator_generator<OutputIterator>
     struct_generator_generator;
+  karma::rule<OutputIterator, idl_parser::member(struct_, unsigned int)> template_parameter;
   karma::rule<OutputIterator, idl_parser::member(struct_)> mpl_member_type;
   karma::rule<OutputIterator, idl_parser::member(struct_, unsigned int)> fusion_at;
   karma::rule<OutputIterator, idl_parser::struct_def(struct_)> mpl_sequence_type;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator, idl_parser::struct_def(struct_), karma::locals<unsigned int> > morbid_fusion_model;
-  karma::rule<OutputIterator, idl_parser::member(struct_)> member;
-  karma::rule<OutputIterator, idl_parser::struct_def(struct_)> start;
+  karma::rule<OutputIterator, idl_parser::member(struct_, unsigned int)> member;
+  karma::rule<OutputIterator, idl_parser::struct_def(struct_)
+              , karma::locals<unsigned int> > start;
   karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
 };
 

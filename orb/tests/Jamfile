@@ -1,4 +1,4 @@
-# (c) Copyright 2012 Felipe Magno de Almeida
+# (c) Copyright 2012,2013 Felipe Magno de Almeida
 #
 # Distributed under the Boost Software License, Version 1.0. (See
 # accompanying file LICENSE_1_0.txt or copy at
@@ -135,6 +135,19 @@ exe reference_server
 
 make reference.output : reference_client reference_server : @run-server-client ;
 
+make fwd_ref.hpp : fwd_ref.idl : @compileidl : <dependency>/morbid//install-idl ;
+
+exe fwd_ref_client
+ : fwd_ref_client.cpp /morbid//morbid
+ : <implicit-dependency>fwd_ref.hpp
+ ;
+exe fwd_ref_server
+ : fwd_ref_server.cpp /morbid//morbid
+ : <implicit-dependency>fwd_ref.hpp
+ ;
+
+make fwd_ref.output : fwd_ref_client fwd_ref_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
 alias inout_allprimitives : inout_allprimitives.output ;
@@ -142,6 +155,7 @@ alias return_allprimitives : return_allprimitives.output ;
 alias modules_allprimitives : modules_allprimitives.output ;
 alias struct : struct.output ;
 alias reference : reference.output ;
+alias fwd_ref : fwd_ref.output ;
 
 if [ option.get test-with-openbus : : 1 ]
 {
@@ -153,6 +167,6 @@ if [ option.get test-with-openbus : : 1 ]
 }
 
 alias tests : /morbid//install allprimitives out_allprimitives inout_allprimitives
- return_allprimitives modules_allprimitives struct #reference
+ return_allprimitives modules_allprimitives struct reference fwd_ref
  interop//interops
   ;

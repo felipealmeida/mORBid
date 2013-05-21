@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -21,7 +21,7 @@ namespace morbid { namespace idl_compiler { namespace generator {
 namespace karma = boost::spirit::karma;
 namespace phoenix = boost::phoenix;
 
-template <typename OutputIterator, typename Iterator>
+template <typename OutputIterator>
 struct parameter : karma::grammar<OutputIterator
                                   , idl_parser::param_decl(lookuped_type)>
 {
@@ -50,7 +50,7 @@ struct parameter : karma::grammar<OutputIterator
   typedef boost::variant<idl_parser::direction::in, idl_parser::direction::out, idl_parser::direction::inout>
     direction_variant;
 
-  generator::type_spec<OutputIterator, Iterator> type_spec;
+  generator::type_spec<OutputIterator> type_spec;
   karma::rule<OutputIterator, idl_parser::direction::in()> in_traits;
   karma::rule<OutputIterator, idl_parser::direction::out()> out_traits;
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_traits;

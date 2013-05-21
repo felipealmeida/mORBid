@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -36,43 +36,40 @@ namespace morbid { namespace idl_compiler { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
-template <typename OutputIterator, typename Iterator>
-header_reference_model_generator<OutputIterator, Iterator>::header_reference_model_generator()
+template <typename OutputIterator>
+header_reference_model_generator<OutputIterator>::header_reference_model_generator()
   : header_reference_model_generator::base_type(start)
 {
   namespace phoenix = boost::phoenix;
   using karma::_1;
-  using karma::_val; using karma::_r1; using karma::_r2;
-  using karma::_a; using karma::_b;
-  using karma::eol;
+  using karma::_val; using karma::_r1; using karma::_r2; using karma::_r3;
+  using karma::_a; using karma::eol;
   using phoenix::at_c;
 
   wave_string %= karma::string;
   class_name %= karma::string << "_ref";
-  specialization =
-    (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
-    << "namespace morbid {" << eol
-    <<  "template <>" << eol
-    << "struct is_remote_reference< "
-    << (+("::" << wave_string))[_1 = _r1]
-    << "_ref > : ::boost::mpl::true_ {};" << eol
-    << "}" << eol
-    << (*("namespace " << wave_string << " { "))[_1 = _r2] << eol
-    ;
+  // specialization =
+  //   (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
+  //   << "namespace morbid {" << eol
+  //   <<  "template <>" << eol
+  //   << "struct is_remote_reference< "
+  //   << (+("::" << wave_string))[_1 = _r1]
+  //   << "_ref > : ::boost::mpl::true_ {};" << eol
+  //   << "}" << eol
+  //   << (*("namespace " << wave_string << " { "))[_1 = _r2] << eol
+  //   ;
   start = 
     "struct "
     << class_name[_1 = at_c<0>(_val)]
     << "{" << eol
     << common_functions[_1 = _val]
     << indent << "// Start of operations defined in IDL" << eol
-    << (*(operation(_r1, _r2) << eol))[_1 = at_c<1>(_val)]
+    << (*(operation(_r1, _r2, at_c<0>(_val)) << eol))[_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
     << ior_function
     << "private:" << eol
-    << common_members[_1 = _a]
+    << common_members
     << "};" << eol << eol
-    << karma::eps[_b = _r2, phoenix::pop_back(_b)]
-    << specialization(_r2, _b)[_1 = _val]
     ;
   operation =
     indent
@@ -101,8 +98,8 @@ header_reference_model_generator<OutputIterator, Iterator>::header_reference_mod
         //       << synchronous_template_args(_r1)))[_1 = at_c<2>(_val)]
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
-        << "( _orb_, "
-           "\"IDL:" << (wave_string % '/')[_1 = _r2] << ":1.0\""
+        << "( _orb_, \"IDL:"
+        << (-(wave_string % '/')[_1 = _r2] << '/') << wave_string[_1 = _r3] << ":1.0\""
         << ", \"" << wave_string[_1 = at_c<1>(_val)]
         << "\", _structured_ior_"
         << eol << indent << indent << indent << indent << ", "

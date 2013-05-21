@@ -1,4 +1,4 @@
-/* (c) Copyright 2012 Felipe Magno de Almeida
+/* (c) Copyright 2012,2013 Felipe Magno de Almeida
  *
  * Distributed under the Boost Software License, Version 1.0. (See
  * accompanying file LICENSE_1_0.txt or copy at
@@ -51,37 +51,37 @@ struct type_kind<T, typename boost::disable_if<boost::is_scalar<T> >::type>
   typedef typename T::_morbid_type_kind type;
 };
 
-template <typename T>
-struct in_traits<T, typename boost::enable_if
-                 <boost::is_same<typename T::_morbid_type_kind, struct_tag>
-                 , void>::type>
-{
-  typedef T const& type;
-};
+// template <typename T>
+// struct in_traits<T, typename boost::enable_if
+//                  <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+//                  , void>::type>
+// {
+//   typedef T const& type;
+// };
 
-template <typename T>
-struct out_traits<T, typename boost::enable_if
-                  <boost::is_same<typename T::_morbid_type_kind, struct_tag>
-                  , void>::type>
-{
-  typedef T& type;
-};
+// template <typename T>
+// struct out_traits<T, typename boost::enable_if
+//                   <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+//                   , void>::type>
+// {
+//   typedef T& type;
+// };
 
-template <typename T>
-struct inout_traits<T, typename boost::enable_if
-                    <boost::is_same<typename T::_morbid_type_kind, struct_tag>
-                    , void>::type>
-{
-  typedef T& type;
-};
+// template <typename T>
+// struct inout_traits<T, typename boost::enable_if
+//                     <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+//                     , void>::type>
+// {
+//   typedef T& type;
+// };
 
-template <typename T>
-struct return_traits<T, typename boost::enable_if
-                     <boost::is_same<typename T::_morbid_type_kind, struct_tag>
-                      , void>::type>
-{
-  typedef T type;
-};
+// template <typename T>
+// struct return_traits<T, typename boost::enable_if
+//                      <boost::is_same<typename T::_morbid_type_kind, struct_tag>
+//                       , void>::type>
+// {
+//   typedef T type;
+// };
 
 template <typename C>
 struct in_traits<reference<C> >
