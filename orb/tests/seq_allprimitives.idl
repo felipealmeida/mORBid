@@ -1,0 +1,27 @@
+/* (c) Copyright 2012 Felipe Magno de Almeida
+ *
+ * Distributed under the Boost Software License, Version 1.0. (See
+ * accompanying file LICENSE_1_0.txt or copy at
+ * http://www.boost.org/LICENSE_1_0.txt)
+ */
+
+typedef sequence<boolean> BooleanSeq;
+typedef sequence<char> CharSeq;
+typedef sequence<double> DoubleSeq;
+typedef sequence<float> FloatSeq;
+typedef sequence<long> LongSeq;
+typedef sequence<octet> OctetSeq;
+typedef sequence<short> ShortSeq;
+typedef sequence<string> StringSeq;
+
+interface seq_allprimitives
+{
+  void foo1(in BooleanSeq a);
+  void foo2(in CharSeq a);
+  void foo3(in DoubleSeq a);
+  void foo4(in FloatSeq a);
+  void foo5(in LongSeq a);
+  void foo6(in OctetSeq a);
+  void foo7(in ShortSeq a);
+  void foo8(in StringSeq a);
+};

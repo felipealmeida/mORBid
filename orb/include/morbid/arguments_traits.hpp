@@ -112,11 +112,43 @@ struct argument_giop_grammar<octet, Domain, Iterator>
 };
 
 template <typename T, typename Domain, typename Iterator>
+struct argument_giop_grammar<std::vector<T>, Domain, Iterator>
+{
+  // typedef spirit::terminal<giop::tag::octet>const& result_type;
+
+  // typedef boost::proto::exprns_::expr
+
+  typedef boost::proto::exprns_::expr
+  <
+    boost::proto::tagns_::tag::subscript
+    , boost::proto::argsns_::list2
+    <boost::spirit::terminal<morbid::giop::tag::sequence>const&
+     , typename argument_giop_grammar<T, Domain, Iterator>::result_type
+    >
+    , 2l
+  > const result_type;
+
+  // const boost::proto::exprns_::expr
+  // <
+  //   boost::proto::tagns_::tag::subscript
+  //   , boost::proto::argsns_::list2
+  //   <const boost::spirit::terminal<morbid::giop::tag::sequence>&
+  //    , const boost::spirit::terminal<boost::spirit::tag::bool_>&
+  //   >
+  // , 2l>
+
+  result_type operator()(struct orb orb) const
+  {
+    return giop::sequence[argument_giop_grammar<T, Domain, Iterator>()(orb)];
+  }
+};
+
+template <typename T, typename Domain, typename Iterator>
 struct argument_giop_grammar<T, Domain, Iterator
                              , typename boost::enable_if<boost::is_same<typename T::_morbid_type_kind, struct_tag> >::type>
 {
   typedef typename T::template _morbid_grammar<Domain, Iterator, fusion_adapt::struct_sequence<T> > grammar_type;
-  typedef grammar_type& result_type;
+  typedef grammar_type const& result_type;
   result_type operator()(orb) const
   {
     static grammar_type r;

@@ -33,6 +33,8 @@ void generate_header_modules_visitor::discover_vertex(vertex_descriptor v, modul
     modules_names.push_back(module.name);
 
   generator::concept_interface<output_iterator_type> concept_interface;
+  using karma::_1; using karma::_r1; using karma::attr_cast; using idl_parser::wave_string;
+  using karma::eol; using spirit::unused_type;
 
   for(std::vector<idl_compiler::interface_>::const_iterator
         Iter = module.interfaces.begin()
@@ -41,9 +43,6 @@ void generate_header_modules_visitor::discover_vertex(vertex_descriptor v, modul
   {
     if(Iter->definition.fully_defined)
     {
-      using karma::_1; using karma::_r1; using karma::attr_cast; using idl_parser::wave_string;
-      using karma::eol; using spirit::unused_type;
-
       bool r = karma::generate(iterator
                                , "namespace boost { namespace type_erasure { // specialization of concept_interface"
                                << eol
@@ -83,6 +82,28 @@ void generate_header_modules_visitor::discover_vertex(vertex_descriptor v, modul
                           , fusion::make_vector(modules_names, Iter->definition.name));
       if(!r) throw std::runtime_error("Failed generating header_concept_generator");
     }
+  }
+
+  for(std::vector<idl_compiler::struct_>::const_iterator
+        Iter = module.structs.begin()
+        , EndIter = module.structs.end()
+        ; Iter != EndIter; ++Iter)
+  {
+    bool r = karma::generate(iterator
+                             , "namespace boost { namespace type_erasure { // specialization of is_placeholder to avoid "
+                             "instantiating morbid::remote< concept > too eagerly" << eol
+                             << "template <>" << eol
+                             << "struct is_placeholder< "
+                             << (*(
+                                   "::"
+                                   << attr_cast<wave_string>(karma::string)
+                                ))
+                             << "::"
+                             << attr_cast<wave_string>(karma::string)
+                             << "_struct<> > : ::boost::mpl::false_ {};" << eol
+                             << "}} // specialization of is_placeholder" << eol
+                             , fusion::make_vector(modules_names, Iter->definition.name));
+    if(!r) throw std::runtime_error("Failed generating header_concept_generator");
   }
 }
 

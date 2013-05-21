@@ -156,7 +156,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
       // std::cout << "Parsed OK" << std::endl;
 
       structured_ior sior = {fusion::at_c<0u>(r)};
-    
+
       for(std::vector<boost::variant<iiop::profile_body, profile_body_1_1_attr, ior::tagged_profile> >::const_iterator
             first = fusion::at_c<1u>(r).begin()
             , last = fusion::at_c<1u>(r).end(); first != last; ++first)

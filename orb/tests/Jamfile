@@ -12,8 +12,6 @@ project morbid/tests ;
 path-constant current : . ;
 path-constant install : ../../install ;
 
-make allprimitives.hpp : allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
-
 actions donothing
 {
 }
@@ -32,16 +30,6 @@ if [ option.get test-with-openbus : : 1 ]
   }
 }
 
-exe allprimitives_client
- : allprimitives_client.cpp /morbid//morbid
-  : <implicit-dependency>allprimitives.hpp
- ;
-exe allprimitives_server
- : allprimitives_server.cpp /morbid//morbid
-  : <implicit-dependency>allprimitives.hpp
- ;
-
-make allprimitives.output : allprimitives_client allprimitives_server : @run-server-client ;
 actions run-server-client
 {
   $(>[2]) $(>[2]).ior > $(<).server &
@@ -56,6 +44,19 @@ actions run-server-client
     exit 1
   fi
 }
+
+make allprimitives.hpp : allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
+
+exe allprimitives_client
+ : allprimitives_client.cpp /morbid//morbid
+  : <implicit-dependency>allprimitives.hpp
+ ;
+exe allprimitives_server
+ : allprimitives_server.cpp /morbid//morbid
+  : <implicit-dependency>allprimitives.hpp
+ ;
+
+make allprimitives.output : allprimitives_client allprimitives_server : @run-server-client ;
 
 make out_allprimitives.hpp : out_allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
 
@@ -148,6 +149,19 @@ exe fwd_ref_server
 
 make fwd_ref.output : fwd_ref_client fwd_ref_server : @run-server-client ;
 
+make seq_allprimitives.hpp : seq_allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
+
+exe seq_allprimitives_client
+ : seq_allprimitives_client.cpp /morbid//morbid
+  : <implicit-dependency>seq_allprimitives.hpp
+ ;
+exe seq_allprimitives_server
+ : seq_allprimitives_server.cpp /morbid//morbid
+  : <implicit-dependency>seq_allprimitives.hpp
+ ;
+
+make seq_allprimitives.output : seq_allprimitives_client seq_allprimitives_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
 alias inout_allprimitives : inout_allprimitives.output ;
@@ -156,6 +170,7 @@ alias modules_allprimitives : modules_allprimitives.output ;
 alias struct : struct.output ;
 alias reference : reference.output ;
 alias fwd_ref : fwd_ref.output ;
+alias seq_allprimitives : seq_allprimitives.output ;
 
 if [ option.get test-with-openbus : : 1 ]
 {
@@ -164,9 +179,17 @@ if [ option.get test-with-openbus : : 1 ]
 
   make offer_registry.hpp : $(openbus-idl-path)/offer_registry.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
   alias openbus : [ testing.run openbus_client.cpp /morbid//morbid : : : <implicit-dependency>offer_registry.hpp ] ;
+
+  alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
+   return_allprimitives modules_allprimitives struct reference fwd_ref openbus
+  ;
+}
+else
+{
+  alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
+   return_allprimitives modules_allprimitives struct reference fwd_ref
+   ;
 }
 
-alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
- return_allprimitives modules_allprimitives struct reference fwd_ref ;
 alias interop-tests : interop//interops ;
 alias tests : morbid-tests interop-tests ;
