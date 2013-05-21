@@ -176,6 +176,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
       typedef typename Attribute::concept_class::remote_reference ref;
 
       attr = ref(orb_, sior);
+      first = first_;
       return true;
     }
     else

@@ -5,17 +5,15 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "struct.h"
-#include <CORBA.h>
+#include "struct.hpp"
+#include <morbid/corba.hpp>
 
 #include <fstream>
 
-struct struct_interface_impl : POA_struct_interface
+struct struct_interface_impl
 {
-  struct_interface_impl(CORBA::ORB_var orb)
-    : foo1_(false), foo2_(false), foo3_(false)
-    , foo4_(false)
-    , orb(orb)
+  struct_interface_impl(corba::orb orb)
+    : foo1_(false), foo2_(false), foo3_(false), orb(orb)
   {}
 
   void foo1(some_struct const& s)
@@ -86,41 +84,37 @@ struct struct_interface_impl : POA_struct_interface
     std::cout << "struct_interface_impl::foo4 called" << std::endl;
     assert(foo1_ && foo2_ && foo3_ && !foo4_);
     foo4_ = true;
-    orb->shutdown(true);
+    orb.stop();
     some_struct r = {true, false, true, 'a', 'b', 2.0, 2.0f, 2, 'c', 2};
     return r;
   }
 
   bool foo1_, foo2_, foo3_, foo4_;
-  CORBA::ORB_var orb;
+  corba::orb orb;
 };
 
 int main(int argc, char* argv[])
 {
-  CORBA::ORB_var orb = CORBA::ORB_init(argc, argv, "");
+  corba::orb orb;
 
-  CORBA::Object_var poa_obj = orb->resolve_initial_references ("RootPOA");
-  PortableServer::POA_var poa = PortableServer::POA::_narrow (poa_obj);
-  PortableServer::POAManager_var poa_manager = poa->the_POAManager();
-  
-  struct_interface_impl struct_interface(orb);
+  struct_interface_impl si(orb);
 
-  PortableServer::ObjectId_var oid = poa->activate_object (&struct_interface);
-
-  CORBA::Object_var ref = poa->id_to_reference (oid.in());
-  CORBA::String_var str = orb->object_to_string (ref.in());
-  if(argc > 1)
   {
-    std::ofstream ofs(argv[1]);
-    ofs << str.in() << std::endl;
+    std::ostream_iterator<char> output(std::cout);
+    std::ofstream ofs;
+    if(argc > 1)
+    {
+      ofs.open(argv[1]);
+      output = std::ostream_iterator<char> (ofs);
+    }
+    corba::stringify_object_id
+      (orb, orb.serve_ref< struct_interface_concept>
+       (si), output);
   }
-  else
-    std::cout << str.in() << std::endl;
 
   std::cout << "Running" << std::endl;
 
-  poa_manager->activate();
-  orb->run();
+  orb.run();
 
-  assert(struct_interface.foo1_ && struct_interface.foo2_ && struct_interface.foo3_ && struct_interface.foo4_);
+  assert(si.foo1_ && si.foo2_ && si.foo3_ && si.foo4_);
 }

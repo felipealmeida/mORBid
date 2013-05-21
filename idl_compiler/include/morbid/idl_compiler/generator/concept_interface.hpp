@@ -69,11 +69,12 @@ struct concept_interface : karma::grammar
       (*operation_concept_interface_specialization(_r1, _r2, at_c<0>(_val)))[_1 = at_c<1>(_val)]
     ;
     indent = karma::space << karma::space;
+    parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   }
 
+  idl_compiler::generator::parameter<OutputIterator> parameter;
   idl_compiler::generator::return_<OutputIterator> return_;
-  karma::rule<OutputIterator, idl_parser::param_decl(interface_)>
-    parameter_select;
+  karma::rule<OutputIterator, idl_parser::param_decl(interface_)> parameter_select;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator
               , idl_parser::op_decl()> operation_name;

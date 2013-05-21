@@ -99,7 +99,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
         << "( _orb_, \"IDL:"
-        << (-(wave_string % '/')[_1 = _r2] << '/') << wave_string[_1 = _r3] << ":1.0\""
+        << -((wave_string % '/')[_1 = _r2] << '/') << wave_string[_1 = _r3] << ":1.0\""
         << ", \"" << wave_string[_1 = at_c<1>(_val)]
         << "\", _structured_ior_"
         << eol << indent << indent << indent << indent << ", "

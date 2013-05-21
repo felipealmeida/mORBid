@@ -166,7 +166,7 @@ if [ option.get test-with-openbus : : 1 ]
   alias openbus : [ testing.run openbus_client.cpp /morbid//morbid : : : <implicit-dependency>offer_registry.hpp ] ;
 }
 
-alias tests : /morbid//install allprimitives out_allprimitives inout_allprimitives
- return_allprimitives modules_allprimitives struct reference fwd_ref
- interop//interops
-  ;
+alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
+ return_allprimitives modules_allprimitives struct reference fwd_ref ;
+alias interop-tests : interop//interops ;
+alias tests : morbid-tests interop-tests ;

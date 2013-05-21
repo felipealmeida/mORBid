@@ -114,9 +114,11 @@ void generate_reference_model_visitor::discover_vertex(vertex_descriptor v, modu
     bool r = karma::generate(iterator
                              , "namespace " << karma::string << " {" << karma::eol
                              , module.name);
+    if(!r) throw std::runtime_error("Failed generating header_concept_generator");
   }
 
   generator::header_reference_model_generator<output_iterator_type> reference_model_generator;
+  generator::proxy_reference_generator<output_iterator_type> proxy_reference_generator;
   for(std::vector<idl_compiler::interface_>::const_iterator
         Iter = module.interfaces.begin()
         , EndIter = module.interfaces.end()
@@ -127,6 +129,9 @@ void generate_reference_model_visitor::discover_vertex(vertex_descriptor v, modu
       bool r = karma::generate(iterator, reference_model_generator
                                (phoenix::val(*Iter), phoenix::val(modules_names))
                                , Iter->definition);
+      if(!r) throw std::runtime_error("Failed generating header_concept_generator");
+
+      r = karma::generate(iterator, proxy_reference_generator(phoenix::val(*Iter)), Iter->definition);
       if(!r) throw std::runtime_error("Failed generating header_concept_generator");
     }
   }
@@ -150,6 +155,7 @@ void generate_reference_model_visitor::finish_vertex(vertex_descriptor v, module
     bool r = karma::generate(iterator
                              , "} // namespace " << karma::string << " {" << karma::eol
                              , module.name);
+    if(!r) throw std::runtime_error("Failed generating header_concept_generator");
   }
 }
 

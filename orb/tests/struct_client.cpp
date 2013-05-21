@@ -5,14 +5,14 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include "struct.h"
-#include <CORBA.h>
+#include "struct.hpp"
+#include <morbid/corba.hpp>
 
 #include <fstream>
 
 int main(int argc, char* argv[])
 {
-  CORBA::ORB_var orb = CORBA::ORB_init(argc, argv, "");
+  corba::orb orb;
 
   assert(argc > 1);
 
@@ -22,12 +22,11 @@ int main(int argc, char* argv[])
     std::getline(ifs, ior);
   }
 
-  CORBA::Object_var obj = orb->string_to_object (ior.c_str());
-  struct_interface_var struct_interface_ = struct_interface::_narrow (obj);
+  struct_interface_ref si (orb, ior);
   
   some_struct s = {true, false, true, 'a', 'b', 2.0, 2.0f, 2, 'c', 2};
-  assert(!CORBA::is_nil(struct_interface_));
-  struct_interface_->foo1(s);
+
+  si.foo1(s);
   assert(s.a1);
   assert(!s.b1);
   assert(s.c1);
@@ -39,7 +38,7 @@ int main(int argc, char* argv[])
   assert(s.a6 == 'c');
   assert(s.a7 == 2);
   
-  struct_interface_->foo2(s);
+  si.foo2(s);
 
   assert(!s.a1);
   assert(s.b1);
@@ -55,7 +54,7 @@ int main(int argc, char* argv[])
   some_struct s1 = {true, false, true, 'a', 'b', 2.0, 2.0f, 2, 'c', 2};
   s = s1;
 
-  struct_interface_->foo3(s);
+  si.foo3(s);
 
   assert(!s.a1);
   assert(s.b1);
@@ -68,7 +67,7 @@ int main(int argc, char* argv[])
   assert(s.a6 == 'e');
   assert(s.a7 == 3);
 
-  s = struct_interface_->foo4();
+  s = si.foo4();
 
   assert(s.a1);
   assert(!s.b1);

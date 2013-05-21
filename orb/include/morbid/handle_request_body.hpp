@@ -332,7 +332,8 @@ void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
   if(qi::parse(rq_first, rq_last
                , giop::compile<iiop::parser_domain>
                (iiop::aligned(align_offset)[arguments_grammar_(giop::endian(little_endian))])
-               , parse_arguments))
+               , parse_arguments)
+     && rq_first == rq_last)
   {
     // std::cout << "Parsed arguments correctly " << typeid(parse_arguments).name() << std::endl;
     // std::cout << "Arguments parsed " << parse_arguments << std::endl;
@@ -365,6 +366,7 @@ void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
   }
   else
   {
+    throw std::runtime_error("Error");
   }
 }
 

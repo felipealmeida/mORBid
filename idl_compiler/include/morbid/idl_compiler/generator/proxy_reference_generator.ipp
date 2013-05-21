@@ -33,14 +33,14 @@ proxy_reference_generator<OutputIterator>::proxy_reference_generator()
     << "template <typename T>" << eol
     << "struct "
     << wave_string[_1 = at_c<0>(_val)]
-    << "::proxy_reference" << eol
+    << "_concept::proxy_reference" << eol
     << "{" << eol
     << indent << "proxy_reference(boost::reference_wrapper<T> ref) : _ptr(&boost::unwrap_ref(ref)) {}" << eol
     << indent << "// Start of operations defined in IDL" << eol
     << (*(operation(_r1) << eol))[_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
     << indent << "T* _ptr;" << eol
-    << "}" << eol << eol
+    << "};" << eol << eol
     ;
   operation =
     indent
@@ -62,7 +62,6 @@ proxy_reference_generator<OutputIterator>::proxy_reference_generator()
     << ");"
     << eol
     << indent << "}" << eol
-    << ";"
     ;
   synchronous_args %= "arg" << karma::lit(_r1);
   parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
