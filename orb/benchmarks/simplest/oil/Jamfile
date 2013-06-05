@@ -5,6 +5,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 
 import feature ;
+import string ;
 
 rule idl2lua ( target : sources + )
 {
@@ -12,6 +13,7 @@ rule idl2lua ( target : sources + )
     : $(sources)
     : action-idl2lua
   ;
+  explicit $(target) ;
 }
 
 actions action-idl2lua
@@ -29,24 +31,46 @@ rule pre-compile ( target : sources + )
     : $(sources)
     : @action-pre-compile
   ;
+  explicit $(target) ;
 
   make $(target:S=.h)
     : $(target)
     : @dummy
   ;
-
+  explicit $(target:S=.h) ;
 }
 
+rule action-pre-compile ( target : sources + : requirements * )
+{
+  local lua-path ;
+  for source in $(sources)
+  {
+    local path = [ on $(source) return $(LOCATE) ] ;
+
+    if $(path)
+    {
+      lua-path += $(path)/?.lua ;
+    }
+    else if ! ?.lua in $(lua-path)
+    {
+      lua-path += ?.lua ;
+    }
+  }
+  LUA_PATH on $(<) = [ string.join $(lua-path) : \; ] ;
+}
+
+# -l precisa pegar todos os diretorios aonde estao os fontes
 actions action-pre-compile
 {
   lua5.1 -e "package.path=package.path..';/home/felipe/dev/tecgraf/openbus2/openbus/build/loop-2snapshot/lua/?.lua'" \
     /home/felipe/dev/tecgraf/openbus2/openbus/build/loop-2snapshot/lua/preloader.lua \
-    -l "?.lua" \
-    -d $(<:D) \
-    -h $(<:S=.h:D=) \
-    -o $(<:D=) \
-    $(>)
+    -l "$(LUA_PATH)" \
+    -d "$(<:D)" \
+    -h "$(<:S=.h:D=)" \
+    -o "$(<:D=)" \
+    "$(>)"
 }
+
 
 actions dummy
 {
@@ -58,16 +82,28 @@ idl2lua parsed.lua : ../simplest.idl ;
 pre-compile server.c : server.lua parsed.lua ;
 pre-compile client.c : client.lua parsed.lua ;
 
-feature.feature morbid-oil-server : no yes : composite link-incompatible ;
-feature.compose <morbid-oil-server>yes : <define>MORBID_OIL_SERVER ;
+#feature.feature morbid-oil-server : no yes : composite link-incompatible ;
+#feature.compose <morbid-oil-server>yes : <define>MORBID_OIL_SERVER ;
 
 lib dl : : <link>shared ;
+explicit dl ;
 
-exe server : server.c servlibs.c launcher.c dl /oil//oil
- : <morbid-oil-server>yes
+obj launcher_server.obj : launcher.c /oil//oil
+ : <define>MORBID_OIL_SERVER
+ ;
+explicit launcher_server.obj ;
+
+obj servlibs_server.obj : servlibs.c /oil//oil
+ : <define>MORBID_OIL_SERVER
    <implicit-dependency>server.h
  ;
+explicit servlibs_server.obj ;
+
+exe server : server.c servlibs_server.obj launcher_server.obj dl /oil//oil
+ : <implicit-dependency>server.h
+ ;
+explicit server ;
 exe client : client.c servlibs.c launcher.c dl /oil//oil
  : <implicit-dependency>client.h
  ;
-
+explicit client ;
