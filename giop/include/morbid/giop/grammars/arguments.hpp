@@ -38,7 +38,22 @@ struct arguments_aux<0u, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Iter
   rule<Domain, Iterator, Attr(endian)> start;
 };
 
-#define BOOST_PP_ITERATION_PARAMS_1 (3, (1, MORBID_GIOP_MAX_ARGS, "morbid/giop/grammars/arguments.hpp"))
+template <typename Domain, typename Iterator, typename TypeSeq, typename Attr>
+struct arguments_aux<1u, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Iterator, Attr(endian)>
+{
+  template <typename C>
+  arguments_aux(C const& c) : arguments_aux::base_type(start)
+  {
+    start = c.template call
+      <typename mpl::at_c<TypeSeq, 0u>::type, Domain, Iterator>()
+      & karma::eps
+      ;
+  }
+
+  rule<Domain, Iterator, Attr(endian)> start;
+};
+
+#define BOOST_PP_ITERATION_PARAMS_1 (3, (2, MORBID_GIOP_MAX_ARGS, "morbid/giop/grammars/arguments.hpp"))
 #include BOOST_PP_ITERATE()
 
 template <typename Domain, typename Iterator, typename TypeSeq, typename Attr>
@@ -65,10 +80,10 @@ struct arguments_aux<N, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Itera
   arguments_aux(C const& c) : arguments_aux::base_type(start)
   {
 #define MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence(Z, I, DATA)             \
-    BOOST_PP_EXPR_IF(BOOST_PP_DEC(N), &) c.template call                \
+    BOOST_PP_EXPR_IF(I, &) c.template call                              \
       <typename mpl::at_c<TypeSeq, I>::type, Domain, Iterator>()
 
-    start = BOOST_PP_REPEAT(N, MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence, ~) & spirit::eps
+    start = BOOST_PP_REPEAT(N, MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence, ~)
       ;
 
 #undef MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence
