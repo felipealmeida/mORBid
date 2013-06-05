@@ -43,6 +43,29 @@ struct octet_encoding
   static boost::uint32_t toucs4(int ch) { return ch; }
 };
 
+struct bool_encoding
+{
+  typedef bool char_type;
+
+  static bool isascii_(int ch) { return false; }
+  static bool ischar(int ch) { return true; }
+  static bool isalnum(int ch) { return false; }
+  static bool isalpha(int ch) { return false; }
+  static bool isdigit(int ch) { return false; }
+  static bool isxdigit(int ch) { return false; }
+  static bool iscntrl(int ch) { return false; }
+  static bool isgraph(int ch) { return false; }
+  static bool islower(int ch) { return true; }
+  static bool isprint(int ch) { return false; }
+  static bool ispunct(int ch) { return false; }
+  static bool isspace(int ch) { return false; }
+  static bool isblank(int ch) { return false; }
+  static bool isupper(int ch) { return false; }
+  static int tolower(int ch) { return ch; }
+  static int toupper(int ch) { return ch; }
+  static boost::uint32_t toucs4(int ch) { return ch; }
+};
+
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
 
@@ -71,7 +94,7 @@ template <typename Modifiers, typename Enable>
 struct make_primitive<spirit::tag::bool_, Modifiers, Enable>
 {
   typedef qi::char_class<spirit::tag::char_code
-                         <spirit::tag::char_, octet_encoding> > result_type;
+                         <spirit::tag::char_, bool_encoding> > result_type;
 
   template <typename T_>
   result_type operator()(T_& val, boost::spirit::unused_type) const
