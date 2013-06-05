@@ -21,11 +21,14 @@ exe morbid_client
  : <implicit-dependency>simplest.hpp
    <test-orb>morbid
  ;
+explicit morbid_client ;
+
 exe morbid_server
  : morbid-server.cpp /morbid//morbid /boost//chrono 
  : <implicit-dependency>simplest.hpp
    <test-orb>morbid
  ;
+explicit morid_server ;
 
 actions morbid.compileidl
 {
