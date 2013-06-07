@@ -5,8 +5,10 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#define MORBID_OPENBUS
 #include "offer_registry.hpp"
 #include <morbid/corba.hpp>
+#include <morbid/openbus.hpp>
 
 int main()
 {

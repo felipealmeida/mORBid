@@ -113,18 +113,20 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
   boost::asio::ip::tcp::endpoint local_endpoint;
 };
 
+#ifdef MORBID_OPENBUS
+
 struct openbus_type {};
 openbus_type const openbus = {};
+
+#endif
 
 struct orb
 {
   orb() : impl(new orb_impl) {}
+#ifdef MORBID_OPENBUS
   orb(openbus_type, std::string const& host, unsigned short port
-      , std::string const& username, std::string const& password)
-    : impl(new orb_impl)
-  {
-    
-  }
+      , std::string const& username, std::string const& password);
+#endif
 
   void run() { impl->run(); }
   void stop() { impl->stop(); }
