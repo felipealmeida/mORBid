@@ -114,10 +114,6 @@ struct argument_giop_grammar<octet, Domain, Iterator>
 template <typename T, typename Domain, typename Iterator>
 struct argument_giop_grammar<std::vector<T>, Domain, Iterator>
 {
-  // typedef spirit::terminal<giop::tag::octet>const& result_type;
-
-  // typedef boost::proto::exprns_::expr
-
   typedef boost::proto::exprns_::expr
   <
     boost::proto::tagns_::tag::subscript
@@ -127,15 +123,6 @@ struct argument_giop_grammar<std::vector<T>, Domain, Iterator>
     >
     , 2l
   > const result_type;
-
-  // const boost::proto::exprns_::expr
-  // <
-  //   boost::proto::tagns_::tag::subscript
-  //   , boost::proto::argsns_::list2
-  //   <const boost::spirit::terminal<morbid::giop::tag::sequence>&
-  //    , const boost::spirit::terminal<boost::spirit::tag::bool_>&
-  //   >
-  // , 2l>
 
   result_type operator()(struct orb orb) const
   {
@@ -149,9 +136,9 @@ struct argument_giop_grammar<T, Domain, Iterator
 {
   typedef typename T::template _morbid_grammar<Domain, Iterator, fusion_adapt::struct_sequence<T> > grammar_type;
   typedef grammar_type const& result_type;
-  result_type operator()(orb) const
+  result_type operator()(struct orb orb) const
   {
-    static grammar_type r;
+    static grammar_type r(orb);
     return r;
   }
 };
@@ -169,28 +156,6 @@ struct argument_giop_grammar< reference<T>, Domain, Iterator>
     return giop::reference(orb);
   }
 };
-
-// template <typename T/*, typename Domain*/, typename Iterator>
-// struct argument_giop_grammar< reference<T>, iiop::parser_domain, Iterator>
-// {
-//   typedef spirit::terminal<morbid::giop::tag::reference>const& result_type;
-//   result_type operator()(morbid::orb orb) const
-//   {
-//     return giop::reference//(/*boost::phoenix::val(*/orb/*)*/)
-//       ;
-//   }
-// };
-
-// template <typename T, typename Domain, typename Iterator>
-// struct argument_giop_grammar< reference<T>, Domain, Iterator>
-// {
-//   typedef spirit::terminal<morbid::giop::tag::reference>const& result_type;
-//   result_type operator()(morbid::orb orb) const
-//   {
-//     return giop::reference//(/*boost::phoenix::val(*/orb/*)*/)
-//       ;
-//   }
-// };
 
 }
 
