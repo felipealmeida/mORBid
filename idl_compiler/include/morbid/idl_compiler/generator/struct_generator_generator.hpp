@@ -82,16 +82,25 @@ struct struct_generator_generator : karma::grammar
     boolean_generator = karma::string[_1 = "::morbid::giop::bool_"];
     octet_generator = karma::string[_1 = "::morbid::giop::octet"];
     // any_generator = karma::eps;
-    // object_generator = karma::eps;
+    object_generator = 
+      karma::string[_1 =
+                    "::morbid::arguments_traits(orb).call"
+                    "< ::morbid::type_tag::value_type_tag< ::morbid::object"
+                    ", ::morbid::type_tag::in_tag>, Domain, Iterator>()"]
+      ;
     // value_base_generator = karma::eps;
     // void_generator = karma::eps;
 
-    // scoped_name_generator = karma::string[_1 = "scoped_name_generator"];//karma::eps;
-    // sequence_generator = karma::string[_1 = "sequence_generator"];//karma::eps;
-
-    // any = karma::string[_1 = "CORBA::Any"];
-    // object = karma::string[_1 = "CORBA::Object"];
-    // value_base = karma::string[_1 = "CORBA::ValueBase"];
+    scoped_name_generator
+      = "::morbid::arguments_traits(orb).call< ::morbid::type_tag::value_type_tag< "
+      << (karma::attr_cast<idl_parser::wave_string>
+          (karma::string) % "::")[_1 = at_c<0>(_r1)]
+      << "::"
+      << karma::attr_cast<idl_parser::wave_string>
+      (karma::string)[_1 = phoenix::back(at_c<1>(_val))]
+      << " , ::morbid::type_tag::in_tag> , Domain, Iterator>()"
+      ;
+    sequence_generator = karma::string[_1 = "sequence_generator"];
 
     member_generator =
       (floating_point_generator | integer_generator | char_generator | wchar_generator
@@ -113,16 +122,16 @@ struct struct_generator_generator : karma::grammar
       << "struct _morbid_grammar : ::morbid::giop::grammar<Domain, Iterator, Attr( ::morbid::giop::endian)>" << eol
       // << indent << ", " << karma::string[_1 = at_c<0>(_val)] << "(unsigned int)>" << eol
       << '{' << eol
-      << indent << "_morbid_grammar() : _morbid_grammar::base_type(start)" << eol
+      << indent << "_morbid_grammar( ::morbid::orb orb) : _morbid_grammar::base_type(start)" << eol
       << indent << '{' << eol
       // << indent << indent << "namespace karma = boost::spirit::karma;" << eol
       // << indent << indent << "using karma::_r1;" << eol
-      << indent << indent << "start = " << eol
+      << indent << indent << "start = ::morbid::giop::auto_expr( " << eol
       << indent << indent << indent
       << (
           ((member_generator(_r1) << eol) % (indent << indent << indent << "& "))[_1 = at_c<1>(_val)]
           | ("::boost::spirit::karma::eps" << eol)
-         ) << indent << indent << indent << ";" << eol
+         ) << indent << indent << indent << " );" << eol
       << indent << '}' << eol
       << indent << "::morbid::giop::rule<Domain, Iterator, Attr( ::morbid::giop::endian)> start;" << eol
       << "};" << eol << eol
