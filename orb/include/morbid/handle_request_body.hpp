@@ -26,6 +26,8 @@
 #include <boost/fusion/include/iter_fold.hpp>
 #include <boost/fusion/include/begin.hpp>
 #include <boost/fusion/include/advance.hpp>
+#include <boost/fusion/mpl.hpp>
+#include <boost/fusion/iterator/mpl.hpp>
 
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/bool.hpp>
@@ -33,6 +35,7 @@
 #include <boost/mpl/count_if.hpp>
 #include <boost/mpl/single_view.hpp>
 #include <boost/mpl/joint_view.hpp>
+#include <boost/mpl/copy.hpp>
 
 #include <boost/type_traits/is_fundamental.hpp>
 
@@ -110,7 +113,7 @@ struct split_arguments_sequence
   struct result;
 
   template <typename S, typename Iter>
-  struct result<split_arguments_sequence(S const&, Iter const&)>
+  struct result<split_arguments_sequence(S const&, Iter&)>
   {
     typedef typename boost::remove_reference<typename fusion::result_of::deref<Iter>::type>
     ::type::untagged deref_type;
@@ -118,39 +121,48 @@ struct split_arguments_sequence
     typedef typename type_tag::value_type<deref_type>::type value_type;
     typedef typename mpl::if_
     <is_not_in
-     , fusion::cons
-       <typename boost::add_reference<typename boost::add_const<value_type>::type>::type
-        , S>
+     // , fusion::cons
+     //   <typename boost::add_reference<typename boost::add_const<value_type>::type>::type
+     //    , S>
+     , typename fusion::result_of::push_back
+     <
+         S const
+         , typename boost::add_reference<typename boost::add_const<value_type>::type>::type
+     >::type
      , S
     >::type type;
   };
 
   template <typename S, typename Iter>
-  typename result<split_arguments_sequence(S const&, Iter const&)>::type
-  operator()(S const& s, Iter const& i, mpl::false_) const
+  typename result<split_arguments_sequence(S const&, Iter&)>::type
+  operator()(S const& s, Iter& i, mpl::false_) const
   {
     return s;
   }
 
   template <typename S, typename Iter>
-  typename result<split_arguments_sequence(S const&, Iter const&)>::type
-  operator()(S const& s, Iter const& i, mpl::true_) const
+  typename result<split_arguments_sequence(S const&, Iter&)>::type
+  operator()(S const& s, Iter& i, mpl::true_) const
   {
-    typedef result<split_arguments_sequence(S const&, Iter const&)> result_;
-    typedef typename fusion::result_of::begin<Seq const>::type begin_iterator;
-    typedef mpl::iterator_range<begin_iterator, Iter> before_range;
+    typedef result<split_arguments_sequence(S const&, Iter&)> result_;
+    typedef typename boost::remove_const<Iter>::type iterator;
+    typedef typename mpl::begin<Seq const>::type begin_iterator;
+    typedef mpl::iterator_range<begin_iterator, mpl::fusion_iterator<iterator> > before_range;
     typedef typename mpl::count_if<before_range, type_tag::is_not_in_type_tag<mpl::_1> >::type not_ins;
     // std::cout << "is NOT in, adding reference from generated args. Type: "
     //           << typeid(typename result_::value_type).name()
     //           << " not_ins " << not_ins::value << std::endl;
-    return typename result_::type(fusion::at<not_ins>(args), s);
+    // return typename result_::type(fusion::at<not_ins>(args), s);
+    return fusion::push_back
+      <S, typename fusion::result_of::at<Args, not_ins>::type&>
+      (s, fusion::at<not_ins>(args));
   }
 
   template <typename S, typename Iter>
-  typename result<split_arguments_sequence(S const&, Iter const&)>::type
-  operator()(S const& s, Iter const& i) const
+  typename result<split_arguments_sequence(S const&, Iter&)>::type
+  operator()(S const& s, Iter& i) const
   {
-    typedef result<split_arguments_sequence(S const&, Iter const&)> result_;
+    typedef result<split_arguments_sequence(S const&, Iter&)> result_;
     typedef typename result_::is_not_in is_not_in;
     return (*this)(s, i, is_not_in());
   }
@@ -181,14 +193,18 @@ void handle_request_reply(struct orb orb, F f, T* self, reply& r, Args& args, mp
   typedef typename boost::remove_reference
     <typename fusion::result_of::iter_fold
      <fusion_tagged_arguments const
-      , fusion::nil
+      , fusion::vector0<>
       , split_arguments>::type>::type reply_argument_types;
   reply_argument_types reply_arguments = fusion::iter_fold(fusion_tagged_arguments_
-                                                           , fusion::nil()
+                                                           , fusion::vector0<>()
                                                            , split_arguments(args));
+  typedef typename fusion::result_of::as_vector<reply_argument_types>::type
+    reply_argument_vector_type;
+  reply_argument_vector_type reply_argument_vector
+    = fusion::as_vector(reply_arguments);
   
   // std::cout << "(no result) reply_argument_types " << typeid(reply_argument_types).name() << std::endl;
-  make_request_reply<not_in_params>(orb, r, reply_arguments);
+  make_request_reply<not_in_params>(orb, r, reply_argument_vector);
 }
 
 template <typename R, typename SeqParam, typename F, typename T, typename Args>
@@ -215,10 +231,10 @@ void handle_request_reply(struct orb orb, F f, T* self, reply& r, Args& args, mp
   typedef typename boost::remove_reference
     <typename fusion::result_of::iter_fold
      <fusion_tagged_arguments const
-      , fusion::nil
+      , fusion::vector0<>
       , split_arguments>::type>::type reply_argument_types;
   reply_argument_types reply_arguments = fusion::iter_fold(fusion_tagged_arguments_
-                                                           , fusion::nil()
+                                                           , fusion::vector0<>()
                                                            , split_arguments(args));
   typedef typename fusion::result_of::as_vector
     <typename fusion::result_of::push_front
@@ -255,7 +271,7 @@ struct merge_arguments_sequence
   struct result;
 
   template <typename S, typename Iter>
-  struct result<merge_arguments_sequence(S const&, Iter const&)>
+  struct result<merge_arguments_sequence(S const&, Iter&)>
   {
     typedef typename boost::remove_reference<typename fusion::result_of::deref<Iter>::type>
     ::type::untagged deref_type;
@@ -265,38 +281,44 @@ struct merge_arguments_sequence
     <is_out, typename boost::remove_reference<value_type>::type
      , typename boost::add_reference<value_type>::type
     >::type next_value_type;
-    typedef fusion::cons<next_value_type, S> type;
+    typedef typename fusion::result_of::push_back
+    <S const, next_value_type>::type type;
   };
 
   template <typename S, typename Iter>
-  typename result<merge_arguments_sequence(S const&, Iter const&)>::type
-  operator()(S const& s, Iter const& i, mpl::false_) const
+  typename result<merge_arguments_sequence(S const&, Iter&)>::type
+  operator()(S const& s, Iter& i, mpl::false_) const
   {
-    typedef result<merge_arguments_sequence(S const&, Iter const&)> result_;
-    typedef typename fusion::result_of::begin<Seq const>::type begin_iterator;
-    typedef mpl::iterator_range<begin_iterator, Iter> before_range;
+    typedef result<merge_arguments_sequence(S const&, Iter&)> result_;
+    typedef typename boost::remove_const<Iter>::type iterator;
+    typedef typename mpl::begin<Seq const>::type begin_iterator;
+    typedef mpl::iterator_range<begin_iterator, mpl::fusion_iterator<iterator> > before_range;
     typedef typename mpl::count_if<before_range, type_tag::is_not_out_type_tag<mpl::_1> >::type not_outs;
     // std::cout << "is NOT out, copying from parsed args. Type: "
     //           << typeid(typename result_::next_value_type).name()
     //           << " not_outs " << not_outs::value << std::endl;
-    return typename result_::type(fusion::at<not_outs>(args), s);
+    // return typename result_::type(fusion::at<not_outs>(args), s);
+    return fusion::push_back
+      <S, typename result_::next_value_type>
+      (s, fusion::at<not_outs>(args));
   }  
 
   template <typename S, typename Iter>
-  typename result<merge_arguments_sequence(S const&, Iter const&)>::type
-  operator()(S const& s, Iter const& i, mpl::true_) const
+  typename result<merge_arguments_sequence(S const&, Iter&)>::type
+  operator()(S const& s, Iter& i, mpl::true_) const
   {
-    typedef result<merge_arguments_sequence(S const&, Iter const&)> result_;
+    typedef result<merge_arguments_sequence(S const&, Iter&)> result_;
     // std::cout << "IS out, default constructing argument. Type: "
     //           << typeid(typename result_::next_value_type).name() << std::endl;
-    return typename result_::type(typename result_::next_value_type(), s);
+    // return typename result_::type(typename result_::next_value_type(), s);
+    return fusion::push_back(s, typename result_::next_value_type());
   }  
 
   template <typename S, typename Iter>
-  typename result<merge_arguments_sequence(S const&, Iter const&)>::type
-  operator()(S const& s, Iter const& i) const
+  typename result<merge_arguments_sequence(S const&, Iter&)>::type
+  operator()(S const& s, Iter& i) const
   {
-    typedef result<merge_arguments_sequence(S const&, Iter const&)> result_;
+    typedef result<merge_arguments_sequence(S const&, Iter&)> result_;
     typedef typename result_::is_out is_out;
     return (*this)(s, i, is_out());
   }
@@ -353,15 +375,18 @@ void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
     typedef typename boost::remove_reference
       <typename fusion::result_of::iter_fold
       <fusion_tagged_arguments const
-       , fusion::nil
+       , fusion::vector0<>
        ,  merge_arguments>::type>::type arguments_type;
     arguments_type arguments = fusion::iter_fold(fusion_tagged_arguments_
-                                                 , fusion::nil()
+                                                 , fusion::vector0<>()
                                                  , merge_arguments(parse_arguments));
+    typedef typename fusion::result_of::as_vector<arguments_type>::type
+      arguments_vector_type;
+    arguments_vector_type arguments_vector = fusion::as_vector(arguments);
     // Calling function with arguments
     fusion::fused<F> fused(f);
     // Create reply
-    handle_request_reply<R, SeqParam>(orb, fused, self, r, arguments
+    handle_request_reply<R, SeqParam>(orb, fused, self, r, arguments_vector
                                       , mpl::identity<R>());
   }
   else

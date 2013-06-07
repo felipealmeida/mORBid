@@ -32,6 +32,11 @@ struct value_type_tag<T, in_tag>
   typedef in_tag tag;
 
   value_type_tag(type value) : value(value) {}
+  value_type_tag<T, in_tag>& operator=(T const& object)
+  {
+    value = object;
+    return *this;
+  }
 
   type value;
 };
@@ -44,6 +49,11 @@ struct value_type_tag<T, out_tag>
   typedef out_tag tag;
 
   value_type_tag(type value) : value(value) {}
+  value_type_tag<T, out_tag>& operator=(T const& object)
+  {
+    value = object;
+    return *this;
+  }
 
   type value;
 };
@@ -56,6 +66,11 @@ struct value_type_tag<T, inout_tag>
   typedef inout_tag tag;
 
   value_type_tag(type value) : value(value) {}
+  value_type_tag<T, inout_tag>& operator=(T const& object)
+  {
+    value = object;
+    return *this;
+  }
 
   type value;
 };

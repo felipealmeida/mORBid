@@ -40,6 +40,7 @@
 #include <boost/fusion/include/as_vector.hpp>
 #include <boost/fusion/include/remove_if.hpp>
 #include <boost/fusion/include/tag_of.hpp>
+#include <boost/fusion/include/copy.hpp>
 #include <boost/algorithm/hex.hpp>
 
 #include <string>
@@ -140,22 +141,50 @@ struct in_args_one_elem_converter<1u, T>
 };
 
 template <typename Src, typename DstSeq>
-void aux_copy(Src const& src, DstSeq const& dst_seq
+void aux_copy(Src const& src, DstSeq& dst_seq
               , mpl::identity<fusion::non_fusion_tag>)
 {
   // std::cerr << "Copying from out arg (with type " << typeid(src).name() << ") " << src << std::endl;
-  fusion::at_c<0u>(dst_seq).value = src;
+  fusion::deref(fusion::begin(dst_seq)).value = src;
 }
 
-template <typename SrcSeq, typename DstSeq, typename Tag>
-void aux_copy(SrcSeq const& src_seq, DstSeq const& dst_seq
-              , mpl::identity<Tag>)
+template <typename SrcSeq, typename DstSeq, typename S>
+void aux1_copy(SrcSeq const&, DstSeq const&, S
+              , typename boost::enable_if<mpl::equal_to<S, mpl::int_<0> > >::type* = 0)
 {
+}
+
+template <typename T>
+void is_const_test(T& x)
+{
+  BOOST_MPL_ASSERT_NOT((boost::is_const<T>));
+}
+
+template <typename SrcSeq, typename DstSeq, typename S>
+void aux1_copy(SrcSeq const& src_seq, DstSeq& dst_seq, S
+              , typename boost::disable_if<mpl::equal_to<S, mpl::int_<0> > >::type* = 0)
+{
+  BOOST_MPL_ASSERT_NOT((/*mpl::or_<fusion::result_of::empty<DstSeq>
+                    , mpl::not_
+                    <*/
+                    typename boost::is_const
+                    <typename fusion::result_of::deref
+                    <typename fusion::result_of::begin<DstSeq>::type
+                    >::type>::type/*> >*/));
+  // *fusion::begin(dst_seq) = *fusion::begin(src_seq);
+  is_const_test(*fusion::begin(dst_seq));
   fusion::copy(src_seq, dst_seq);
 }
 
+template <typename SrcSeq, typename DstSeq, typename Tag>
+void aux_copy(SrcSeq const& src_seq, DstSeq& dst_seq
+              , mpl::identity<Tag>)
+{
+  aux1_copy(src_seq, dst_seq, typename mpl::size<DstSeq>::type());
+}
+
 template <typename R, typename OutResult, typename OutSeq, typename Tag>
-typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& seq, OutSeq const& out
+typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& seq, OutSeq& out
                                              , mpl::identity<Tag> tag
                                              , typename boost::disable_if<boost::is_same<void, R> >::type* = 0)
 {
@@ -164,7 +193,7 @@ typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& 
 }
 
 template <typename R, typename OutResult, typename OutSeq>
-typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& r, OutSeq const&
+typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& r, OutSeq&
                                              , mpl::identity<fusion::non_fusion_tag>
                                              , typename boost::disable_if<boost::is_same<void, R> >::type* = 0)
 {
@@ -172,7 +201,7 @@ typename return_traits<R>::type return_value(mpl::identity<R>, OutResult const& 
 }
 
 template <typename OutResult, typename OutSeq, typename Tag>
-void return_value(mpl::identity<void>, OutResult const& seq, OutSeq const& out
+void return_value(mpl::identity<void>, OutResult const& seq, OutSeq& out
                   , mpl::identity<Tag> tag)
 {
   aux_copy(seq, out, tag);
@@ -182,6 +211,8 @@ template <typename R, typename ArgsSeq>
 typename return_traits<R>::type call
  (struct orb orb, const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args)
 {
+  BOOST_MPL_ASSERT_NOT((boost::is_const<ArgsSeq>));
+
   // std::cerr << "synchronous_call::call" << std::endl;
   namespace mpl = boost::mpl;
   // if(ior.structured_profiles.empty())
@@ -428,10 +459,23 @@ typename return_traits<R>::type call
           {
             orb.add_socket(host, port, socket);
 
+            // typedef typename fusion::result_of::filter_if
+            //   <ArgsSeq, is_not_in_lambda>::type type;
+            // typedef typename fusion::result_of::as_vector
+            //   <type_>::type type;
+            // BOOST_MPL_ASSERT((mpl::eval_if<typename mpl::empty<type>::type
+            //                   , mpl::true_
+            //                   , boost::is_same
+            //                   <type
+            //                   , void> >));
+
             // std::cerr << "NO EXCEPTION" << std::endl;
-            return return_value(mpl::identity<R>(), *attribute
-                                , fusion::as_vector(fusion::filter_if<is_not_in_lambda>(args))
-                                , mpl::identity<typename fusion::traits::tag_of<arguments_attribute_type>::type>());
+            fusion::filter_view<ArgsSeq, is_not_in_lambda> view(args);
+            return return_value
+              (mpl::identity<R>(), *attribute
+               , view
+               , mpl::identity
+               <typename fusion::traits::tag_of<arguments_attribute_type>::type>());
           }
           else
           {

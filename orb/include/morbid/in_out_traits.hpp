@@ -63,6 +63,12 @@ struct in_traits<std::vector<T> >
   typedef std::vector<T>const& type;
 };
 
+template <typename T>
+struct return_traits<std::vector<T> >
+{
+  typedef std::vector<T> type;
+};
+
 typedef out_traits<bool>::type Boolean_out;
 typedef out_traits<unsigned_short>::type UShort_out;
 typedef out_traits<short_>::type Short_out;

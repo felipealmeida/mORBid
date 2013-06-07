@@ -119,11 +119,11 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   }
 
   template <typename Expr>
-  rule& operator%=(Expr const& expr)
+  rule& operator=(giop::auto_expr_type<Expr> const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::parser_domain, Expr>::type compilation_result; 
     BOOST_MPL_ASSERT((spirit::traits::is_parser<compilation_result>));
-    f = qi::detail::bind_parser<mpl::true_>(spirit::compile< iiop::parser_domain>(expr));
+    f = qi::detail::bind_parser<mpl::true_>(spirit::compile< iiop::parser_domain>(expr.expr));
     return *this;
   }
 
@@ -182,10 +182,17 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   {
   }
 
+  template <typename Expression>
+  void warning()
+  {
+    // int i = 5;
+  }
+
   template <typename Expr>
   rule& operator=(Expr const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
+    warning<compilation_result>();
     // std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
     BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
     f = karma::detail::bind_generator<mpl::false_>(spirit::compile< iiop::generator_domain>(expr));
@@ -193,12 +200,12 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
   }
 
   template <typename Expr>
-  rule& operator%=(Expr const& expr)
+  rule& operator=(giop::auto_expr_type<Expr> const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
     // std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
     BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
-    f = karma::detail::bind_generator<mpl::true_>(spirit::compile< iiop::generator_domain>(expr));
+    f = karma::detail::bind_generator<mpl::true_>(spirit::compile< iiop::generator_domain>(expr.expr));
     return *this;
   }
 

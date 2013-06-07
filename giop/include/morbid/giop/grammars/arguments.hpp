@@ -44,9 +44,12 @@ struct arguments_aux<1u, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Iter
   template <typename C>
   arguments_aux(C const& c) : arguments_aux::base_type(start)
   {
-    start = c.template call
-      <typename mpl::at_c<TypeSeq, 0u>::type, Domain, Iterator>()
-      & karma::eps
+    start =
+      giop::auto_expr
+      (c.template call
+       <typename mpl::at_c<TypeSeq, 0u>::type, Domain, Iterator>()
+       & karma::eps
+      )
       ;
   }
 
@@ -83,7 +86,11 @@ struct arguments_aux<N, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Itera
     BOOST_PP_EXPR_IF(I, &) c.template call                              \
       <typename mpl::at_c<TypeSeq, I>::type, Domain, Iterator>()
 
-    start = BOOST_PP_REPEAT(N, MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence, ~)
+    start =
+      giop::auto_expr
+      (
+       BOOST_PP_REPEAT(N, MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence, ~)
+      )
       ;
 
 #undef MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence

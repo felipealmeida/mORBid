@@ -7,14 +7,14 @@
 
 interface allprimitives
 {
-  void foo1(in boolean a);
-  void foo2(in char a);
-  void foo3(in double a);
-  void foo4(in float a);
-  void foo5(in long a);
-  void foo6(in octet a);
-  void foo7(in short a);
-  void foo8(in string a);
+  void foo1(in boolean a, in char b);
+  void foo2(in char a, in double b);
+  void foo3(in double a, in float b);
+  void foo4(in float a, in long b);
+  void foo5(in long a, in octet b);
+  void foo6(in octet a, in short b);
+  void foo7(in short a, in string b);
+  void foo8(in string a, in boolean b);
   // void foo9(in wchar a);
   // void foo10(in wstring a);
   // void foo11(in any a);

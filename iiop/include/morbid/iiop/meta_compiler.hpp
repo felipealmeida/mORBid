@@ -72,6 +72,7 @@ struct make_component< ::morbid::iiop::generator_domain, proto::tag::terminal>
   typename result<make_component(Elements, Modifiers)>::type
   operator()(Elements const& elements, Modifiers const& modifiers) const
   {
+    // int i = 5;
     typedef typename remove_const<typename Elements::car_type>::type term;
     return ::morbid::iiop::generator::make_primitive<term, Modifiers>()(elements.car, modifiers);
   }
@@ -96,6 +97,7 @@ struct make_component< ::morbid::iiop::generator_domain, Tag>
   typename result<make_component(Elements, Modifiers)>::type
   operator()(Elements const& elements, Modifiers const& modifiers) const
   {
+    // int i = 5;
     return ::morbid::iiop::generator::make_composite<Tag, Elements, Modifiers>()(elements, modifiers);
   }
 };
@@ -124,6 +126,7 @@ struct make_component< ::morbid::iiop::generator_domain, tag::action>
   typename result<make_component(Elements, unused_type)>::type
   operator()(Elements const& elements, unused_type) const
   {
+    // int i = 5;
     typename result<make_component(Elements, unused_type)>::type
       result(elements.car, elements.cdr.car);
     return result;
@@ -152,6 +155,7 @@ struct make_component< ::morbid::iiop::generator_domain, tag::directive>
   typename result<make_component(Elements, Modifiers)>::type
   operator()(Elements const& elements, Modifiers const& modifiers) const
   {
+    // int i = 5;
     return ::morbid::iiop::generator::make_directive<
       typename boost::remove_const<typename Elements::car_type>::type,
       typename boost::remove_const<typename Elements::cdr_type::car_type>::type,

@@ -30,6 +30,15 @@ BOOST_SPIRIT_TERMINAL_EX(reference);
 
 } }
 
+
+namespace boost {
+
+template <>
+struct is_scalar< ::morbid::orb> : mpl::true_
+{};
+
+}
+
 namespace morbid {
 
 namespace karma = boost::spirit::karma;
@@ -38,7 +47,8 @@ namespace qi = boost::spirit::qi;
 struct reference_generator : karma::primitive_generator<reference_generator>
 {
   reference_generator(struct orb orb)
-    : orb_(orb) {}
+     : orb_(orb)
+  {}
 
   template <typename Context, typename Unused>
   struct attribute
@@ -46,17 +56,18 @@ struct reference_generator : karma::primitive_generator<reference_generator>
     typedef typename boost::uint_t<32>::least type;
   };
 
-  template <typename OutputIterator, typename Context, typename Delimiter, typename U>
-  bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, U& attr) const
+  template <typename OutputIterator, typename Context, typename Delimiter, typename C>
+  bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, reference<C>const& attr) const
   {
     // std::cout << "reference_generator::generate " << typeid(U).name() << std::endl;
+    typedef reference<C> ref_type;
 
     structured_ior sior;
     if(!attr._sior)
     {
       // std::cout << "serve_copy" << std::endl;
       orb::object_id id = orb_.serve_copy
-        <typename U::concept_class, typename U::any_type>(attr);
+        <typename ref_type::concept_class, typename ref_type::any_type>(attr);
       sior = structured_ior_object_id(orb_, id);
     }
     else
@@ -99,13 +110,14 @@ struct reference_generator : karma::primitive_generator<reference_generator>
     }
   }
 
-  struct orb orb_;
+   struct orb orb_;
 };
 
 struct reference_parser : qi::primitive_parser<reference_parser>
 {
   reference_parser(orb o)
-    : orb_(o) {}
+     : orb_(o)
+  {}
 
   template <typename Context, typename Unused>
   struct attribute
@@ -114,7 +126,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
   };
 
   template <typename Iterator, typename Context, typename Skipper, typename Attribute>
-  bool parse(Iterator& first, Iterator const& last
+  bool parse(Iterator& f, Iterator const& last
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
@@ -148,7 +160,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
 
     ior_grammar_type ior_grammar(tagged_profile_body | tagged_profile);
     namespace qi = boost::spirit::qi;
-    Iterator first_ = first;
+    Iterator first_ = f;
     if(qi::parse(first_, last
                  , giop::compile<iiop::parser_domain>(ior_grammar(giop::native_endian))
                  , r))
@@ -176,7 +188,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
       typedef typename Attribute::concept_class::remote_reference ref;
 
       attr = ref(orb_, sior);
-      first = first_;
+      f = first_;
       return true;
     }
     else
@@ -186,19 +198,9 @@ struct reference_parser : qi::primitive_parser<reference_parser>
   orb orb_;
 };
 
-namespace iiop { namespace generator {
+namespace iiop {
 
-template <typename Modifiers>
-struct make_primitive<spirit::terminal_ex<giop::tag::reference, boost::fusion::vector1<morbid::orb> >, Modifiers>
-{
-  typedef morbid::reference_generator result_type;
-
-  template <typename Terminal>
-  result_type operator()(Terminal const& term, boost::spirit::unused_type) const
-  {
-    return result_type(fusion::at_c<0>(term.args));
-  }
-};
+namespace generator {
 
 template <typename Modifiers>
 struct make_primitive<giop::tag::reference, Modifiers>
@@ -207,7 +209,22 @@ struct make_primitive<giop::tag::reference, Modifiers>
 
   template <typename Terminal>
   result_type operator()(Terminal const& term, boost::spirit::unused_type) const
+    ;
+  // {
+  //   // BOOST_MPL_ASSERT((boost::is_same<Terminal, void>));
+  //   return result_type()/*(fusion::at_c<0>(term.args))*/;
+  // }
+};
+
+template <typename Modifiers, typename T>
+struct make_primitive<spirit::terminal_ex<giop::tag::reference, boost::fusion::vector1<T> >, Modifiers>
+{
+  typedef morbid::reference_generator result_type;
+
+  template <typename Terminal>
+  result_type operator()(Terminal const& term, boost::spirit::unused_type) const
   {
+    // BOOST_MPL_ASSERT((boost::is_same<Terminal, void>));
     return result_type(fusion::at_c<0>(term.args));
   }
 };
@@ -216,8 +233,8 @@ struct make_primitive<giop::tag::reference, Modifiers>
 
 namespace parser {
 
-template <typename Modifiers>
-struct make_primitive<spirit::terminal_ex<giop::tag::reference, boost::fusion::vector1<morbid::orb> >, Modifiers>
+template <typename Modifiers, typename T>
+struct make_primitive<spirit::terminal_ex<giop::tag::reference, boost::fusion::vector1<T> >, Modifiers>
 {
   typedef morbid::reference_parser result_type;
 
@@ -228,9 +245,33 @@ struct make_primitive<spirit::terminal_ex<giop::tag::reference, boost::fusion::v
   }
 };
 
+// template <typename Modifiers>
+// struct make_primitive<giop::tag::reference, Modifiers>
+// {
+//   typedef morbid::reference_parser result_type;
+
+//   template <typename Terminal>
+//   result_type operator()(Terminal& term, boost::spirit::unused_type) const
+//   {
+//     return result_type(/*fusion::at_c<0u>(term.args)*/);
+//   }
+// };
+
 } } }
 
 namespace boost { namespace spirit {
+
+namespace traits {
+
+template <>
+struct has_semantic_action< ::morbid::reference_parser>
+  : mpl::true_ {};
+
+template <>
+struct has_semantic_action< ::morbid::reference_generator>
+  : mpl::true_ {};
+
+}
 
 template <>
 struct use_lazy_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::reference, 1>
@@ -239,6 +280,25 @@ struct use_lazy_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::r
 
 template <>
 struct use_terminal< ::morbid::iiop::generator_domain, morbid::giop::tag::reference>
+  : mpl::true_
+{};
+
+template <typename U>
+struct use_terminal< ::morbid::iiop::generator_domain
+                     , boost::spirit::terminal_ex
+                     <morbid::giop::tag::reference, fusion::vector1<U> > >
+  : mpl::true_
+{};
+
+template <>
+struct use_terminal< ::morbid::iiop::parser_domain, morbid::giop::tag::reference>
+  : mpl::true_
+{};
+
+template <typename U>
+struct use_terminal< ::morbid::iiop::parser_domain
+                     , boost::spirit::terminal_ex
+                     <morbid::giop::tag::reference, fusion::vector1<U> > >
   : mpl::true_
 {};
 

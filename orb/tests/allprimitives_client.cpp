@@ -12,15 +12,15 @@
 
 void foo( ::allprimitives allprimitives)
 {
-  allprimitives.foo1(true);
-  allprimitives.foo2('c');
-  allprimitives.foo3(2.0);
-  allprimitives.foo4(2.0f);
-  allprimitives.foo5(2l);
+  allprimitives.foo1(true, 'c');
+  allprimitives.foo2('c', 2.0);
+  allprimitives.foo3(2.0, 2.0f);
+  allprimitives.foo4(2.0f, 2l);
   unsigned char asd = 'a';
-  allprimitives.foo6(asd);
-  allprimitives.foo7(2);
-  allprimitives.foo8("qwe");
+  allprimitives.foo5(2l, asd);
+  allprimitives.foo6(asd, 2);
+  allprimitives.foo7(2, "qwe");
+  allprimitives.foo8("qwe", true);
 }
 
 int main(int argc, char* argv[])

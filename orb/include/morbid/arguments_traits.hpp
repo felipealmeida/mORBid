@@ -163,9 +163,34 @@ struct argument_giop_grammar< reference<T>, Domain, Iterator>
                                       , boost::proto::argsns_::term
                                       <boost::spirit::terminal_ex
                                        <morbid::giop::tag::reference
-                                        , boost::fusion::vector1<morbid::orb> > >, 0l> result_type;
-  result_type operator()(morbid::orb orb) const { return giop::reference(orb); }
+                                        , boost::fusion::vector1<morbid::orb> > >, 0l>const result_type;
+  result_type operator()(morbid::orb orb) const
+  {
+    return giop::reference(orb);
+  }
 };
+
+// template <typename T/*, typename Domain*/, typename Iterator>
+// struct argument_giop_grammar< reference<T>, iiop::parser_domain, Iterator>
+// {
+//   typedef spirit::terminal<morbid::giop::tag::reference>const& result_type;
+//   result_type operator()(morbid::orb orb) const
+//   {
+//     return giop::reference//(/*boost::phoenix::val(*/orb/*)*/)
+//       ;
+//   }
+// };
+
+// template <typename T, typename Domain, typename Iterator>
+// struct argument_giop_grammar< reference<T>, Domain, Iterator>
+// {
+//   typedef spirit::terminal<morbid::giop::tag::reference>const& result_type;
+//   result_type operator()(morbid::orb orb) const
+//   {
+//     return giop::reference//(/*boost::phoenix::val(*/orb/*)*/)
+//       ;
+//   }
+// };
 
 }
 

@@ -41,6 +41,7 @@ struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
              , Attribute& attr) const
   {
     // std::cout << "sequence_parser::parse" << std::endl;
+    BOOST_MPL_ASSERT_NOT((boost::is_const<Attribute>));
 
     unsigned_parser<32u> unsigned_;
     boost::uint_t<32u>::least size;

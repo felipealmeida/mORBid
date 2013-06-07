@@ -80,6 +80,23 @@ template <typename Domain, typename I, typename T1, typename T2, typename T3
           , typename T4>
 struct rule_impl;
 
+template <typename T>
+struct auto_expr_type
+{
+  typedef T type;
+
+  T const& expr;
+
+  auto_expr_type(T const& expr)
+    : expr(expr) {}
+};
+
+template <typename T>
+auto_expr_type<T> auto_expr(T const& expr)
+{
+  return auto_expr_type<T>(expr);
+}
+
 template <typename Domain, typename Iterator, typename T1, typename T2 = spirit::unused_type
           , typename T3 = spirit::unused_type, typename T4 = spirit::unused_type>
 struct rule
@@ -113,10 +130,9 @@ struct rule
   }
 
   template <typename Expr>
-  self_type& operator%=(Expr const& expr)
+  self_type& operator=(auto_expr_type<Expr> const& expr)
   {
-    typedef typename giop::result_of::compile<Domain, Expr>::type compilation_result;
-    rule_impl_ %= expr;
+    rule_impl_ = expr;
     return *this;
   }
 

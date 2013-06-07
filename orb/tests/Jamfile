@@ -162,6 +162,19 @@ exe seq_allprimitives_server
 
 make seq_allprimitives.output : seq_allprimitives_client seq_allprimitives_server : @run-server-client ;
 
+make seq_args_allprimitives.hpp : seq_args_allprimitives.idl : @compileidl : <dependency>/morbid//install-idl ;
+
+exe seq_args_allprimitives_client
+ : seq_args_allprimitives_client.cpp /morbid//morbid
+  : <implicit-dependency>seq_args_allprimitives.hpp
+ ;
+exe seq_args_allprimitives_server
+ : seq_args_allprimitives_server.cpp /morbid//morbid
+  : <implicit-dependency>seq_args_allprimitives.hpp
+ ;
+
+make seq_args_allprimitives.output : seq_args_allprimitives_client seq_args_allprimitives_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
 alias inout_allprimitives : inout_allprimitives.output ;
@@ -171,6 +184,7 @@ alias struct : struct.output ;
 alias reference : reference.output ;
 alias fwd_ref : fwd_ref.output ;
 alias seq_allprimitives : seq_allprimitives.output ;
+alias seq_args_allprimitives : seq_args_allprimitives.output ;
 
 if [ option.get test-with-openbus : : 1 ]
 {
@@ -181,13 +195,16 @@ if [ option.get test-with-openbus : : 1 ]
   alias openbus : [ testing.run openbus_client.cpp /morbid//morbid : : : <implicit-dependency>offer_registry.hpp ] ;
 
   alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
-   return_allprimitives modules_allprimitives struct reference fwd_ref openbus
+   return_allprimitives modules_allprimitives struct reference fwd_ref seq_allprimitives
+   seq_args_allprimitives
+   openbus
   ;
 }
 else
 {
   alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
-   return_allprimitives modules_allprimitives struct reference fwd_ref
+   return_allprimitives modules_allprimitives struct reference fwd_ref seq_allprimitives
+   seq_args_allprimitives
    ;
 }
 
