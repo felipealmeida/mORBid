@@ -22,6 +22,7 @@ namespace morbid { namespace idl_parser {
 struct interface_def
 {
   wave_string name;
+  std::vector<types::scoped_name> bases;
   bool fully_defined;
   std::vector<op_decl> op_decls;
   std::vector<attribute> attributes;
@@ -49,6 +50,7 @@ BOOST_FUSION_ADAPT_STRUCT(::morbid::idl_parser::interface_def
                           (std::vector< ::morbid::idl_parser::wave_string>, repoids)
                           ( ::boost::wave::util::file_position_type, file_position)
                           (bool, fully_defined)
+                          (std::vector< ::morbid::idl_parser::types::scoped_name>, bases)
                           );
 
 #endif

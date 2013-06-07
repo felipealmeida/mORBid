@@ -47,7 +47,8 @@ struct interface_definition : boost::spirit::qi::grammar
   interface_definition()
     : interface_definition::base_type(start)
   {
-    namespace qi = boost::spirit::qi;
+    namespace spirit = boost::spirit;
+    namespace qi = spirit::qi;
     namespace phoenix = boost::phoenix;
     using qi::_a; using qi::_b; using qi::_c;
     using qi::_1;
@@ -63,6 +64,7 @@ struct interface_definition : boost::spirit::qi::grammar
        -(
          token_id(boost::wave::T_COLON)
          >> (scoped_name % token_id(boost::wave::T_COMMA))
+         [phoenix::at_c<6>(spirit::_val) = spirit::_1]
         )
       ]
       >> token_id(boost::wave::T_LEFTBRACE)
