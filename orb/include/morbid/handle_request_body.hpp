@@ -52,7 +52,8 @@ struct tag
 template <typename NotInParams, typename ReplyArguments>
 void make_request_reply(struct orb orb, reply& r, ReplyArguments& reply_arguments)
 {
-  // std::cout << "Generating reply with reply arguments " << typeid(ReplyArguments).name() << std::endl;
+  std::cout << "Generating reply with reply arguments " << typeid(ReplyArguments).name()
+            << " NotInParams " << typeid(NotInParams).name() << std::endl;
   typedef ReplyArguments reply_argument_types;
 
   typedef giop::forward_back_insert_iterator<std::vector<char> > output_iterator_type;

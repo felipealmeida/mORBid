@@ -10,6 +10,7 @@
 
 #include <morbid/tags.hpp>
 #include <morbid/structured_ior.hpp>
+#include <morbid/detail/requirements.hpp>
 
 #include <boost/type_erasure/any.hpp>
 #include <boost/type_erasure/is_empty.hpp>
@@ -19,17 +20,44 @@
 
 namespace morbid {
 
+namespace mpl = boost::mpl;
+
+namespace detail {
+
+template <typename T, typename U>
+struct is_concept_base_and_derived
+{
+  typedef typename mpl::if_
+  <
+    mpl::contains<typename U::bases, T>
+    , mpl::true_
+    , mpl::not_
+      <
+        boost::is_same
+        <
+          typename mpl::find_if<typename U::bases, is_concept_base_and_derived<T, mpl::_> >::type
+          , typename mpl::end<typename U::bases>::type
+        >
+      >
+  >::type type;
+};
+
+template <typename T>
+struct is_concept_base_and_derived<T, T> : mpl::true_ {};
+
+}
+
 template <typename T>
 struct is_remote_reference : boost::mpl::false_ {};
 
 template <typename C>
-struct reference : boost::type_erasure::any<typename C::regular_requirements>
+struct reference : boost::type_erasure::any<typename detail::regular_requirements<C>::type>
 {
   typedef reference<C> self_type;
   typedef interface_tag _morbid_type_kind;
 
   typedef C concept_class;
-  typedef boost::type_erasure::any<typename C::regular_requirements> any_type;
+  typedef boost::type_erasure::any<typename detail::regular_requirements<C>::type> any_type;
 
   reference()
   {
@@ -37,7 +65,8 @@ struct reference : boost::type_erasure::any<typename C::regular_requirements>
   }
 
   template <typename T>
-  reference(reference<T> const& other)
+  reference(reference<T> const& other
+            , typename boost::enable_if<detail::is_concept_base_and_derived<C, T> >::type* = 0)
     : any_type(static_cast<typename reference<T>::any_type const&>(other))
     , _sior(other._sior)
   {
@@ -47,7 +76,8 @@ struct reference : boost::type_erasure::any<typename C::regular_requirements>
   }
 
   template <typename T>
-  reference(reference<T>& other)
+  reference(reference<T>& other
+            , typename boost::enable_if<detail::is_concept_base_and_derived<C, T> >::type* = 0)
     : any_type(static_cast<typename reference<T>::any_type&>(other))
     , _sior(other._sior)
   {

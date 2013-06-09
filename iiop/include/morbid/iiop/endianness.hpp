@@ -185,9 +185,64 @@ struct make_primitive<tag::save_endian, Modifiers, Enable>
 };
 
 template <typename Subject>
-struct specific_endianness_parser : endianness_parser<Subject>
+struct specific_endianness_parser : qi::unary_parser<specific_endianness_parser<Subject> >
 {
-  
+  specific_endianness_parser(Subject const& subject, giop::endian endianness)
+    : endianness(endianness), subject(subject) {}
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr, boost::mpl::true_) const
+  {
+    typedef typename Context::attributes_type attributes_type;
+    typedef typename fusion::result_of::as_list
+      <typename fusion::result_of::push_back
+       <attributes_type, endianness_attribute>::type
+       >::type
+      endianness_attributes_type;
+    typedef spirit::context
+      <endianness_attributes_type, typename Context::locals_type> context_type;
+
+    endianness_attribute e(endianness);
+    endianness_attributes_type attributes
+      = fusion::as_list(fusion::push_back(ctx.attributes, e));
+    context_type context(attributes);
+    context.locals = ctx.locals;
+    bool r = subject.parse(first, last, context, skipper, attr);
+    ctx.locals = context.locals;
+    return r;
+  }  
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr, boost::mpl::false_) const
+  {
+    // std::cout << "endianness read from stream " << (unsigned int)endianness << std::endl;
+    typedef generator_endianness<typename Context::attributes_type> getter_endianness;
+    bool old_endianness = getter_endianness::call(ctx.attributes);
+    getter_endianness::call(ctx.attributes) = endianness;
+    bool r = subject.parse(first, last, ctx, skipper, attr);
+    getter_endianness::call(ctx.attributes) = old_endianness;
+    return r;
+  }
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    typedef typename Context::attributes_type attributes_type;
+    typedef typename fusion::result_of::find<attributes_type, iiop::endianness_attribute>::type index_iterator_type;
+    typedef typename fusion::result_of::distance
+      <index_iterator_type, typename fusion::result_of::end<attributes_type>::type>::type distance_to_end;
+    return parse(first, last, ctx, skipper, attr
+                 , typename mpl::equal_to<distance_to_end, mpl::int_<0> >::type());
+  }
+
+  giop::endian endianness;
+  Subject subject;
 };
 
 template <typename Subject, typename Modifiers>
@@ -202,18 +257,38 @@ struct make_directive<giop::tag::endianness, Subject, Modifiers>
 };
 
 template <typename Subject, typename Modifiers>
-struct make_directive<spirit::terminal_ex<giop::tag::endianness
-                                          , boost::fusion::vector1<bool> >
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
                       , Subject, Modifiers>
 {
   typedef specific_endianness_parser<Subject> result_type;
 
   template <typename Terminal>
-  result_type operator()(Terminal const& term, Subject const& subject, spirit::unused_type) const;
-  // {
-  //   return result_type(subject, fusion::at_c<0>(term.args));
-  // }
+  result_type operator()(Terminal const& term, Subject const& subject, spirit::unused_type) const
+  {
+    return result_type(subject, fusion::at_c<0>(term.args));
+  }
 };
+
+template <typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::little_endian_type> >
+                      , Subject, Modifiers>
+  : make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
+                   , Subject, Modifiers>
+{};
+
+template <typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::big_endian_type> >
+                      , Subject, Modifiers>
+  : make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
+                   , Subject, Modifiers>
+{};
+
+template <typename Subject, typename Modifiers>
+struct make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::native_endian_type> >
+                      , Subject, Modifiers>
+  : make_directive<spirit::terminal_ex<giop::tag::endianness, boost::fusion::vector1<giop::endian> >
+                   , Subject, Modifiers>
+{};
 
 }
 
@@ -346,6 +421,16 @@ struct handles_container< ::morbid::iiop::generator::endianness_generator<Subjec
                           , Context, Iterator>
 : unary_handles_container<Subject, Attribute, Context, Iterator> {};
 
+template <typename Subject>
+struct has_semantic_action< ::morbid::iiop::parser::endianness_parser<Subject> >
+  : unary_has_semantic_action<Subject> {};
+
+template <typename Subject, typename Attribute, typename Context
+          , typename Iterator>
+struct handles_container< ::morbid::iiop::parser::endianness_parser<Subject>, Attribute
+                          , Context, Iterator>
+: unary_handles_container<Subject, Attribute, Context, Iterator> {};
+
 }
 
 template <typename Enable>
@@ -375,9 +460,32 @@ template <>
 struct use_lazy_directive< ::morbid::iiop::generator_domain, morbid::giop::tag::endianness, 1>
   : mpl::true_ {};
 
-// Parser
 template <typename Enable>
 struct use_directive< ::morbid::iiop::parser_domain, morbid::giop::tag::endianness, Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_directive< ::morbid::iiop::parser_domain
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::little_endian_type> >
+                      , Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_directive< ::morbid::iiop::parser_domain
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::endian> >
+                      , Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_directive< ::morbid::iiop::parser_domain
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::big_endian_type> >
+                      , Enable> : mpl::true_ {};
+
+template <typename Enable>
+struct use_directive< ::morbid::iiop::parser_domain
+                      , terminal_ex<morbid::giop::tag::endianness, boost::fusion::vector1< ::morbid::giop::native_endian_type> >
+                      , Enable> : mpl::true_ {};
+
+template <>
+struct use_lazy_directive< ::morbid::iiop::parser_domain, morbid::giop::tag::endianness, 1>
+  : mpl::true_ {};
 
 // Parser
 template <typename Enable>

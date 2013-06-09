@@ -41,6 +41,7 @@
 #include <boost/fusion/include/remove_if.hpp>
 #include <boost/fusion/include/tag_of.hpp>
 #include <boost/fusion/include/copy.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/algorithm/hex.hpp>
 
 #include <string>
@@ -56,6 +57,21 @@ inline ostream& operator<<(ostream& os, vector<char>::iterator it)
 }
 
 }
+
+namespace morbid { namespace synchronous_call {
+
+struct user_exception
+{
+  user_exception() {}
+  user_exception(std::string const& exception_id)
+    : exception_id(exception_id) {}
+  std::string exception_id;
+};
+
+} }
+
+// BOOST_FUSION_ADAPT_STRUCT(::morbid::synchronous_call::user_exception
+//                           , (std::string, exception_id));
 
 namespace morbid { namespace synchronous_call {
 
@@ -213,10 +229,9 @@ typename return_traits<R>::type call
 {
   BOOST_MPL_ASSERT_NOT((boost::is_const<ArgsSeq>));
 
-  // std::cerr << "synchronous_call::call" << std::endl;
+  std::cerr << "synchronous_call::call" << std::endl;
   namespace mpl = boost::mpl;
-  // if(ior.structured_profiles.empty())
-  //   throw MARSHALL();
+  assert(!ior.structured_profiles.empty());
 
   iiop::profile_body const* profile_body = 0;
   for(std::vector<structured_ior::variant_type>::const_iterator
@@ -228,18 +243,17 @@ typename return_traits<R>::type call
       break;
   }
 
-  // if(!profile_body)
-  //   throw MARSHALL();
+  assert(!!profile_body);
 
   std::string const& host = profile_body->host;
   std::vector<char> const& object_key = profile_body->object_key;
   unsigned short port = profile_body->port;
 
-  // std::cerr << "Making synchronous call to " << host << ":" << port
-  //           << " to object with object_key " << boost::make_iterator_range(object_key.begin(), object_key.end())
-  //           << " with repoid: " << repoid << " to method " << method
-  //           << " and args [" << typeid(args).name()
-  //           << ']' << std::endl;
+  std::cerr << "Making synchronous call to " << host << ":" << port
+            << " to object with object_key " << boost::make_iterator_range(object_key.begin(), object_key.end())
+            << " with repoid: " << repoid << " to method " << method
+            << " and args [" << typeid(args).name()
+            << ']' << std::endl;
 
   namespace fusion = boost::fusion;
   namespace karma = boost::spirit::karma;
@@ -326,7 +340,7 @@ typename return_traits<R>::type call
     boost::asio::write(*socket, boost::asio::buffer(buffer)
                        , boost::asio::transfer_all());
 
-    // std::cerr << "Sent for " << method << ". Waiting reply" << std::endl;
+    std::cerr << "Sent for " << method << ". Waiting reply" << std::endl;
 
     std::vector<char> reply_buffer(1024u);
     std::size_t offset = 0;
@@ -338,7 +352,7 @@ typename return_traits<R>::type call
       boost::system::error_code ec;
       std::size_t bytes_read
         = socket->read_some(boost::asio::buffer(&reply_buffer[offset], reply_buffer.size() - offset), ec);
-      // std::cerr << "Read " << bytes_read << " bytes" << std::endl;
+      std::cerr << "Read " << bytes_read << " bytes" << std::endl;
       if(ec)
         throw ec;
       else
@@ -348,10 +362,10 @@ typename return_traits<R>::type call
         iterator_type first = reply_buffer.begin()
           ,  last = boost::next(reply_buffer.begin(), offset);
 
-        // std::cerr << "Should try to parse " << offset << " ";
+        std::cerr << "Should try to parse " << offset << " ";
 
-        // boost::algorithm::hex(first, last, std::ostream_iterator<char>(std::cerr));
-        // std::endl(std::cerr);
+        boost::algorithm::hex(first, last, std::ostream_iterator<char>(std::cerr));
+        std::endl(std::cerr);
 
         assert(std::distance(first, last) == offset);
 
@@ -391,7 +405,8 @@ typename return_traits<R>::type call
           <mpl::size<arguments_attribute_type_>::value, arguments_attribute_type_>::type arguments_attribute_type;
 
         typedef fusion::vector3<std::string, unsigned int, unsigned int> system_exception_attribute_type;
-        typedef boost::variant<system_exception_attribute_type, arguments_attribute_type> variant_attribute_type;
+        typedef boost::variant<system_exception_attribute_type, arguments_attribute_type
+                               , user_exception> variant_attribute_type;
 
         typedef fusion::vector4<service_context_list, unsigned int, unsigned int
                                 , variant_attribute_type>
@@ -425,6 +440,10 @@ typename return_traits<R>::type call
             & arguments_grammar_
            ) |
            (
+            spirit::eps(phoenix::at_c<2u>(spirit::_val) == 1u)
+            & spirit::attr_cast<user_exception>(giop::string)
+           ) |
+           (
             spirit::eps(phoenix::at_c<2u>(spirit::_val) == 2u)
             & system_exception_grammar_
            )
@@ -441,18 +460,23 @@ typename return_traits<R>::type call
         {
           assert(first_ == last);
           reply_attribute_type& reply_attr = fusion::at_c<0u>(attribute);
-          // std::cerr << "Parsed correctly!" << std::endl;
-          // std::cerr << "Number of service contexts " << fusion::at_c<0u>(reply_attr).size()
-          //           << " request id " << fusion::at_c<1u>(reply_attr)
-          //           << " reply status " << fusion::at_c<2u>(reply_attr) << std::endl;
+          std::cerr << "Parsed correctly!" << std::endl;
+          std::cerr << "Number of service contexts " << fusion::at_c<0u>(reply_attr).size()
+                    << " request id " << fusion::at_c<1u>(reply_attr)
+                    << " reply status " << fusion::at_c<2u>(reply_attr) << std::endl;
 
           variant_attribute_type const& result = fusion::at_c<3u>(reply_attr);
           if(system_exception_attribute_type const* attribute
              = boost::get<system_exception_attribute_type>(&result))
           {
-            // std::cerr << "Parsed system exception correctly, exception id: " << fusion::at_c<0>(*attribute)
-            //           << " minor code " << fusion::at_c<1>(*attribute)
-            //           << " completion status " << fusion::at_c<2>(*attribute) << std::endl;
+            std::cerr << "Parsed system exception correctly, exception id: " << fusion::at_c<0>(*attribute)
+                      << " minor code " << fusion::at_c<1>(*attribute)
+                      << " completion status " << fusion::at_c<2>(*attribute) << std::endl;
+          }
+          if(user_exception const* attribute
+             = boost::get<user_exception>(&result))
+          {
+            std::cerr << "Parsed user exception correctly, exception id: " << attribute->exception_id << std::endl;
           }
           else if(arguments_attribute_type const* attribute
                   = boost::get<arguments_attribute_type>(&result))
@@ -469,7 +493,7 @@ typename return_traits<R>::type call
             //                   <type
             //                   , void> >));
 
-            // std::cerr << "NO EXCEPTION" << std::endl;
+            std::cerr << "NO EXCEPTION" << std::endl;
             fusion::filter_view<ArgsSeq, is_not_in_lambda> view(args);
             return return_value
               (mpl::identity<R>(), *attribute
@@ -498,7 +522,7 @@ typename return_traits<R>::type call
   else
     std::cerr << "Failed generating" << std::endl;
 
-  throw std::runtime_error("MARSHALL");
+  std::abort();
 }
 
 } }

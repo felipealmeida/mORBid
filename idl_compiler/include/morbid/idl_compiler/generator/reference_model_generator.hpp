@@ -35,15 +35,21 @@ struct header_reference_model_generator : karma::grammar
     parameter_select;
   karma::rule<OutputIterator, idl_parser::type_spec(interface_)>
     type_spec_select;
+  karma::rule<OutputIterator
+              , idl_parser::types::scoped_name(interface_)> base_spec;
   karma::rule<OutputIterator> ior_function;
   karma::rule<OutputIterator> indent;
   karma::rule<OutputIterator> common_members;
   karma::rule<OutputIterator
-              , idl_parser::interface_def()> common_functions;
+              , idl_parser::interface_def(interface_)> common_functions;
   karma::rule<OutputIterator
               , idl_parser::op_decl(interface_, std::vector<idl_parser::wave_string>, idl_parser::wave_string)
               , karma::locals<unsigned int> > 
     operation;
+  karma::rule<OutputIterator
+              , idl_parser::attribute(interface_, std::vector<idl_parser::wave_string>, idl_parser::wave_string)
+              , karma::locals<unsigned int> > 
+    attribute;
   karma::rule<OutputIterator
               , idl_parser::interface_def(interface_, std::vector<idl_parser::wave_string>)> start;
   // karma::rule<OutputIterator

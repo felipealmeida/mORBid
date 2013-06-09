@@ -8,7 +8,6 @@
 #ifndef TECORB_IDL_COMPILER_CONCEPT_GENERATOR_IPP
 #define TECORB_IDL_COMPILER_CONCEPT_GENERATOR_IPP
 
-// #include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/proxy_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/concept_generator.hpp>
 
@@ -17,15 +16,27 @@
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/phoenix.hpp>
 
-// namespace std {
+namespace boost { namespace spirit { namespace traits {
 
-// template <typename T, typename U>
-// std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
-// {
-//   return os << "[pair first: " << p.first << " second: " << p.second << ']';
-// }
+template <typename Domain>
+struct extract_from_container<std::vector< ::morbid::idl_parser::types::scoped_name>
+                              , std::vector< ::morbid::idl_parser::type_spec>, Domain>
+{
+  typedef std::vector< ::morbid::idl_parser::types::scoped_name> from_type;
+  typedef std::vector< ::morbid::idl_parser::type_spec> type;
 
-// }
+  template <typename Context>
+  static type call(from_type const& attr, Context& ctx)
+  {
+    type r(attr.begin(), attr.end());
+    std::cout << "Converting ";
+    std::copy(r.begin(), r.end(), std::ostream_iterator<type::value_type>(std::cout, ", "));
+    std::endl(std::cout);
+    return r;
+  }
+};
+
+} } }
 
 namespace morbid { namespace idl_compiler { namespace generator {
 
@@ -35,6 +46,7 @@ template <typename OutputIterator>
 header_concept_generator<OutputIterator>::header_concept_generator()
   : header_concept_generator::base_type(start)
 {
+  namespace spirit = boost::spirit;
   namespace phoenix = boost::phoenix;
   using karma::_1;
   using karma::_val;
@@ -52,11 +64,19 @@ header_concept_generator<OutputIterator>::header_concept_generator()
     << (*(operation(_r1) << eol))
     [_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
-    << requirements[_1 = at_c<1>(_val)] << eol
+    << indent << "// Start of attributes defined in IDL" << eol
+    << (*(attribute(_r1) << eol))
+    [_1 = at_c<2>(_val)]
+    << indent << "// End of attributes defined in IDL" << eol
+    << requirements[_1 = _val] << eol
+    << indent << "typedef boost::mpl::vector< "
+    <<  (
+         (base_spec(_r1) % ", ") [_1 = phoenix::at_c<6>(_val)]
+         | "::morbid::object_concept"
+        )
+    << "> bases;" << eol
     << public_members(_r2, _a)[_1 = at_c<0>(_val)] << eol
     << indent << "typedef ::morbid::interface_tag _morbid_type_kind;" << eol
-    // << indent << empty_reference(_r1)[_1 = _val] << ";" << eol
-    // << indent << proxy_reference(_r1)[_1 = _val] << ";" << eol
     << indent << "template <typename T> struct proxy_reference;" << eol
     << indent << "typedef " << wave_string[_1 = _a] << "_ref remote_reference;" << eol
     << "};" << eol << eol
@@ -82,9 +102,53 @@ header_concept_generator<OutputIterator>::header_concept_generator()
     << " , " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
     << " >"
     ;
+  attribute = 
+    indent
+    << "template <typename C = ::boost::type_erasure::_self>" << eol
+    << "  struct _get_" << wave_string[_1 = at_c<2>(_val)] << eol
+    << "  {\n"
+    //    "    template <typename>\n"
+    //    "    struct result;\n"
+    //    "    template <typename This_>\n"
+    //    "    struct result< " << wave_string[_1 = at_c<2>(_val)] << "(This_&)>" << eol
+    // << "    {\n"
+    //    "      typedef T type;\n"
+    //    "    };\n"
+    //    "    template <typename This_>\n"
+    //    "    struct result< " << wave_string[_1 = at_c<2>(_val)] << "(This_&, T const&)>" << eol
+    // << "    {\n"
+    //    "      typedef void type;\n"
+    //    "    };\n"
+    << "    typedef typename ::morbid::lazy_eval< "
+    << return_
+       (
+        at_c<1>(_r1)[at_c<1>(_val)]
+       )
+       [_1 = at_c<1>(_val)]
+    << ", C>::type result_type;\n"
+       "    static result_type apply(C const& self)\n"
+       "    {\n"
+       "      return self._get_" << wave_string[_1 = at_c<2>(_val)] << "();\n"
+       "    }\n"
+       // "    static void apply(C& self, T const& obj)\n"
+       // "    {\n"
+       // "      self." << wave_string[_1 = at_c<2>(_val)] << "(obj);\n"
+       // "    }\n"
+       "    template <typename This_>\n"
+       "    result_type operator()(This_* self)\n"
+       "    {\n"
+       "      return apply(*self);\n"
+       "    }\n"
+       // "    template <typename This_>\n"
+       // "    void operator()(This_* self, T const& obj)\n"
+       // "    {\n"
+       // "      apply(*self, obj);\n"
+       // "    }\n"
+       "    inline static const char* name() { return \"_get_" << wave_string[_1 = at_c<2>(_val)] << "\"; }\n"
+       "    typedef ::boost::mpl::vector0<> arguments;\n"
+       "  };\n"
+    ;
   operation =
-    -(
-      // karma::eps(at_c<3>(_val))
       indent << "template <typename C = ::boost::type_erasure::_self, typename R = "
       << return_
       (
@@ -120,7 +184,6 @@ header_concept_generator<OutputIterator>::header_concept_generator()
               << karma::lit(_a)
               << karma::attr_cast<idl_parser::param_decl>(karma::eps)
               << " arg" << karma::lit(++_a)))[_1 = at_c<2>(_val)]
-           //           (*(", " << parameter_select(_r1) << " arg" << karma::lit(++_a)))[_1 = at_c<2>(_val)]
           )
       << ")" << eol
       << indent << indent << "{" << eol
@@ -132,16 +195,29 @@ header_concept_generator<OutputIterator>::header_concept_generator()
       << indent << indent << "typedef ::boost::mpl::vector< "
       << -(arguments(_r1) % ", ")[_1 = at_c<2>(_val)] << " > arguments;" << eol
       << indent << "};" << eol
-     )
     ;
-  requirements = indent
+  base_spec %=
+    type_spec(at_c<1>(_r1)[_val])
+    << "_concept"
+    ;
+  attribute_name = "_get_" << wave_string[_1 = at_c<2>(_val)]
+    ;
+  requirements =
+    indent
     << "typedef boost::mpl::vector< "
-    << -((operation_name << "<>") % ", ")[_1 = _val]
+    << -((operation_name << "<>") % ", ")[_1 = at_c<1>(_val)]
+    // << -karma::buffer
+    //     [
+    //      spirit::eps(!phoenix::empty(at_c<1>(_val)))
+    //      [karma::string[_1 = ", "]]
+    //      << ((attribute_name << "<>") % ", ")[_1 = at_c<2>(_val)]
+    //     ]
     << " >" << eol
     << indent << indent << "requirements;" << eol
     << indent
     << "typedef boost::mpl::vector< ::boost::type_erasure::copy_constructible<>, ::boost::type_erasure::relaxed"
-    << (*(", " << operation_name << "<>"))[_1 = _val]
+    << (*(", " << operation_name << "<>"))[_1 = at_c<1>(_val)]
+    << (*(", " << attribute_name << "<>"))[_1 = at_c<2>(_val)]
     << " >" << eol
     << indent << indent << "regular_requirements;" << eol
     ;

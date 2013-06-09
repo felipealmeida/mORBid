@@ -21,6 +21,8 @@
 namespace morbid {
 
 namespace spirit = boost::spirit;
+namespace fusion = boost::fusion;
+namespace proto = boost::proto;
 
 namespace detail {
 
@@ -114,12 +116,13 @@ struct argument_giop_grammar<octet, Domain, Iterator>
 template <typename T, typename Domain, typename Iterator>
 struct argument_giop_grammar<std::vector<T>, Domain, Iterator>
 {
-  typedef boost::proto::exprns_::expr
+  typedef proto::exprns_::expr
   <
-    boost::proto::tagns_::tag::subscript
-    , boost::proto::argsns_::list2
-    <boost::spirit::terminal<morbid::giop::tag::sequence>const&
-     , typename argument_giop_grammar<T, Domain, Iterator>::result_type
+    proto::tagns_::tag::subscript
+    , proto::argsns_::list2
+    <
+      spirit::terminal<giop::tag::sequence>const&
+      , typename argument_giop_grammar<T, Domain, Iterator>::result_type
     >
     , 2l
   > const result_type;
@@ -127,6 +130,39 @@ struct argument_giop_grammar<std::vector<T>, Domain, Iterator>
   result_type operator()(struct orb orb) const
   {
     return giop::sequence[argument_giop_grammar<T, Domain, Iterator>()(orb)];
+  }
+};
+
+template <typename T, std::size_t N, typename Domain, typename Iterator>
+struct argument_giop_grammar<boost::array<T, N>, Domain, Iterator>
+{
+  typedef boost::proto::exprns_::expr
+  <
+    boost::proto::tagns_::tag::subscript
+    , boost::proto::argsns_::list2
+    < 
+      boost::proto::exprns_::expr
+      <
+        boost::proto::tagns_::tag::terminal
+        , boost::proto::argsns_::term
+          <
+            boost::spirit::terminal_ex
+            <
+              boost::spirit::tag::repeat
+              , boost::fusion::vector1<long unsigned int>
+            >
+          >
+        , 0l
+      >
+      , typename argument_giop_grammar<T, Domain, Iterator>::result_type
+    >
+    , 2l
+  > const result_type;
+
+  result_type operator()(struct orb orb) const
+  {
+    // return spirit::repeat(N)[argument_giop_grammar<T, Domain, Iterator>()(orb)];
+    return result_type::make(spirit::repeat(N), argument_giop_grammar<T, Domain, Iterator>()(orb));
   }
 };
 
@@ -146,11 +182,16 @@ struct argument_giop_grammar<T, Domain, Iterator
 template <typename T, typename Domain, typename Iterator>
 struct argument_giop_grammar< reference<T>, Domain, Iterator>
 {
-  typedef boost::proto::exprns_::expr<boost::proto::tagns_::tag::terminal
-                                      , boost::proto::argsns_::term
-                                      <boost::spirit::terminal_ex
-                                       <morbid::giop::tag::reference
-                                        , boost::fusion::vector1<morbid::orb> > >, 0l>const result_type;
+  typedef proto::exprns_::expr
+  <
+    proto::tagns_::tag::terminal
+    , proto::argsns_::term
+    <
+      spirit::terminal_ex
+      <giop::tag::reference, fusion::vector1<morbid::orb> >
+    >
+    , 0l
+  > const result_type;
   result_type operator()(morbid::orb orb) const
   {
     return giop::reference(orb);

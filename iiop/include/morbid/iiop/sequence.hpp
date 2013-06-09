@@ -60,6 +60,29 @@ struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
     return r;
   }
 
+  template <typename Iterator, typename Context, typename Skipper, typename T
+            , std::size_t N>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , boost::array<T, N>& attr) const
+  {
+    // std::cout << "sequence_parser::parse" << std::endl;
+    unsigned_parser<32u> unsigned_;
+    boost::uint_t<32u>::least size;
+    bool r = unsigned_.parse(first, last, ctx, skipper, size);
+    // std::cout << "sequence size " << size << std::endl;
+
+    assert(N == size);
+
+    if(!r)
+      return false;
+
+    for(std::size_t i = 0; i != size && r; ++i)
+      r = subject.parse(first, last, ctx, skipper, attr[i]);
+
+    return r;
+  }
+
   sequence_parser(Subject const& subject)
     : subject(subject) 
   {

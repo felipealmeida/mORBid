@@ -36,11 +36,21 @@ struct typedef_generator : karma::grammar
 
     wave_string = karma::string;
     start =
-      "typedef" << karma::space
-                << type_spec(_r1)[_1 = at_c<0>(_val)]
-                << karma::space
-                << wave_string[_1 = at_c<1>(_val)]
-                << ';' << karma::eol
+       "typedef "
+      <<
+      (
+        (
+         karma::eps(at_c<2>(_val))
+         << "::boost::array< " << type_spec(_r1)[_1 = at_c<0>(_val)]
+         << ", " << karma::uint_[_1 = *at_c<2>(_val)]
+         << ">"
+        )
+        |
+        type_spec(_r1)[_1 = at_c<0>(_val)]
+       )
+       << karma::space
+       << wave_string[_1 = at_c<1>(_val)]
+       << ';' << karma::eol
       ;
 
     // start.name("typedef");

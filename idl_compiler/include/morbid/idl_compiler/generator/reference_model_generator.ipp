@@ -61,15 +61,49 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
   start = 
     "struct "
     << class_name[_1 = at_c<0>(_val)]
+    << -karma::buffer[(" : " << (base_spec(_r1) % ", ") [_1 = phoenix::at_c<6>(_val)])]
     << "{" << eol
-    << common_functions[_1 = _val]
+    << common_functions(_r1)[_1 = _val]
     << indent << "// Start of operations defined in IDL" << eol
     << (*(operation(_r1, _r2, at_c<0>(_val)) << eol))[_1 = at_c<1>(_val)]
     << indent << "// End of operations defined in IDL" << eol
+    << indent << "// Start of attributes defined in IDL" << eol
+    << (*(attribute(_r1, _r2, at_c<0>(_val)) << eol))[_1 = at_c<2>(_val)]
+    << indent << "// End of attributes defined in IDL" << eol
     << ior_function
+    << indent << "typedef " << wave_string[_1 = at_c<0>(_val)] << "_concept concept_class;" << eol
     << "private:" << eol
     << common_members
     << "};" << eol << eol
+    ;
+  base_spec %=
+    type_spec(at_c<1>(_r1)[_val])
+    << "_ref"
+    ;
+  attribute =
+    indent
+    << type_spec(at_c<1>(_r1)[at_c<1>(_val)])[_1 = at_c<1>(_val)]
+    << karma::space << "_get_" << wave_string[_1 = at_c<2>(_val)] << "() const" << eol
+    << indent << "{" << eol
+    << (
+        indent << indent << "assert(!!_orb_);" << eol
+        << indent << indent << "return ::morbid::synchronous_call::call" << eol
+        << indent << indent << indent << "< "
+        << type_spec
+        (
+         at_c<1>(_r1)[at_c<1>(_val)] // interface_.lookups[type_spec]
+        )
+        [_1 = at_c<1>(_val)]
+        << eol << indent << indent << indent << ">" << eol
+        << indent << indent << indent
+        << "( *_orb_, \"IDL:"
+        << -((wave_string % '/')[_1 = _r2] << '/') << wave_string[_1 = _r3] << ":1.0\""
+        << ", \"_get_" << wave_string[_1 = at_c<2>(_val)]
+        << "\", _structured_ior_"
+        << eol << indent << indent << indent << indent << ", "
+        << "boost::fusion::vector0<>());" << eol
+       )
+    << indent << "}" << eol
     ;
   operation =
     indent
@@ -87,18 +121,17 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << (
         // indent << indent << "std::cout << \"Called " << wave_string[_1 = phoenix::at_c<1>(_val)]
         // << " was called\" << std::endl;" << eol
-        indent << indent << "return ::morbid::synchronous_call::call" << eol
+        indent << indent << "assert(!!_orb_);" << eol
+        << indent << indent << "return ::morbid::synchronous_call::call" << eol
         << indent << indent << indent << "< "
         << type_spec
         (
          at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
         )
         [_1 = at_c<0>(_val)]
-        // << (*(eol << indent << indent << indent << ", "
-        //       << synchronous_template_args(_r1)))[_1 = at_c<2>(_val)]
         << eol << indent << indent << indent << ">" << eol
         << indent << indent << indent
-        << "( _orb_, \"IDL:"
+        << "( *_orb_, \"IDL:"
         << -((wave_string % '/')[_1 = _r2] << '/') << wave_string[_1 = _r3] << ":1.0\""
         << ", \"" << wave_string[_1 = at_c<1>(_val)]
         << "\", _structured_ior_"
@@ -134,31 +167,47 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << "// Constructors" << eol
     << indent << 
        (
+        class_name[_1 = at_c<0>(_val)] << "()" << eol
+        << indent << "{}" << eol
+       )
+    << indent << 
+       (
         class_name[_1 = at_c<0>(_val)]
         << "( ::morbid::orb orb, ::morbid::structured_ior const& structured_ior)" << eol
-        << indent << indent << " : _orb_(orb), _structured_ior_(structured_ior)" << eol
+        << indent << indent << " : "
+        << -karma::buffer
+        [
+         ((base_spec(_r1) << "(orb, structured_ior)") % ", ") [_1 = phoenix::at_c<6>(_val)] << "," << eol
+        ]
+        << indent << indent << " _orb_(orb), _structured_ior_(structured_ior)" << eol
         << indent << "{}" << eol
        )
     << indent << 
       (
         class_name[_1 = at_c<0>(_val)]
         << "( ::morbid::orb orb, std::string const& ior)" << eol
-        << indent << indent << " : _orb_(orb), _structured_ior_( ::morbid::string_to_structured_ior(ior.begin(), ior.end()))" << eol
+        << indent << indent << " : "
+        << -karma::buffer
+        [
+         ((base_spec(_r1) << "(orb, ior)") % ", ") [_1 = phoenix::at_c<6>(_val)] << "," << eol
+        ]
+        << indent << indent << "_orb_(orb), _structured_ior_( ::morbid::string_to_structured_ior(ior.begin(), ior.end()))" << eol
         << indent << "{}" << eol
        )
-    // << indent << "~" << class_name[_1 = _val] << "();" << eol
     ;
 
   common_members =
     indent
     << "// Members" << eol
-    << indent << "::morbid::orb _orb_;" << eol
+    << indent << "::boost::optional< ::morbid::orb> _orb_;" << eol
     << indent << "::morbid::structured_ior _structured_ior_;" << eol
     // << indent << "static const char* _repository_id;" << eol
     ;
   indent = karma::space << karma::space;
   ior_function =
-    indent << "::morbid::structured_ior _structured_ior() const { return _structured_ior_; }" << eol
+    indent
+    << "::morbid::structured_ior _structured_ior() const { return _structured_ior_; }" << eol
+    << indent << "::boost::optional< ::morbid::orb> _orb() const { return _orb_; }" << eol
     ;
 
   start.name("header_reference_model_generator");

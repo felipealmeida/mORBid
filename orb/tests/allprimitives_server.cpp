@@ -16,7 +16,6 @@ struct allprimitives_impl
     : foo1_(false), foo2_(false), foo3_(false)
     , foo4_(false), foo5_(false), foo6_(false)
     , foo7_(false), foo8_(false), foo9_(false)
-    , foo10_(false), foo11_(false)
     , orb(orb) {}
 
   void foo1(bool b, char c)
@@ -82,12 +81,18 @@ struct allprimitives_impl
     assert(str == "qwe");
     assert(b == true);
     foo8_ = true;
+  }
+
+  void foo9()
+  {
+    std::cout << "== foo9" << std::endl;
+    assert(!foo9_ && foo8_ && foo7_ && foo6_ && foo5_ && foo4_ && foo3_ && foo2_ && foo1_);
+    foo9_ = true;
     orb.stop();
   }
 
   bool foo1_, foo2_, foo3_, foo4_, foo5_
-       , foo6_, foo7_, foo8_, foo9_, foo10_
-       , foo11_;
+       , foo6_, foo7_, foo8_, foo9_;
   corba::orb orb;
 };
 
@@ -111,7 +116,7 @@ int main(int argc, char* argv[])
 
   orb.run();
 
-  assert(ap.foo8_ && ap.foo7_ && ap.foo6_
+  assert(ap.foo9_ && ap.foo8_ && ap.foo7_ && ap.foo6_
          && ap.foo5_ && ap.foo4_ && ap.foo3_
          && ap.foo2_ && ap.foo1_);
 }

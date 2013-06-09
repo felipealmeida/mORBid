@@ -47,13 +47,20 @@ struct header_concept_generator : karma::grammar
   karma::rule<OutputIterator
               , idl_parser::param_decl(interface_)> arguments;
   karma::rule<OutputIterator
+              , idl_parser::types::scoped_name(interface_)> base_spec;
+  karma::rule<OutputIterator
               , idl_parser::op_decl(interface_)
               , karma::locals<unsigned int> > operation;
+  karma::rule<OutputIterator
+              , idl_parser::attribute(interface_)
+              , karma::locals<unsigned int> > attribute;
   karma::rule<OutputIterator, idl_parser::param_decl(unsigned int)> args;
   karma::rule<OutputIterator
               , idl_parser::op_decl()> operation_name;
   karma::rule<OutputIterator
-              , std::vector<idl_parser::op_decl >()> requirements;
+              , idl_parser::attribute()> attribute_name;
+  karma::rule<OutputIterator
+              , idl_parser::interface_def()> requirements;
   karma::rule<OutputIterator
               , idl_parser::interface_def(interface_, std::vector<idl_parser::wave_string>)
               , karma::locals<idl_parser::wave_string> > start;

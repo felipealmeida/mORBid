@@ -128,6 +128,13 @@ inline lookuped_type lookup_type_spec
     (lookup_type_spec_functional(current_module, modules), t.type);
 }
 
+inline lookuped_type lookup_type_spec
+  (idl_parser::types::scoped_name t, std::vector<vertex_descriptor>const& current_module
+   , modules_tree_type const& modules)
+{
+  return lookup_type_spec_functional(current_module, modules)(t);
+}
+
 } }
 
 #endif

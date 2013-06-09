@@ -14,6 +14,8 @@
 
 namespace morbid {
 
+struct object_concept;
+
 struct object_ref
 {
   object_ref( ::morbid::orb orb, ::morbid::structured_ior const& structured_ior)
@@ -24,6 +26,7 @@ struct object_ref
   {}
   
   ::morbid::structured_ior _structured_ior() const { return _structured_ior_; }
+  typedef object_concept concept_class;
 private:
   ::morbid::orb _orb_;
   ::morbid::structured_ior _structured_ior_;
@@ -39,6 +42,7 @@ struct object_concept
   typedef boost::mpl::vector< > requirements;
   typedef boost::mpl::vector< ::boost::type_erasure::copy_constructible<>, ::boost::type_erasure::relaxed >
     regular_requirements;
+  typedef boost::mpl::vector0<> bases;
   typedef ::morbid::interface_tag _morbid_type_kind;
 
   struct empty_reference

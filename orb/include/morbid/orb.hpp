@@ -9,6 +9,9 @@
 #define MORBID_ORB_INIT_HPP
 
 #include <morbid/reply.hpp>
+#include <morbid/type_tag.hpp>
+#include <morbid/detail/requirements.hpp>
+#include <morbid/detail/is_a.hpp>
 #include <morbid/structured_ior.hpp>
 #include <morbid/giop/forward_back_insert_iterator.hpp>
 #include <morbid/ior/grammar/corbaloc.hpp>
@@ -41,6 +44,9 @@ template <typename R, typename SeqParam, typename T, typename F>
 void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
                          , const char*& rq_first, const char* rq_last
                          , bool little_endian, reply& r);
+
+template <typename NotInParams, typename ReplyArguments>
+void make_request_reply(struct orb orb, reply& r, ReplyArguments& reply_arguments);
 
 namespace poa {
 
@@ -330,11 +336,11 @@ struct object_registration
                       , std::size_t align_offset, const char*& first
                       , const char* last, bool little_endian, reply& r)
   {
-    typedef typename C::requirements requirements;
+    typedef typename detail::requirements<C>::type requirements;
     typedef typename mpl::at_c<requirements, I>::type method_concept;
     if(method == method_concept::name())
     {
-      // std::cout << "Should call method " << method << std::endl;
+      std::cout << "Should call method " << method << std::endl;
       handle_request_body
         <typename method_concept::result_type, typename method_concept::arguments>
         (orb_, &object, method_concept(), align_offset, first, last, little_endian, r);
@@ -345,14 +351,49 @@ struct object_registration
 
   template <int I>
   struct call_if_not_end<I, typename boost::enable_if
-                         <mpl::equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
+                         <mpl::equal_to<mpl::size<typename detail::requirements<C>::type>, mpl::int_<I> > >::type>
   {
-    inline static void do_(self_type& self, std::string const&, std::size_t, const char*&, const char*, bool, reply&) {}
+    inline static void do_(self_type& self, std::string const& method, std::size_t align_offset, const char*& arg_first
+                           , const char* arg_last, bool little_endian, reply& r)
+    {
+      // function not found
+      if(method == "_is_a")
+      {
+        namespace qi = boost::spirit::qi;
+        std::string type_id;
+        bool p = qi::parse(arg_first, arg_last
+                           , giop::compile<iiop::parser_domain>
+                           (
+                            iiop::aligned(align_offset)
+                            [
+                             giop::endianness(giop::endian(little_endian))
+                             [
+                              giop::string
+                             ]
+                            ])
+                           , type_id);
+        assert(!!p);
+
+        std::cout << "is_a type_id " << type_id << std::endl;
+
+        bool res = detail::is_a<C>(type_id);
+        type_tag::value_type_tag<bool, type_tag::in_tag> vres(res);
+        boost::fusion::vector1<bool const&> v(res);
+        make_request_reply<mpl::vector1<type_tag::value_type_tag<bool, type_tag::out_tag> > >(self.orb_, r, v);
+      }
+      else if(method == "_non_existent")
+      {
+        boost::fusion::vector1<bool> v(false);
+        make_request_reply<mpl::vector1<type_tag::value_type_tag<bool, type_tag::out_tag> > >(self.orb_, r, v);
+      }
+      else
+        std::abort();
+    }
   };
 
   template <int I>
   struct call_if_not_end<I, typename boost::enable_if
-                         <mpl::not_equal_to<mpl::size<typename C::requirements>, mpl::int_<I> > >::type>
+                         <mpl::not_equal_to<mpl::size<typename detail::requirements<C>::type>, mpl::int_<I> > >::type>
   {
     inline static void do_(self_type& self, std::string const& method
                            , std::size_t align_offset, const char*& first, const char* last

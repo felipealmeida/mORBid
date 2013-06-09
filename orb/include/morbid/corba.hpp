@@ -12,6 +12,8 @@
 #include <morbid/orb.hpp>
 #include <morbid/primitive_types.hpp>
 #include <morbid/in_out_traits.hpp>
+#include <morbid/reference.hpp>
+#include <morbid/reference_cast.hpp>
 
 namespace corba {
 

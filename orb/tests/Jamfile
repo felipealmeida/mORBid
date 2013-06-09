@@ -32,10 +32,10 @@ if [ option.get test-with-openbus : : 1 ]
 
 actions run-server-client
 {
-  $(>[2]) $(>[2]).ior > $(<).server &
+  $(>[2]) $(>[2]).ior &> $(<).server &
   server_pid=$!
   sleep 1
-  $(>[1]) $(>[2]).ior > $(<).client
+  $(>[1]) $(>[2]).ior &> $(<).client
   if [ "$?" -eq 0 ]
   then
     wait $server_pid
@@ -175,6 +175,19 @@ exe seq_args_allprimitives_server
 
 make seq_args_allprimitives.output : seq_args_allprimitives_client seq_args_allprimitives_server : @run-server-client ;
 
+make inheritance.hpp : inheritance.idl : @compileidl : <dependency>/morbid//install-idl ;
+
+exe inheritance_client
+ : inheritance_client.cpp /morbid//morbid
+ : <implicit-dependency>inheritance.hpp
+ ;
+exe inheritance_server
+ : inheritance_server.cpp /morbid//morbid
+ : <implicit-dependency>inheritance.hpp
+ ;
+
+make inheritance.output : inheritance_client inheritance_server : @run-server-client ;
+
 alias allprimitives : allprimitives.output ;
 alias out_allprimitives : out_allprimitives.output ;
 alias inout_allprimitives : inout_allprimitives.output ;
@@ -182,6 +195,7 @@ alias return_allprimitives : return_allprimitives.output ;
 alias modules_allprimitives : modules_allprimitives.output ;
 alias struct : struct.output ;
 alias reference : reference.output ;
+alias inheritance : inheritance.output ;
 alias fwd_ref : fwd_ref.output ;
 alias seq_allprimitives : seq_allprimitives.output ;
 alias seq_args_allprimitives : seq_args_allprimitives.output ;
@@ -191,12 +205,13 @@ if [ option.get test-with-openbus : : 1 ]
   local openbus-idl-path-env = [ os.environ OPENBUS_IDL_PATH ] ;
   path-constant openbus-idl-path : $(openbus-idl-path-env) ;
 
-  make offer_registry.hpp : $(openbus-idl-path)/offer_registry.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
-  alias openbus : [ testing.run openbus_client.cpp /morbid//morbid : : : <implicit-dependency>offer_registry.hpp ] ;
+  make access_control.hpp : $(openbus-idl-path)/access_control.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
+  make scs.hpp : $(scs-idl-path)/scs.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
+  alias openbus : [ testing.run openbus_client.cpp /openssl//openssl /morbid//morbid : : : <implicit-dependency>access_control.hpp <implicit-dependency>scs.hpp ] ;
 
   alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
    return_allprimitives modules_allprimitives struct reference fwd_ref seq_allprimitives
-   seq_args_allprimitives
+   seq_args_allprimitives inheritance
    openbus
   ;
 }
@@ -204,7 +219,7 @@ else
 {
   alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
    return_allprimitives modules_allprimitives struct reference fwd_ref seq_allprimitives
-   seq_args_allprimitives
+   seq_args_allprimitives inheritance
    ;
 }
 

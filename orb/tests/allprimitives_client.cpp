@@ -21,6 +21,7 @@ void foo( ::allprimitives allprimitives)
   allprimitives.foo6(asd, 2);
   allprimitives.foo7(2, "qwe");
   allprimitives.foo8("qwe", true);
+  allprimitives.foo9();
 }
 
 int main(int argc, char* argv[])

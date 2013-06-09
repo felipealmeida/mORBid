@@ -6,7 +6,8 @@
  */
 
 #define MORBID_OPENBUS
-#include "offer_registry.hpp"
+#include "access_control.hpp"
+#include "scs.hpp"
 #include <morbid/corba.hpp>
 #include <morbid/openbus.hpp>
 

@@ -34,6 +34,7 @@ struct op_decl : qi::grammar
 
     start %= 
       &(token_position[qi::_a = qi::_1])
+      >> qi::omit[-(&token_id(boost::wave::T_IDENTIFIER) >> token_value("oneway"))]
       >> type_spec
       >> &token_id(boost::wave::T_IDENTIFIER)
       >> token_value

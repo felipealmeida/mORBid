@@ -325,7 +325,8 @@ int main(int argc, char** argv)
                 }
                 catch(morbid::idl_compiler::lookup_error const& e)
                 {
-                  throw morbid::idl_compiler::compilation_error("Not found type of struct member", first->file_position);
+                  throw morbid::idl_compiler::compilation_error("Not found type of struct member"
+                                                                , s.definition.file_position);
                 }
               }
             }
@@ -357,7 +358,9 @@ int main(int argc, char** argv)
             std::cout << "interface " << interface << std::endl;
             typedef morbid::idl_compiler::interface_ interface_type;
             typedef morbid::idl_parser::op_decl op_decl_type;
+            typedef morbid::idl_parser::types::scoped_name scoped_name;
             typedef morbid::idl_parser::param_decl param_decl;
+            typedef morbid::idl_parser::attribute attribute;
             using morbid::idl_parser::wave_string;
             interface_type i(interface);
 
@@ -382,6 +385,50 @@ int main(int argc, char** argv)
               throw std::runtime_error("Failed constructing RepoID");
             i.definition.repoids.push_back(repoid);
             assert(i.definition.repoids.size() == 2);
+
+            for(std::vector<scoped_name>::const_iterator
+                  first = i.definition.bases.begin()
+                  , last = i.definition.bases.end()
+                  ;first != last; ++first)
+            {
+              if(i.lookups.find(*first) == i.lookups.end())
+              {
+                try
+                {
+                  i.lookups.insert(std::make_pair
+                                   (*first
+                                    , morbid::idl_compiler::lookup_type_spec
+                                    (*first, current_module, modules_tree)));
+                }
+                catch(morbid::idl_compiler::lookup_error const& e)
+                {
+                  throw morbid::idl_compiler::compilation_error("Not found type for base of interface"
+                                                                , i.definition.file_position);
+                }
+              }
+            }
+
+            for(std::vector<attribute>::const_iterator
+                  first = i.definition.attributes.begin()
+                  , last = i.definition.attributes.end()
+                  ;first != last; ++first)
+            {
+              if(i.lookups.find(first->type) == i.lookups.end())
+              {
+                try
+                {
+                  i.lookups.insert(std::make_pair
+                                   (first->type
+                                    , morbid::idl_compiler::lookup_type_spec
+                                    (first->type, current_module, modules_tree)));
+                }
+                catch(morbid::idl_compiler::lookup_error const& e)
+                {
+                  throw morbid::idl_compiler::compilation_error("Not found type for attribute of interface"
+                                                                , first->file_position);
+                }
+              }
+            }
 
             for(std::vector<op_decl_type>::const_iterator
                   first = i.definition.op_decls.begin()

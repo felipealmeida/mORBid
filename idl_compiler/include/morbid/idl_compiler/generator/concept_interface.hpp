@@ -39,7 +39,8 @@ struct concept_interface : karma::grammar
     using karma::_a;
 
     wave_string %= karma::string;
-    operation_name = karma::stream[_1 = at_c<1>(_val)];
+    operation_name = wave_string[_1 = at_c<1>(_val)];
+    attribute_name = "_get_" << wave_string[_1 = at_c<2>(_val)];
     operation_concept_interface_specialization =
       "template <class C, class Base>" 
       << eol
@@ -65,13 +66,34 @@ struct concept_interface : karma::grammar
       << indent << "}" << eol
       << "};" << eol
       ;
+    attribute_concept_interface_specialization =
+      "template <class C, class Base>" 
+      << eol
+      << "struct concept_interface< " << -(wave_string % "::")[_1 = _r2]
+      << "::" << wave_string[_1 = _r3] << "_concept::" << attribute_name[_1 = _val] << "<C>, Base, C> : Base" << eol
+      << "{" << eol
+      << indent << " typename ::morbid::lazy_eval< "
+      << return_(at_c<1>(_r1)[at_c<1>(_val)])[_1 = at_c<1>(_val)]
+      << ", C>::type" << eol
+      << karma::space << attribute_name[_1 = _val]
+      << '('
+      << ") const" << eol
+      << indent << "{" << eol
+      << indent << indent << "return call( typename ::morbid::lazy_eval< " << -(wave_string % "::")[_1 = _r2]
+      << "::" << wave_string[_1 = _r3] << "_concept::" << attribute_name[_1 = _val] << "<C>, C>::type(), *this"
+      << ");" << eol
+      << indent << "}" << eol
+      << "};" << eol
+      ;
     start =
       (*operation_concept_interface_specialization(_r1, _r2, at_c<0>(_val)))[_1 = at_c<1>(_val)]
+      << (*attribute_concept_interface_specialization(_r1, _r2, at_c<0>(_val)))[_1 = at_c<2>(_val)]
     ;
     indent = karma::space << karma::space;
     parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
   }
 
+  idl_compiler::generator::type_spec<OutputIterator> type_spec;
   idl_compiler::generator::parameter<OutputIterator> parameter;
   idl_compiler::generator::return_<OutputIterator> return_;
   karma::rule<OutputIterator, idl_parser::param_decl(interface_)> parameter_select;
@@ -79,10 +101,15 @@ struct concept_interface : karma::grammar
   karma::rule<OutputIterator
               , idl_parser::op_decl()> operation_name;
   karma::rule<OutputIterator
+              , idl_parser::attribute()> attribute_name;
+  karma::rule<OutputIterator
               , idl_parser::wave_string()> wave_string;
   karma::rule<OutputIterator
               , idl_parser::op_decl(interface_, std::vector<idl_parser::wave_string>, idl_parser::wave_string)
               , karma::locals<unsigned int> > operation_concept_interface_specialization;
+  karma::rule<OutputIterator
+              , idl_parser::attribute(interface_, std::vector<idl_parser::wave_string>, idl_parser::wave_string)
+              , karma::locals<unsigned int> > attribute_concept_interface_specialization;
   karma::rule<OutputIterator
               , idl_parser::interface_def(interface_, std::vector<idl_parser::wave_string>)> start;
 };
