@@ -117,6 +117,10 @@ struct rule
   rule()
     : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule_impl_)))
   {}
+  rule(const char* name)
+    : proto::extends<terminal_type, self_type>(terminal_type::make(boost::cref(rule_impl_)))
+    , rule_impl_(name)
+  {}
   ~rule()
   {
     // std::cout << "~rule " << this << std::endl;
@@ -151,6 +155,13 @@ private:
   rule(self_type const&);
   self_type& operator=(self_type const&);
 };
+
+template <typename Domain, typename Iterator, typename T1, typename T2
+          , typename T3, typename T4>
+void debug(rule<Domain, Iterator, T1, T2, T3, T4>& r)
+{
+  debug(r.rule_impl_);
+}
 
 } }
 
