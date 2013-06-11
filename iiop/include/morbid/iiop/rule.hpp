@@ -101,13 +101,22 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
     fusion::cons<attr_reference_type, parameter_types>
     , locals_type>
   context_type;
+  typedef spirit::unused_type const& skipper_type;
 
   typedef boost::function
     <bool(I& /*first*/, I const& /*last*/
           , context_type& /*context*/
-          , spirit::unused_type const& /*skipper*/
+          , skipper_type /*skipper*/
           )>
   function_type;
+
+  rule() : name_(0)
+  {
+  }
+
+  rule(const char* name) : name_(name)
+  {
+  }
   
   template <typename Expr>
   rule& operator=(Expr const& expr)
@@ -127,8 +136,33 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
     return *this;
   }
 
+  void name(const char* name)
+  {
+    this->name_ = name;
+  }
+  const char* name()
+  {
+    return name_;
+  }
+
   function_type f;
+  const char* name_;
 };
+
+template <typename I, typename T1, typename T2, typename T3, typename T4>
+void debug(rule<I, T1, T2, T3, T4>& r)
+{
+  typedef rule<I, T1, T2, T3, T4> rule_type;
+  typedef
+    qi::debug_handler<
+      I
+    , typename rule_type::context_type
+    , typename rule_type::skipper_type
+    , qi::simple_trace>
+    debug_handler;
+  typedef typename qi::detail::get_simple_trace<I>::type trace;
+  r.f = debug_handler(r.f, trace(), r.name());
+}
 
 }
 
@@ -178,21 +212,18 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
     <bool(output_iterator&, context_type&, /*delimiter_type*/spirit::unused_type const&)>
   function_type;
 
-  rule()
+  rule() : name_(0)
   {
   }
 
-  template <typename Expression>
-  void warning()
+  rule(const char* name) : name_(name)
   {
-    // int i = 5;
   }
 
   template <typename Expr>
   rule& operator=(Expr const& expr)
   {
     typedef typename spirit::result_of::compile<iiop::generator_domain, Expr>::type compilation_result; 
-    warning<compilation_result>();
     // std::cout << "Rule compilation result type " << typeid(compilation_result).name() << std::endl;
     BOOST_MPL_ASSERT((spirit::traits::is_generator<compilation_result>));
     f = karma::detail::bind_generator<mpl::false_>(spirit::compile< iiop::generator_domain>(expr));
@@ -209,8 +240,32 @@ struct rule : iiop::rule_base<I, T1, T2, T3, T4>
     return *this;
   }
 
+  void name(const char* name)
+  {
+    this->name_ = name;
+  }
+  const char* name()
+  {
+    return name_;
+  }
+
   function_type f;
+  const char* name_;
 };
+
+template <typename I, typename T1, typename T2, typename T3, typename T4>
+void debug(rule<I, T1, T2, T3, T4>& r)
+{
+  // typedef karma::rule<Iterator, T1, T2, T3, T4> rule_type;
+  // typedef
+  //   karma::debug_handler<
+  //     Iterator
+  //   , typename rule_type::context_type
+  //   , typename rule_type::skipper_type
+  //   , qi::simple_trace>
+  //   debug_handler;
+  // r.f = debug_handler(r.f, trace(), r.name());
+}
 
 } }
 

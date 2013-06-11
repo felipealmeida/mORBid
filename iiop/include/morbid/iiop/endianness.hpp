@@ -35,6 +35,11 @@ struct endianness_attribute
   bool endianness;
 };
 
+inline std::ostream& operator<<(std::ostream& os, endianness_attribute endian)
+{
+  return os << "[endianness_attribute endianness: " << (endian.endianness ? "little-endian]" : "big-endian]");
+}
+
 } }
 
 namespace boost {

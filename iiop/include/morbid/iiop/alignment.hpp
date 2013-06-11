@@ -13,12 +13,15 @@
 
 #include <morbid/giop/common_terminals.hpp>
 
+#include <boost/mpl/bool.hpp>
+
 namespace morbid { namespace iiop {
 
 namespace spirit = boost::spirit;
 namespace karma = spirit::karma;
 namespace qi = spirit::qi;
 namespace fusion = boost::fusion;
+namespace mpl = boost::mpl;
 
 BOOST_SPIRIT_TERMINAL_EX(aligned);
 
@@ -28,6 +31,12 @@ struct alignment_attribute
   OutputIterator first;
   std::size_t offset;
 };
+
+template <typename OutputIterator>
+std::ostream& operator<<(std::ostream& os, alignment_attribute<OutputIterator> align)
+{
+  return os << "[alignment_attribute offset: " << align.offset << "]";
+}
 
 } }
 
@@ -85,12 +94,12 @@ namespace parser {
 template <std::size_t N, typename Iterator, typename Attributes>
 bool alignment_padding(Iterator& first, Iterator last, Attributes const& attributes)
 {
-  // std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes" << std::endl;
+  std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes" << std::endl;
   alignment_attribute<Iterator> align_from
     = get_alignment_attribute<Attributes, Iterator>::call(attributes);
 
   std::size_t distance = std::distance(align_from.first, first) + align_from.offset;
-  // std::cout << "position distance " << distance << std::endl;
+  std::cout << "position distance " << distance << std::endl;
 
   const std::size_t alignment = N/CHAR_BIT;
 
@@ -98,14 +107,14 @@ bool alignment_padding(Iterator& first, Iterator last, Attributes const& attribu
   int padding = remainder? alignment - remainder : 0;
   for(;padding && first != last; --padding)
   {
-    // std::cout << "padding byte" << std::endl;
+    std::cout << "padding byte" << std::endl;
     ++first;
   }
   return first != last;
 }
 
 template <typename Subject>
-struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
+struct specific_alignment_enabler : qi::unary_parser<specific_alignment_enabler<Subject> >
 {
   template <typename Context, typename Iterator>
   struct attribute : spirit::traits::attribute_of<Subject, Context, Iterator>
@@ -117,7 +126,7 @@ struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    // std::cout << "alignment_enabler::parse " << offset << std::endl;
+    std::cout << "specific_alignment_enabler::parse " << offset << std::endl;
     typedef typename Context::attributes_type attributes_type;
     typedef typename fusion::result_of::find<attributes_type, alignment_attribute<Iterator>
                                              >::type index_iterator_type;
@@ -146,13 +155,87 @@ struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
     return false;
   }
 
-  alignment_enabler(Subject const& subject, std::size_t offset = 0)
+  specific_alignment_enabler(Subject const& subject, std::size_t offset)
     : subject(subject), offset(offset)
   {
   }
 
   Subject subject;
   std::size_t offset;
+};
+
+template <typename Subject>
+struct alignment_enabler : qi::unary_parser<alignment_enabler<Subject> >
+{
+  template <typename Context, typename Iterator>
+  struct attribute : spirit::traits::attribute_of<Subject, Context, Iterator>
+  {
+  };
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr, mpl::true_) const
+  {
+    std::cout << "alignment_enabler::parse" << std::endl;
+    typedef typename Context::attributes_type attributes_type;
+    typedef typename fusion::result_of::find<attributes_type, alignment_attribute<Iterator>
+                                             >::type index_iterator_type;
+    typedef typename fusion::result_of::distance
+      <index_iterator_type, typename fusion::result_of::end<attributes_type>::type>::type distance_to_end;
+    BOOST_MPL_ASSERT_RELATION(distance_to_end::value, ==, 0);
+
+    typedef typename fusion::result_of::as_list
+      <typename fusion::result_of::push_back
+       <attributes_type, alignment_attribute<Iterator> >::type
+       >::type
+      alignment_attributes_type;
+    typedef spirit::context
+      <alignment_attributes_type, typename Context::locals_type> context_type;
+    alignment_attribute<Iterator> e = { first, 0u };
+    alignment_attributes_type attributes
+      = fusion::as_list(fusion::push_back(ctx.attributes, e));
+    context_type context(attributes);
+    context.locals = ctx.locals;
+
+    if(subject.parse(first, last, context, skipper, attr))
+    {
+      ctx.locals = context.locals;
+      return true;
+    }
+    return false;
+  }
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr, mpl::false_) const
+  {
+    return subject.parse(first, last, ctx, skipper, attr);
+  }
+
+  template <typename Iterator, typename Context, typename Skipper, typename Attribute>
+  bool parse(Iterator& first, Iterator const& last
+             , Context& ctx, Skipper const& skipper
+             , Attribute& attr) const
+  {
+    std::cout << "alignment_parser::parse ctx.attributes " << typeid(ctx.attributes).name()
+              << std::endl;
+    typedef typename fusion::result_of::find<typename Context::attributes_type
+                                             , alignment_attribute<Iterator>
+                                             >::type index_iterator_type;
+    typedef typename fusion::result_of::end<typename Context::attributes_type>::type
+      end_type;
+    return parse(first, last, ctx, skipper, attr
+                 , typename boost::is_same<index_iterator_type, end_type>::type());
+  }
+
+  alignment_enabler(Subject const& subject)
+    : subject(subject)
+  {
+  }
+
+  Subject subject;
 };
 
 template <typename Subject, typename Modifiers>
@@ -169,7 +252,7 @@ struct make_directive<tag::aligned, Subject, Modifiers>
 template <typename U, typename Subject, typename Modifiers>
 struct make_directive<spirit::terminal_ex<tag::aligned, fusion::vector1<U> >, Subject, Modifiers>
 {
-  typedef alignment_enabler<Subject> result_type;
+  typedef specific_alignment_enabler<Subject> result_type;
 
   template <typename Terminal>
   result_type operator()(Terminal const& term, Subject const& subject, boost::spirit::unused_type) const
@@ -185,22 +268,22 @@ namespace generator {
 template <std::size_t N, typename OutputIterator, typename Attributes>
 void alignment_padding(OutputIterator& sink, Attributes const& attributes)
 {
-  // std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes of alignment" << std::endl;
+  std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes of alignment" << std::endl;
   typedef typename output_iterator<OutputIterator>::type output_iterator;
   alignment_attribute<output_iterator> align_from
     = get_alignment_attribute<Attributes
                                     , output_iterator>::call(attributes);
 
   std::size_t distance = std::distance(align_from.first, sink.base()) + align_from.offset;
-  // std::cout << "alignment_padding distance from start " << distance << std::endl;
+  std::cout << "alignment_padding distance from start " << distance << std::endl;
   const std::size_t alignment = N/CHAR_BIT;
 
   int remainder = distance % alignment;
   int padding = remainder? alignment - remainder : 0;
-  // std::cout << "padding bytes " << padding << std::endl;
+  std::cout << "padding bytes " << padding << std::endl;
   for(;padding != 0; --padding)
   {
-    // std::cout << "padding byte" << std::endl;
+    std::cout << "padding byte" << std::endl;
     *sink = '\0';
     ++sink;
   }
