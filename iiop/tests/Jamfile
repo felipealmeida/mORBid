@@ -17,9 +17,12 @@ run grammar_generator1.cpp /morbid//iiop ;
 run grammar_generate_and_parse1.cpp /morbid//iiop ;
 run grammar_parser1.cpp /morbid//iiop ;
 run align_test1.cpp /morbid//iiop ;
+run align_grammar_test1.cpp /morbid//iiop ;
+run align_nested_grammar_test1.cpp /morbid//iiop ;
 run nested_rules_align_test.cpp /morbid//iiop ;
 
 alias tests : compile_to_karma compile_to_qi
  grammar_generator1 grammar_generate_and_parse1
  grammar_parser1 align_test1 nested_rules_align_test
+ align_grammar_test1 align_nested_grammar_test1
  ;
