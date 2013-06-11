@@ -34,6 +34,11 @@
 
 #include <boost/asio.hpp>
 
+#ifdef MORBID_OPENBUS
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
+#endif
+
 BOOST_TYPE_ERASURE_MEMBER((morbid)(poa)(has_call), call, 6)
 
 namespace morbid {
@@ -47,6 +52,14 @@ void handle_request_body(struct orb orb, T* self, F f, std::size_t align_offset
 
 template <typename NotInParams, typename ReplyArguments>
 void make_request_reply(struct orb orb, reply& r, ReplyArguments& reply_arguments);
+
+namespace synchronous_call {
+
+template <typename R, typename ArgsSeq>
+typename return_traits<R>::type call
+(struct orb orb, const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args);
+
+}
 
 namespace poa {
 
@@ -117,6 +130,32 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
   boost::asio::io_service io_service;
   boost::asio::ip::tcp::acceptor acceptor;
   boost::asio::ip::tcp::endpoint local_endpoint;
+#ifdef MORBID_OPENBUS
+  EVP_PKEY* key;
+  std::string openbus_login_id;
+  std::string openbus_id;
+  std::string openbus_host;
+  unsigned short openbus_port;
+
+  struct openbus_session
+  {
+    openbus_session() {}
+    openbus_session(std::string const& remote_id
+                    , boost::uint_t<32u>::least session_number
+                    , std::vector<char> const& secret)
+      : remote_id(remote_id), session_number(session_number)
+      , secret(secret), ticket(0u) {}
+
+    std::string remote_id;
+    boost::uint_t<32u>::least session_number;
+    std::vector<char> secret;
+    boost::uint_t<32>::exact ticket;
+  };
+
+  typedef std::map<std::pair<std::string, unsigned short>
+                   , openbus_session> openbus_sessions_type;
+  openbus_sessions_type openbus_sessions;
+#endif
 };
 
 #ifdef MORBID_OPENBUS
@@ -181,6 +220,9 @@ private:
   friend void stringify_object_id( morbid::orb orb, orb_impl::object_map_iterator object_id, OutputIterator output);
   friend structured_ior structured_ior_object_id
     (struct orb orb, orb_impl::object_map_iterator object_id);
+  template <typename R, typename ArgsSeq>
+  friend typename return_traits<R>::type synchronous_call::call
+  (struct orb orb, const char* repoid, const char* method, structured_ior const& ior, ArgsSeq args);
 
   boost::shared_ptr<orb_impl> impl;
 };

@@ -91,12 +91,18 @@ struct reference_generator : karma::primitive_generator<reference_generator>
       (giop::endianness[profile_body]);
     
     ior_grammar_type ior_grammar(tagged_profile | tagged_profile_body);
+
+    typedef iiop::get_alignment_attribute
+      <typename Context::attributes_type, OutputIterator> alignment_getter;
+    iiop::alignment_attribute<OutputIterator> alignment
+      = alignment_getter::call(ctx.attributes);
+    std::size_t offset = std::distance(alignment.first, sink) + alignment.offset;
       
     namespace karma = boost::spirit::karma;
     if(karma::generate(sink
                        , giop::compile<iiop::generator_domain>
                        (
-                        ior_grammar(giop::native_endian)
+                        iiop::aligned(offset)[ior_grammar(giop::native_endian)]
                        )
                        , sior))
     {
@@ -158,11 +164,19 @@ struct reference_parser : qi::primitive_parser<reference_parser>
     typedef ior::grammar::ior<iiop::parser_domain, Iterator, result_type>
       ior_grammar_type;
 
+    Iterator first_ = f;
+
+    typedef iiop::get_alignment_attribute
+      <typename Context::attributes_type, Iterator> alignment_getter;
+    iiop::alignment_attribute<Iterator> alignment
+      = alignment_getter::call(ctx.attributes);
+    std::size_t offset = std::distance(alignment.first, first_) + alignment.offset;
+
     ior_grammar_type ior_grammar(tagged_profile_body | tagged_profile);
     namespace qi = boost::spirit::qi;
-    Iterator first_ = f;
     if(qi::parse(first_, last
-                 , giop::compile<iiop::parser_domain>(ior_grammar(giop::native_endian))
+                 , giop::compile<iiop::parser_domain>
+                 (iiop::aligned(offset)[ior_grammar(giop::native_endian)])
                  , r))
     {
       // std::cout << "Parsed OK" << std::endl;

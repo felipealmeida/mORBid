@@ -31,8 +31,13 @@ orb::orb(openbus_type, std::string const& host, unsigned short port
   namespace access_control = ::tecgraf::openbus::core::v2_0::services::access_control;
   access_control::AccessControl acs = reference_cast<access_control::AccessControl>(obj, *this);
 
+  impl->openbus_host = host;
+  impl->openbus_port = port;
+
   std::vector<unsigned char> buskey_args = acs._get_buskey();
   std::cout << "buskey_args: " << buskey_args.size() << std::endl;
+
+  impl->openbus_id = acs._get_busid();
 
   EVP_PKEY* bus_key = 0;
   {
@@ -51,6 +56,7 @@ orb::orb(openbus_type, std::string const& host, unsigned short port
     r = EVP_PKEY_keygen(ctx, &key);
     assert((r == 1) && key);
   }
+  impl->key = key;
 
   boost::array<unsigned char, 32> public_key_hash;
   std::vector<unsigned char> public_key_buffer;
@@ -100,6 +106,7 @@ orb::orb(openbus_type, std::string const& host, unsigned short port
   morbid::unsigned_long validity_time = 0;
   access_control::LoginInfo li = acs.loginByPassword(username, public_key_buffer, encrypted_block, validity_time);
   std::cout << "li.id: " << li.id << " li.entity: " << li.entity << " validity_time: " << validity_time << std::endl;
+  impl->openbus_login_id = li.id;
 }
 
 }

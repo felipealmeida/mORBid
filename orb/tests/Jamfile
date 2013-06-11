@@ -202,12 +202,16 @@ alias seq_args_allprimitives : seq_args_allprimitives.output ;
 
 if [ option.get test-with-openbus : : 1 ]
 {
+  import feature ;
+  feature.feature morbid-openbus : off on : composite link-incompatible ;
+  feature.compose <morbid-openbus>on : <define>MORBID_OPENBUS ;
+
   local openbus-idl-path-env = [ os.environ OPENBUS_IDL_PATH ] ;
   path-constant openbus-idl-path : $(openbus-idl-path-env) ;
 
   make access_control.hpp : $(openbus-idl-path)/access_control.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
-  make scs.hpp : $(scs-idl-path)/scs.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
-  alias openbus : [ testing.run openbus_client.cpp /openssl//openssl /morbid//morbid : : : <implicit-dependency>access_control.hpp <implicit-dependency>scs.hpp ] ;
+  make offer_registry.hpp : $(openbus-idl-path)/offer_registry.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
+  alias openbus : [ testing.run openbus_client.cpp /openssl//openssl /morbid//morbid/<morbid-openbus>on : : : <implicit-dependency>access_control.hpp <implicit-dependency>offer_registry.hpp <morbid-openbus>on ] ;
 
   alias morbid-tests : allprimitives out_allprimitives inout_allprimitives
    return_allprimitives modules_allprimitives struct reference fwd_ref seq_allprimitives

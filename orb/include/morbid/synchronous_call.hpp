@@ -309,9 +309,90 @@ typename return_traits<R>::type call
   arguments_grammar arguments_grammar_(arguments_traits);
   request_header_grammar request_header_grammar_(arguments_grammar_);
   message_header_grammar message_header_grammar_(request_header_grammar_);
+  service_context_list service_context;
+#ifdef MORBID_OPENBUS
+  bool repeat = false;
+  do
+  {
+    repeat = false;
+  if(!orb.impl->openbus_login_id.empty())
+  {
+    orb_impl::openbus_sessions_type::iterator
+      session_iterator = orb.impl->openbus_sessions.find(std::make_pair(host, port));
+
+    if(session_iterator != orb.impl->openbus_sessions.end())
+    {
+      assert(session_iterator->second.secret.size() == 16u);
+      fusion::vector2<std::vector<unsigned char>, std::vector<unsigned char> > signed_call_chain
+        (std::vector<unsigned char>(256u), std::vector<unsigned char>());
+      std::vector<char> hash(32u);
+      {
+        std::vector<char> buffer;
+        std::back_insert_iterator<std::vector<char> > iterator(buffer);
+        bool g = karma::generate
+          (iterator
+           ,  qi::char_
+           << qi::char_
+           << spirit::repeat(16u)[qi::char_]
+           << qi::little_dword
+           << qi::string
+           , fusion::make_vector(2, 0, session_iterator->second.secret, session_iterator->second.ticket, method));
+        assert(!!g);
+        assert(buffer.size() == 22 + std::strlen(method));
+        SHA256((unsigned char*)&buffer[0], buffer.size(), (unsigned char*)&hash[0]);
+      }
+      std::vector<char> credential_data;
+      giop::forward_back_insert_iterator<std::vector<char> > iterator(credential_data);
+      bool g = karma::generate(iterator, giop::compile<iiop::generator_domain>
+                               (
+                                giop::endianness(giop::native_endian)
+                                [
+                                 giop::string & giop::string
+                                 & giop::ulong_ & giop::ulong_
+                                 & +giop::octet
+                                 // Signed Call Chain
+                                 & +giop::octet
+                                 & giop::sequence[giop::octet]
+                                ]
+                               )
+                               , fusion::make_vector
+                               (orb.impl->openbus_id, orb.impl->openbus_login_id, session_iterator->second.session_number
+                                , session_iterator->second.ticket, hash
+                                // Signed Call Chain
+                                , fusion::at_c<0u>(signed_call_chain), fusion::at_c<1u>(signed_call_chain)));
+      assert(!!g);
+      ++session_iterator->second.ticket;
+      service_context.push_back
+        (fusion::make_vector(0x42555300, credential_data)); 
+    }
+    else
+    {
+      std::vector<char> credential_data;
+      giop::forward_back_insert_iterator<std::vector<char> > iterator(credential_data);
+      bool g = karma::generate(iterator, giop::compile<iiop::generator_domain>
+                               (
+                                giop::endianness(giop::native_endian)
+                                [
+                                 giop::string & giop::string
+                                 & giop::ulong_ & giop::ulong_
+                                 & +giop::octet
+                                 // Signed Call Chain
+                                 & +giop::octet
+                                 & giop::sequence[giop::octet]
+                                ]
+                               )
+                               , fusion::make_vector
+                               (orb.impl->openbus_id, orb.impl->openbus_login_id, 0u, 0u, std::vector<unsigned char>(32u)
+                                , std::vector<unsigned char>(256u), std::string()));
+      assert(!!g);
+      service_context.push_back
+        (fusion::make_vector(0x42555300, credential_data));
+    }
+  }
+#endif
   message_attribute_type attribute (fusion::make_vector
                                     (request_attribute_type
-                                     (service_context_list(), 1u, true, object_key
+                                     (service_context, 1u, true, object_key
                                       , method, std::vector<char>(), in_args)));
   
   std::vector<char> buffer;
@@ -343,21 +424,68 @@ typename return_traits<R>::type call
     std::cerr << "Sent for " << method << ". Waiting reply" << std::endl;
 
     std::vector<char> reply_buffer(1024u);
-    std::size_t offset = 0;
     std::vector<char>::iterator first;
-    do
     {
-      if(reply_buffer.size() - offset < 128u)
-        reply_buffer.resize(reply_buffer.size() + 1024u);
-      boost::system::error_code ec;
-      std::size_t bytes_read
-        = socket->read_some(boost::asio::buffer(&reply_buffer[offset], reply_buffer.size() - offset), ec);
-      std::cerr << "Read " << bytes_read << " bytes" << std::endl;
-      if(ec)
-        throw ec;
-      else
+      std::vector<char> reply_buffer(1024*1024);
+      std::size_t offset = 0, size_to_download = 0;
+      typedef std::vector<char>::iterator iterator_type;
+      iterator_type first;
+      bool header_parse = false;
+      do
       {
+        boost::system::error_code ec;
+        std::size_t bytes_read = socket->read_some
+          (boost::asio::mutable_buffers_1(&reply_buffer[offset], reply_buffer.size() - offset), ec);
         offset += bytes_read;
+
+        // OB_DIAG_REQUIRE(!ec, "Read  " << offset << " bytes"
+        //                 ,  "Failed reading with error " << ec.message())
+
+        if(offset > 12)
+        {
+          first = reply_buffer.begin();
+          fusion::vector2<unsigned char, unsigned int> attribute;
+          header_parse = qi::parse(first, reply_buffer.begin() + offset
+                                   , giop::compile<iiop::parser_domain>
+                                   ("GIOP"
+                                    & giop::octet('\1')
+                                    & giop::octet('\0')
+                                    & giop::endianness
+                                    [
+                                     giop::octet
+                                     & giop::ulong_
+                                    ]
+                                   )
+                                   , attribute);
+          unsigned char message_type = fusion::at_c<0>(attribute);
+          size_to_download = fusion::at_c<1>(attribute);
+          assert(!!header_parse);
+          assert(message_type == 1);
+          assert(std::distance(first, reply_buffer.begin() + offset) <= size_to_download);
+          // OB_DIAG_FAIL(!header_parse, "Garbage was received as reply or a bug in the diagnostic tool")
+          // OB_DIAG_FAIL(message_type != 1, "Message type " << message_type << " was not expected. Expected a GIOP reply message."
+          //              " This might be a bug in the diagnostic tool")
+          // OB_DIAG_FAIL(std::distance(reply_buffer.begin(), first) + size_to_download > reply_buffer.size()
+          //              , "Message is bigger than 1MB, higher than the limit for the diagnostic tool")
+          // OB_DIAG_FAIL(std::distance(first, reply_buffer.begin() + offset) > size_to_download
+          //              , "Received more data than was expected or a bug in the diagnostic tool")
+        }
+      }
+      while(offset <= 12 
+            || std::distance(first, reply_buffer.begin() + offset) != size_to_download);
+
+      reply_buffer.resize(offset);
+
+      // if(reply_buffer.size() - offset < 128u)
+      //   reply_buffer.resize(reply_buffer.size() + 1024u);
+      // boost::system::error_code ec;
+      // std::size_t bytes_read
+      //   = socket->read_some(boost::asio::buffer(&reply_buffer[offset], reply_buffer.size() - offset), ec);
+      std::cerr << "Read " << reply_buffer.size() << " bytes" << std::endl;
+      // if(ec)
+      //   throw ec;
+      // else
+      {
         typedef std::vector<char>::iterator iterator_type;
         iterator_type first = reply_buffer.begin()
           ,  last = boost::next(reply_buffer.begin(), offset);
@@ -472,6 +600,48 @@ typename return_traits<R>::type call
             std::cerr << "Parsed system exception correctly, exception id: " << fusion::at_c<0>(*attribute)
                       << " minor code " << fusion::at_c<1>(*attribute)
                       << " completion status " << fusion::at_c<2>(*attribute) << std::endl;
+#ifdef MORBID_OPENBUS
+            repeat = (fusion::at_c<0>(*attribute) == "IDL:omg.org/CORBA/NO_PERMISSION:1.0"
+                      && fusion::at_c<1>(*attribute) == 0x42555300
+                      && !orb.impl->openbus_login_id.empty());
+            if(repeat)
+            {
+              service_context_list service_context = fusion::at_c<0u>(reply_attr);
+              fusion::vector3<std::string, unsigned int, std::vector<char> > credential_reset;
+              std::vector<char>::iterator first = fusion::at_c<1u>(service_context[0]).begin()
+                , last = fusion::at_c<1u>(service_context[0]).end();
+              bool r = qi::parse(first, last
+                            , giop::compile<iiop::parser_domain>
+                            (giop::endianness
+                             [
+                              giop::string & giop::ulong_ & (spirit::repeat(256u)[giop::octet])
+                             ])
+                            , credential_reset)
+                && first == last;
+              assert(!!r);
+              std::vector<char> secret;
+              {
+                std::vector<char>const& challange = fusion::at_c<2u>(credential_reset);
+                EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new(orb.impl->key, 0);
+                EVP_PKEY_decrypt_init(ctx);
+                ::size_t out_length = 0;
+                EVP_PKEY_decrypt(ctx, 0, &out_length, (unsigned char*)&challange[0], challange.size());
+                secret.resize(out_length);
+                EVP_PKEY_decrypt(ctx, (unsigned char*)&secret[0], &out_length
+                                 , (unsigned char*)&challange[0], challange.size());
+              }
+              assert(secret.size() >= 16u);
+              secret.resize(16u);
+              
+              
+              orb.impl->openbus_sessions[std::make_pair(host, port)]
+                = orb_impl::openbus_session(fusion::at_c<0>(credential_reset)
+                                            , fusion::at_c<1>(credential_reset)
+                                            , secret);
+            }
+            //break;
+            continue;
+#endif
           }
           if(user_exception const* attribute
              = boost::get<user_exception>(&result))
@@ -514,13 +684,16 @@ typename return_traits<R>::type call
           std::endl(std::cerr);
         }
 
-        break;
+        //break;
       }
     }
-    while(true);
+    //while(true);
   }
   else
     std::cerr << "Failed generating" << std::endl;
+#ifdef MORBID_OPENBUS
+  }while(repeat);
+#endif
 
   std::abort();
 }
