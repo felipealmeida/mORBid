@@ -499,7 +499,9 @@ int main(int argc, char** argv)
               namespace phoenix = boost::phoenix;
               karma::generate(output_iterator
                               , "struct " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_concept;" << eol
-                              << "struct " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref;" << eol
+                              << "template <typename T> struct " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref_impl;" << eol
+                              << "typedef " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref_impl<void> "
+                              << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref;" << eol
                               << "typedef ::morbid::reference< " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)]
                               << "_concept> " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << ";" << eol
                               , fusion::make_vector(module.interfaces.back().definition.name));

@@ -47,7 +47,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
   using phoenix::at_c;
 
   wave_string %= karma::string;
-  class_name %= karma::string << "_ref";
+  class_name %= karma::string << "_ref_impl";
   // specialization =
   //   (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
   //   << "namespace morbid {" << eol
@@ -59,7 +59,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
   //   << (*("namespace " << wave_string << " { "))[_1 = _r2] << eol
   //   ;
   start = 
-    "struct "
+    "template <typename T> struct "
     << class_name[_1 = at_c<0>(_val)]
     << -karma::buffer[(" : " << (base_spec(_r1) % ", ") [_1 = phoenix::at_c<6>(_val)])]
     << "{" << eol

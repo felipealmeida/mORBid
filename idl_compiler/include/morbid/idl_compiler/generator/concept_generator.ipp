@@ -84,7 +84,8 @@ header_concept_generator<OutputIterator>::header_concept_generator()
   start =
     karma::eps[_a = at_c<0>(_val)]
     << "struct " << wave_string[_1 = _a] << "_concept;" << eol
-    << "struct " << wave_string[_1 = _a] << "_ref;" << eol
+    << "template <typename T = void> struct " << wave_string[_1 = _a] << "_ref_impl;" << eol
+    << "typedef " << wave_string[_1 = _a] << "_ref_impl<void> " << wave_string[_1 = _a] << "_ref;" << eol
     << "typedef ::morbid::reference< " << wave_string[_1 = _a] << "_concept> " << wave_string[_1 = _a] << ';' << eol
     << concept_class(_r1, _r2)[_1 = _val]
     ;
@@ -130,6 +131,7 @@ header_concept_generator<OutputIterator>::header_concept_generator()
        "    {\n"
        "      return self._get_" << wave_string[_1 = at_c<2>(_val)] << "();\n"
        "    }\n"
+
        // "    static void apply(C& self, T const& obj)\n"
        // "    {\n"
        // "      self." << wave_string[_1 = at_c<2>(_val)] << "(obj);\n"
