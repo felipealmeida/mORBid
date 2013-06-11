@@ -31,8 +31,12 @@ struct arguments_aux<0u, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Iter
 {
   template <typename C>
   arguments_aux(C const& c) : arguments_aux::base_type(start)
+                            , start("arguments_aux")
   {
     start = spirit::eps;
+#ifdef BOOST_SPIRIT_DEBUG
+    debug(start);
+#endif
   }
 
   rule<Domain, Iterator, Attr(endian)> start;
@@ -43,6 +47,7 @@ struct arguments_aux<1u, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Iter
 {
   template <typename C>
   arguments_aux(C const& c) : arguments_aux::base_type(start)
+                            , start("arguments_aux")
   {
     start =
       giop::auto_expr
@@ -51,6 +56,9 @@ struct arguments_aux<1u, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Iter
        & karma::eps
       )
       ;
+#ifdef BOOST_SPIRIT_DEBUG
+    debug(start);
+#endif
   }
 
   rule<Domain, Iterator, Attr(endian)> start;
@@ -81,6 +89,7 @@ struct arguments_aux<N, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Itera
 {
   template <typename C>
   arguments_aux(C const& c) : arguments_aux::base_type(start)
+                            , start("arguments_aux")
   {
 #define MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence(Z, I, DATA)             \
     BOOST_PP_EXPR_IF(I, &) c.template call                              \
@@ -92,6 +101,9 @@ struct arguments_aux<N, Domain, Iterator, TypeSeq, Attr> : grammar<Domain, Itera
        BOOST_PP_REPEAT(N, MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence, ~)
       )
       ;
+#ifdef BOOST_SPIRIT_DEBUG
+    debug(start);
+#endif
 
 #undef MORBID_GIOP_GRAMMARS_ARGUMENTS_sequence
   }
