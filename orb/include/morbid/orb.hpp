@@ -11,7 +11,6 @@
 #include <morbid/reply.hpp>
 #include <morbid/type_tag.hpp>
 #include <morbid/detail/requirements.hpp>
-#include <morbid/detail/is_a.hpp>
 #include <morbid/structured_ior.hpp>
 #include <morbid/giop/forward_back_insert_iterator.hpp>
 #include <morbid/ior/grammar/corbaloc.hpp>
@@ -38,8 +37,6 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 #endif
-
-BOOST_TYPE_ERASURE_MEMBER((morbid)(poa)(has_call), call, 6)
 
 namespace morbid {
 
@@ -85,21 +82,13 @@ struct orb_impl : boost::enable_shared_from_this<orb_impl>
 
   std::size_t last_id;
 
-  typedef boost::type_erasure::any
-    <boost::mpl::vector
-     <boost::type_erasure::copy_constructible<>
-      , poa::has_call<void(std::string, std::size_t, const char*&
-                           , const char*, bool
-                           , reply&
-                           )>
-     > > object;
   struct object_registration
   {
     object_registration(std::string const& type_id
-                        , object const& obj)
+                        , poa::object_registration_any const& obj)
       : type_id(type_id), obj(obj) {}
     std::string type_id;
-    object obj;
+    poa::object_registration_any obj;
   };
 
   std::auto_ptr<boost::asio::ip::tcp::socket> get_socket(std::string const& hostname, unsigned short port)
@@ -186,7 +175,9 @@ struct orb
                       (C::type_id()
                        , poa::object_registration<C, T&>(*this, servant))));
     assert(pair.second);
-    // std::cout << "Added object " << pair.first->first << std::endl;
+    std::cout << "Added object " << pair.first->first
+              << " concept " << typeid(C).name()
+              << " type " << typeid(T).name() << std::endl;
     return pair.first;
   }
 
@@ -198,7 +189,40 @@ struct orb
                       (C::type_id()
                        , poa::object_registration<C, T>(*this, servant))));
     assert(pair.second);
-    // std::cout << "Added object " << pair.first->first << std::endl;
+    std::cout << "Added object " << pair.first->first
+              << " concept " << typeid(C).name()
+              << " type " << typeid(T).name() << std::endl;
+    return pair.first;
+  }
+
+  template <typename C>
+  object_id serve_ref(reference<C>& ref) const
+  {
+    std::pair<object_id, bool> pair  = impl->object_map.insert
+      (std::make_pair(impl->last_id++, orb_impl::object_registration
+                      (ref._object_registration_ref(*this).type_id()
+                       , ref._object_registration_ref(*this)
+                      )));
+    assert(pair.second);
+    std::cout << "Added object " << pair.first->first
+              << " concept " << typeid(C).name()
+              << " type " << typeid(reference<C>).name() << std::endl;
+    return pair.first;
+  }
+
+  template <typename C>
+  object_id serve_copy(reference<C> ref) const
+  {
+    std::pair<object_id, bool> pair = impl->object_map.insert
+      (std::make_pair(impl->last_id++
+                      , orb_impl::object_registration
+                      (ref._object_registration_copy(*this).type_id()
+                       , ref._object_registration_copy(*this)
+                      )));
+    assert(pair.second);
+    std::cout << "Added object " << pair.first->first
+              << " concept " << typeid(C).name()
+              << " type " << typeid(reference<C>).name() << std::endl;
     return pair.first;
   }
 
@@ -354,109 +378,6 @@ structured_ior string_to_structured_ior(Iterator first, Iterator last)
   }
 
   throw std::runtime_error("invalid param");
-}
-
-
-namespace poa {
-
-template <typename C, typename T>
-struct object_registration
-{
-  typedef object_registration<C, T> self_type;
-  typedef typename boost::remove_reference<T>::type value_type;
-  struct orb orb_;
-  T object;
-
-  object_registration(struct orb orb, T object)
-    : orb_(orb), object(object) {}
-
-  template <int I, typename Enable = void>
-  struct call_if_not_end;
-
-  template <int I>
-  inline void call_if(std::string const& method
-                      , std::size_t align_offset, const char*& first
-                      , const char* last, bool little_endian, reply& r)
-  {
-    typedef typename detail::requirements<C>::type requirements;
-    typedef typename mpl::at_c<requirements, I>::type method_concept;
-    if(method == method_concept::name())
-    {
-      std::cout << "Should call method " << method << std::endl;
-      handle_request_body
-        <typename method_concept::result_type, typename method_concept::arguments>
-        (orb_, &object, method_concept(), align_offset, first, last, little_endian, r);
-    }
-    else
-      call_if_not_end<I+1>::do_(*this, method, align_offset, first, last, little_endian, r);
-  }
-
-  template <int I>
-  struct call_if_not_end<I, typename boost::enable_if
-                         <mpl::equal_to<mpl::size<typename detail::requirements<C>::type>, mpl::int_<I> > >::type>
-  {
-    inline static void do_(self_type& self, std::string const& method, std::size_t align_offset, const char*& arg_first
-                           , const char* arg_last, bool little_endian, reply& r)
-    {
-      // function not found
-      if(method == "_is_a")
-      {
-        namespace qi = boost::spirit::qi;
-        std::string type_id;
-        bool p = qi::parse(arg_first, arg_last
-                           , giop::compile<iiop::parser_domain>
-                           (
-                            iiop::aligned(align_offset)
-                            [
-                             giop::endianness(giop::endian(little_endian))
-                             [
-                              giop::string
-                             ]
-                            ])
-                           , type_id);
-        assert(!!p);
-
-        std::cout << "is_a type_id " << type_id << std::endl;
-
-        bool res = detail::is_a<C>(type_id);
-        type_tag::value_type_tag<bool, type_tag::in_tag> vres(res);
-        boost::fusion::vector1<bool const&> v(res);
-        make_request_reply<mpl::vector1<type_tag::value_type_tag<bool, type_tag::out_tag> > >(self.orb_, r, v);
-      }
-      else if(method == "_non_existent")
-      {
-        boost::fusion::vector1<bool> v(false);
-        make_request_reply<mpl::vector1<type_tag::value_type_tag<bool, type_tag::out_tag> > >(self.orb_, r, v);
-      }
-      else
-        std::abort();
-    }
-  };
-
-  template <int I>
-  struct call_if_not_end<I, typename boost::enable_if
-                         <mpl::not_equal_to<mpl::size<typename detail::requirements<C>::type>, mpl::int_<I> > >::type>
-  {
-    inline static void do_(self_type& self, std::string const& method
-                           , std::size_t align_offset, const char*& first, const char* last
-                           , bool little_endian, reply& r)
-    {
-      self.call_if<I>(method, align_offset, first, last, little_endian, r);
-    }
-  };
-
-  void call(std::string const& method
-            , std::size_t align_offset, const char*& first
-            , const char* last, bool little_endian
-            , reply& r)
-  {
-    namespace fusion = boost::fusion;
-    // std::cout << "calling method " << method << std::endl;
-
-    call_if_not_end<0>::do_(*this, method, align_offset, first, last, little_endian, r);
-  }
-};
-
 }
 
 }

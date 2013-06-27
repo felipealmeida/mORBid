@@ -34,7 +34,7 @@ namespace morbid { namespace poa {
 
 void connection::start()
 {
-  // std::cout << "connection::start " << read_buffer.size() << std::endl;
+  std::cout << "connection::start " << read_buffer.size() << std::endl;
   socket.async_read_some(boost::asio::mutable_buffers_1(&read_buffer[0], read_buffer.size())
                          , boost::bind(&connection::handle_read, shared_from_this()
                                        , _1, _2));
@@ -45,9 +45,10 @@ void connection::close()
   socket.close();
 }
 
-void connection::handle_read(boost::system::error_code const& ec
-                             , std::size_t bytes_read)
+void connection::handle_read(boost::system::error_code ec, std::size_t bytes_read)
 {
+  std::cout << "handle_read " << bytes_read << std::endl;
+  boost::system::error_code no_error;
   if(!ec)
   {
     std::cout << "bytes read: " << bytes_read << std::endl;
@@ -58,7 +59,10 @@ void connection::handle_read(boost::system::error_code const& ec
     process_input();
   }
   else
-    std::cout << "Error " << ec << std::endl;
+  {
+    assert(ec != no_error);
+    std::cout << "Error " << ec.message() << std::endl;
+  }
 }
 
 void connection::process_input()

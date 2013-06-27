@@ -141,6 +141,8 @@ struct specific_alignment_enabler : qi::unary_parser<specific_alignment_enabler<
       alignment_attributes_type;
     typedef spirit::context
       <alignment_attributes_type, typename Context::locals_type> context_type;
+    std::cout << "Adding alignment attribute with offset " << offset
+              << " to " << typeid(attributes_type).name() << std::endl;
     alignment_attribute<Iterator> e = { first, offset };
     alignment_attributes_type attributes
       = fusion::as_list(fusion::push_back(ctx.attributes, e));
@@ -271,9 +273,11 @@ void alignment_padding(OutputIterator& sink, Attributes const& attributes)
   std::cout << "alignment_padding for " << N/CHAR_BIT << " bytes of alignment" << std::endl;
   typedef typename output_iterator<OutputIterator>::type output_iterator;
   alignment_attribute<output_iterator> align_from
-    = get_alignment_attribute<Attributes
-                                    , output_iterator>::call(attributes);
+    = get_alignment_attribute<Attributes, output_iterator>::call(attributes);
 
+  std::cout << "alignment.offset " << align_from.offset
+            << " dist from first to current " << std::distance(align_from.first, sink.base())
+            << std::endl;
   std::size_t distance = std::distance(align_from.first, sink.base()) + align_from.offset;
   std::cout << "alignment_padding distance from start " << distance << std::endl;
   const std::size_t alignment = N/CHAR_BIT;
@@ -311,6 +315,8 @@ struct alignment_enabler : karma::unary_generator<alignment_enabler<Subject> >
       alignment_attributes_type;
     typedef spirit::context
       <alignment_attributes_type, typename Context::locals_type> context_type;
+    std::cout << "Adding alignment attribute with offset " << offset
+              << " to " << typeid(attributes_type).name() << std::endl;
     alignment_attribute<output_iterator> e = { sink.base(), offset };
     alignment_attributes_type attributes
       = fusion::as_list(fusion::push_back(ctx.attributes, e));

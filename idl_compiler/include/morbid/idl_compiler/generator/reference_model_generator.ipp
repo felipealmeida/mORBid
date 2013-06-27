@@ -59,7 +59,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
   //   << (*("namespace " << wave_string << " { "))[_1 = _r2] << eol
   //   ;
   start = 
-    "template <typename T> struct "
+    "template <typename Dummy> struct "
     << class_name[_1 = at_c<0>(_val)]
     << -karma::buffer[(" : " << (base_spec(_r1) % ", ") [_1 = phoenix::at_c<6>(_val)])]
     << "{" << eol
@@ -82,7 +82,11 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     ;
   attribute =
     indent
-    << type_spec(at_c<1>(_r1)[at_c<1>(_val)])[_1 = at_c<1>(_val)]
+    << return_
+    (
+     at_c<1>(_r1)[at_c<1>(_val)]
+     , std::string("Dummy")
+    )[_1 = at_c<1>(_val)]
     << karma::space << "_get_" << wave_string[_1 = at_c<2>(_val)] << "() const" << eol
     << indent << "{" << eol
     << (
@@ -110,6 +114,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << return_
     (
      at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
+     , std::string("Dummy")
     )
     [_1 = at_c<0>(_val)]
     << karma::space << wave_string[_1 = at_c<1>(_val)]
@@ -119,8 +124,8 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << indent << "{" << eol
     << karma::eps[_a = 0]
     << (
-        // indent << indent << "std::cout << \"Called " << wave_string[_1 = phoenix::at_c<1>(_val)]
-        // << " was called\" << std::endl;" << eol
+        // indent << indent << "BOOST_MPL_ASSERT((boost::is_same<Dummy, int>));" << eol
+        // <<
         indent << indent << "assert(!!_orb_);" << eol
         << indent << indent << "return ::morbid::synchronous_call::call" << eol
         << indent << indent << indent << "< "
@@ -147,7 +152,9 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
        )
     << indent << "}" << eol
     ;
-  parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
+  return_ = "typename ::morbid::lazy_eval< " << return_traits(_r1)[_1 = _val] << ", " << karma::lit(_r2) << ">::type";
+  // parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
+  parameter_select %= "typename ::morbid::lazy_eval< " << parameter(at_c<1>(_r1)[at_c<1>(_val)]) << ", Dummy>::type";
   type_spec_select %= type_spec(at_c<1>(_r1)[_val]);
   in_tag = wave_string[_1 = "::morbid::type_tag::in_tag"];
   out_tag = wave_string[_1 = "::morbid::type_tag::out_tag"];

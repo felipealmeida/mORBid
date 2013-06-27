@@ -29,7 +29,7 @@ struct unroll_tag {};
 template <typename Iterator, typename Value, std::size_t E>
 bool unroll_copy(Iterator& first, Iterator last, Value& v, unroll_tag<E>, unroll_tag<E>)
 {
-  // std::cout << "All copied, value " << v << std::endl;
+  std::cout << "numeric value " << v << std::endl;
   return true; 
 }
 
@@ -127,7 +127,7 @@ struct specific_unsigned_parser : qi::primitive_parser<specific_unsigned_parser<
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    // std::cout << "specific_unsigned_parser::parse" << std::endl;
+    std::cout << "specific_unsigned_parser::parse" << std::endl;
     // Should align
     if(!alignment_padding<N>(first, last, ctx.attributes))
       return false;
@@ -151,7 +151,7 @@ struct specific_unsigned_parser : qi::primitive_parser<specific_unsigned_parser<
     {
       r = normal_unsigned_parse<N>(first, last, v);
     }
-    // std::cout << "Value read " << v << " expecting value " << value << std::endl;
+    std::cout << "Value read " << v << " expecting value " << value << std::endl;
     return r && v == value;
   }
 

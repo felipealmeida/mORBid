@@ -28,7 +28,8 @@ struct proxy_reference_generator : karma::grammar
 
   karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
   idl_compiler::generator::parameter<OutputIterator> parameter;
-  idl_compiler::generator::return_<OutputIterator> return_;
+  idl_compiler::generator::return_<OutputIterator> return_traits;
+  karma::rule<OutputIterator, idl_parser::type_spec(lookuped_type, std::string)> return_;
   karma::rule<OutputIterator, idl_parser::param_decl(interface_)>
     parameter_select;
   karma::rule<OutputIterator> indent;

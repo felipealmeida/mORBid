@@ -59,15 +59,16 @@ struct reference_generator : karma::primitive_generator<reference_generator>
   template <typename OutputIterator, typename Context, typename Delimiter, typename C>
   bool generate(OutputIterator& sink, Context& ctx, Delimiter const&, reference<C>const& attr) const
   {
-    // std::cout << "reference_generator::generate " << typeid(U).name() << std::endl;
+    std::cout << "reference_generator::generate " << typeid(C).name() << std::endl;
     typedef reference<C> ref_type;
 
     structured_ior sior;
     if(!attr._sior)
     {
-      // std::cout << "serve_copy" << std::endl;
+      assert(!boost::type_erasure::is_empty(attr._object_registration));
+      std::cout << "serve_copy" << std::endl;
       orb::object_id id = orb_.serve_copy
-        <typename ref_type::concept_class, typename ref_type::any_type>(attr);
+        <typename ref_type::concept_class>(attr);
       sior = structured_ior_object_id(orb_, id);
     }
     else
@@ -93,10 +94,13 @@ struct reference_generator : karma::primitive_generator<reference_generator>
     ior_grammar_type ior_grammar(tagged_profile | tagged_profile_body);
 
     typedef iiop::get_alignment_attribute
-      <typename Context::attributes_type, OutputIterator> alignment_getter;
-    iiop::alignment_attribute<OutputIterator> alignment
+      <typename Context::attributes_type, typename iiop::output_iterator<OutputIterator>::type> alignment_getter;
+    iiop::alignment_attribute<typename iiop::output_iterator<OutputIterator>::type> alignment
       = alignment_getter::call(ctx.attributes);
-    std::size_t offset = std::distance(alignment.first, sink) + alignment.offset;
+    std::cout << "alignment.offset " << alignment.offset
+              << " dist from first to current " << std::distance(alignment.first, sink.base())
+              << std::endl;
+    std::size_t offset = std::distance(alignment.first, sink.base()) + alignment.offset;
       
     namespace karma = boost::spirit::karma;
     if(karma::generate(sink
@@ -136,7 +140,7 @@ struct reference_parser : qi::primitive_parser<reference_parser>
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    // std::cout << "reference_parser::parse " << typeid(Attribute).name() << std::endl;
+    std::cout << "reference_parser::parse " << typeid(Attribute).name() << std::endl;
 
     typedef structured_ior attribute_type;
     namespace fusion = boost::fusion;

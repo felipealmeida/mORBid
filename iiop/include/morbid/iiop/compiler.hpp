@@ -19,21 +19,32 @@ namespace spirit = boost::spirit;
 template <>
 struct compile_impl< iiop::generator_domain>
 {
-  template <typename T>
+  template <typename T, typename Enable = void>
   struct result;
   template <typename This, typename Expr>
-  struct result<This(Expr)>
+  struct result<This(Expr), typename boost::disable_if<iiop::is_aligned<Expr> >::type>
   {
     typedef typename boost::proto::subscript<spirit::terminal< iiop::tag::aligned>
                                              , Expr>::type new_expr;
     typedef typename spirit::result_of::compile< iiop::generator_domain, new_expr>::type type;
   };
+  template <typename This, typename Expr>
+  struct result<This(Expr), typename boost::enable_if<iiop::is_aligned<Expr> >::type>
+  {
+    typedef typename spirit::result_of::compile< iiop::generator_domain, Expr>::type type;
+  };
 
   template <typename Expr>
   typename result<compile_impl< iiop::generator_domain>(Expr)>::type
-  operator()(Expr const& expr) const
+  operator()(Expr const& expr, typename boost::disable_if<iiop::is_aligned<Expr> >::type* =0) const
   {
     return spirit::compile< iiop::generator_domain>(iiop::aligned[expr]);
+  }
+  template <typename Expr>
+  typename result<compile_impl< iiop::generator_domain>(Expr)>::type
+  operator()(Expr const& expr, typename boost::enable_if<iiop::is_aligned<Expr> >::type* =0) const
+  {
+    return spirit::compile< iiop::generator_domain>(expr);
   }
 };
 

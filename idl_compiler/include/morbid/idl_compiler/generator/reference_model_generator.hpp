@@ -27,8 +27,9 @@ struct header_reference_model_generator : karma::grammar
 
   karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
   idl_compiler::generator::parameter<OutputIterator> parameter;
-  idl_compiler::generator::return_<OutputIterator> return_;
+  idl_compiler::generator::return_<OutputIterator> return_traits;
   idl_compiler::generator::type_spec<OutputIterator> type_spec;
+  karma::rule<OutputIterator, idl_parser::type_spec(lookuped_type, std::string)> return_;
   karma::rule<OutputIterator, idl_parser::wave_string()>
     class_name;
   karma::rule<OutputIterator, idl_parser::param_decl(interface_)>

@@ -25,12 +25,15 @@ struct connection : boost::enable_shared_from_this<connection>
   connection(boost::asio::io_service& io_service
              , boost::weak_ptr<orb_impl> orb)
     : socket(io_service), orb_(orb) {}
+  ~connection()
+  {
+    std::cout << "connection::~connection" << std::endl;
+  }
 
   void start();
   void close();
 
-  void handle_read(boost::system::error_code const& ec
-                   , std::size_t bytes_read);
+  void handle_read(boost::system::error_code ec, std::size_t bytes_read);
   void process_input();
 
   std::vector<char> processing_buffer;

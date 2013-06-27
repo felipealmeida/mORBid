@@ -1,0 +1,80 @@
+# (c) Copyright 2012,2013 Felipe Magno de Almeida
+#
+# Distributed under the Boost Software License, Version 1.0. (See
+# accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+import os ;
+
+project morbid/openbus/demo/hello ;
+
+path-constant current : . ;
+path-constant install : ../../../install ;
+
+actions donothing
+{
+}
+
+local scs-idl-path-env = [ os.environ SCS_IDL_PATH ] ;
+path-constant scs-idl-path : $(scs-idl-path-env) ;
+local openbus-idl-path-env = [ os.environ OPENBUS_IDL_PATH ] ;
+path-constant openbus-idl-path : $(openbus-idl-path-env) ;
+
+actions compileidl-openbus
+{
+  $(install:G=)/morbid_idl -i $(>) -o $(<:S=) -I $(scs-idl-path) -I $(openbus-idl-path)
+}
+
+actions compileidl
+{
+  $(install:G=)/morbid_idl -i $(>) -o $(<:S=)
+}
+
+actions run-server-client
+{
+  $(>[2]) $(>[2]).ior &> $(<).server &
+  server_pid=$!
+  sleep 1
+  $(>[1]) $(>[2]).ior &> $(<).client
+  if [ "$?" -eq 0 ]
+  then
+    wait $server_pid
+  else
+    kill -s KILL $server_pid
+    exit 1
+  fi
+}
+
+import feature ;
+feature.feature morbid-openbus : off on : composite link-incompatible ;
+feature.compose <morbid-openbus>on : <define>MORBID_OPENBUS ;
+
+make access_control.hpp : $(openbus-idl-path)/access_control.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
+explicit access_control.hpp ;
+make offer_registry.hpp : $(openbus-idl-path)/offer_registry.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
+explicit offer_registry.hpp ;
+make hello.hpp : hello.idl : @compileidl-openbus : <dependency>/morbid//install-idl ;
+explicit hello.hpp ;
+
+exe hello_client
+ : hello_client.cpp
+   /openssl//openssl /morbid//morbid/<morbid-openbus>on
+ : <implicit-dependency>access_control.hpp
+   <implicit-dependency>offer_registry.hpp
+   <implicit-dependency>hello.hpp
+   <morbid-openbus>on
+ ;
+explicit hello_client ;
+exe hello_server
+ : hello_server.cpp
+   /openssl//openssl /morbid//morbid/<morbid-openbus>on
+ : <implicit-dependency>access_control.hpp
+   <implicit-dependency>offer_registry.hpp
+   <implicit-dependency>hello.hpp
+   <morbid-openbus>on
+ ;
+explicit hello_server ;
+
+make hello.output : hello_client hello_server : @run-server-client ;
+

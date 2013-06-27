@@ -434,8 +434,10 @@ typename return_traits<R>::type call
       do
       {
         boost::system::error_code ec;
+        std::cout << "Waiting read op" << std::endl;
         std::size_t bytes_read = socket->read_some
           (boost::asio::mutable_buffers_1(&reply_buffer[offset], reply_buffer.size() - offset), ec);
+        std::cout << "Read " << bytes_read << std::endl;
         offset += bytes_read;
 
         // OB_DIAG_REQUIRE(!ec, "Read  " << offset << " bytes"

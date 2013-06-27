@@ -40,23 +40,36 @@ struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
              , Context& ctx, Skipper const& skipper
              , Attribute& attr) const
   {
-    // std::cout << "sequence_parser::parse" << std::endl;
+    std::cout << "sequence_parser::parse Attribute " << typeid(Attribute).name() << std::endl;
     BOOST_MPL_ASSERT_NOT((boost::is_const<Attribute>));
+
+    Iterator save = first;
 
     unsigned_parser<32u> unsigned_;
     boost::uint_t<32u>::least size;
-    bool r = unsigned_.parse(first, last, ctx, skipper, size);
-    // std::cout << "sequence size " << size << std::endl;
+    bool r = unsigned_.parse(save, last, ctx, skipper, size);
+    std::cout << "sequence size " << size << std::endl;
 
     if(!r)
+    {
+      std::cout << "failed reading size" << std::endl;
       return false;
+    }
 
     for(;size && r;--size)
     {
+      std::cout << "Still " << size << " elements to read with subject " << typeid(Subject).name() << std::endl;
       typename spirit::traits::container_value<Attribute>::type value;
-      r = subject.parse(first, last, ctx, skipper, value);
+      r = subject.parse(save, last, ctx, skipper, value);
+      if(!r)
+      {
+        std::cout << "failed reading element" << std::endl;
+      }
       spirit::traits::push_back(attr, value);
     }
+    std::cout << "sequence parser succeeded? " << r << std::endl;
+    if(r)
+      first = save;
     return r;
   }
 
@@ -66,10 +79,12 @@ struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
              , Context& ctx, Skipper const& skipper
              , boost::array<T, N>& attr) const
   {
+    Iterator save = first;
+
     // std::cout << "sequence_parser::parse" << std::endl;
     unsigned_parser<32u> unsigned_;
     boost::uint_t<32u>::least size;
-    bool r = unsigned_.parse(first, last, ctx, skipper, size);
+    bool r = unsigned_.parse(save, last, ctx, skipper, size);
     // std::cout << "sequence size " << size << std::endl;
 
     assert(N == size);
@@ -78,7 +93,10 @@ struct sequence_parser : qi::unary_parser<sequence_parser<Subject> >
       return false;
 
     for(std::size_t i = 0; i != size && r; ++i)
-      r = subject.parse(first, last, ctx, skipper, attr[i]);
+      r = subject.parse(save, last, ctx, skipper, attr[i]);
+
+    if(r)
+      first = save;
 
     return r;
   }

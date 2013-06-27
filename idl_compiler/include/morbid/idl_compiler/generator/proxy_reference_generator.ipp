@@ -16,7 +16,8 @@
 
 namespace morbid { namespace idl_compiler { namespace generator {
 
-namespace karma = boost::spirit::karma;
+namespace spirit = boost::spirit;
+namespace karma = spirit::karma;
 
 template <typename OutputIterator>
 proxy_reference_generator<OutputIterator>::proxy_reference_generator()
@@ -47,6 +48,7 @@ proxy_reference_generator<OutputIterator>::proxy_reference_generator()
     << return_
     (
      at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
+     , std::string("T")
     )
     [_1 = at_c<0>(_val)]
     << karma::space
@@ -63,8 +65,9 @@ proxy_reference_generator<OutputIterator>::proxy_reference_generator()
     << eol
     << indent << "}" << eol
     ;
+  return_ = "typename ::morbid::lazy_eval< " << return_traits(_r1)[_1 = _val] << ", " << karma::lit(spirit::_r2) << ">::type";
   synchronous_args %= "arg" << karma::lit(_r1);
-  parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
+  parameter_select %= "typename ::morbid::lazy_eval< " << parameter(at_c<1>(_r1)[at_c<1>(_val)]) << ", T>::type";
   indent = karma::space << karma::space;
   wave_string %= karma::string;
 

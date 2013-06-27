@@ -9,6 +9,7 @@
 #define MORBID_CORBA_H
 
 #include <morbid/handle_request_body.hpp>
+#include <morbid/object_registration.hpp>
 #include <morbid/orb.hpp>
 #include <morbid/primitive_types.hpp>
 #include <morbid/in_out_traits.hpp>
