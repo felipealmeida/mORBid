@@ -14,7 +14,7 @@
 
 #include <boost/optional.hpp>
 
-namespace morbid { namespace idl_compiler {
+namespace morbid { namespace idlc {
 
 struct lookup_type_spec_functional
 {
@@ -67,7 +67,7 @@ struct lookup_type_spec_functional
       {
         module_map map = get(module_property_t(), modules);
 
-        idl_compiler::module const& module = *boost::get(map, *first);
+        idlc::module const& module = *boost::get(map, *first);
         std::cout << "Current module " << module.name << std::endl;
 
         std::vector<idl_parser::wave_string>::const_iterator
@@ -78,7 +78,7 @@ struct lookup_type_spec_functional
         bool found = true;
         while(id_first != id_last && found)
         {
-          typedef typename modules_tree_type::out_edge_iterator out_edge_iterator;
+          typedef modules_tree_type::out_edge_iterator out_edge_iterator;
           std::pair<out_edge_iterator, out_edge_iterator> child_modules
             = out_edges(v_lookup, modules);
 
@@ -87,7 +87,7 @@ struct lookup_type_spec_functional
                 ;++child_modules.first)
           {
             vertex_descriptor v = target(*child_modules.first, modules);
-            idl_compiler::module const& module = *boost::get(map, v);
+            idlc::module const& module = *boost::get(map, v);
             
             if(module.name == *id_first)
             {
@@ -101,7 +101,7 @@ struct lookup_type_spec_functional
 
         if(found)
         {
-          idl_compiler::module const& module = *boost::get(map, v_lookup);
+          idlc::module const& module = *boost::get(map, v_lookup);
           std::cout << "Found correct module " << module.name << std::endl;
 
           boost::optional<kind_variant> kind = search_type(module, s.identifiers.back());

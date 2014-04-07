@@ -15,7 +15,8 @@
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 namespace morbid { namespace iiop {
 

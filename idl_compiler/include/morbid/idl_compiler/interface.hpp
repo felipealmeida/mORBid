@@ -10,6 +10,7 @@
 
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/lookuped_type.hpp>
+#include <morbid/idl_parser/interface_def.hpp>
 
 #include <morbid/idl_parser/type_spec.hpp>
 
@@ -18,7 +19,7 @@
 #include <map>
 #include <ostream>
 
-namespace morbid { namespace idl_compiler {
+namespace morbid { namespace idlc {
 
 struct interface_
 {
@@ -49,8 +50,8 @@ inline std::ostream& operator<<(std::ostream& os, interface_ const& i)
 
 } }
 
-BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::interface_
+BOOST_FUSION_ADAPT_STRUCT( ::morbid::idlc::interface_
                            , ( ::morbid::idl_parser::interface_def, definition)
-                           (::morbid::idl_compiler::interface_::lookups_type, lookups));
+                           (::morbid::idlc::interface_::lookups_type, lookups));
 
 #endif

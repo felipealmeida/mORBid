@@ -14,7 +14,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 namespace morbid { namespace idl_parser { namespace grammar {
 
@@ -87,11 +88,11 @@ struct type_spec : boost::spirit::qi::grammar
       | simple_type_spec
       ;
     start.name("type_spec");
-    qi::debug(start);
     sequence.name("sequence");
-    qi::debug(sequence);
     simple_type_spec.name("simple_type_spec");
-    qi::debug(simple_type_spec);
+    // qi::debug(start);
+    // qi::debug(sequence);
+    // qi::debug(simple_type_spec);
   }
 
   grammar::scoped_name<Iterator> scoped_name;

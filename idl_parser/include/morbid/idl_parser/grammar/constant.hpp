@@ -10,7 +10,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <morbid/idl_parser/grammar/type_spec.hpp>
 #include <morbid/idl_parser/grammar/skipper.hpp>
@@ -39,7 +40,7 @@ struct constant_definition
       >> token_value
       ;
     start.name("constant");
-    qi::debug(start);
+    // qi::debug(start);
   }
 
   grammar::type_spec<Iterator> type_spec;

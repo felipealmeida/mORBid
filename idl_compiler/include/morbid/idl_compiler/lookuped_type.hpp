@@ -11,11 +11,9 @@
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/kinds.hpp>
 
-#include <boost/fusion/include/adapt_struct.hpp>
-
 #include <ostream>
 
-namespace morbid { namespace idl_compiler {
+namespace morbid { namespace idlc {
 
 struct lookuped_type
 {

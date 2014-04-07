@@ -12,11 +12,13 @@
 #include <morbid/idl_compiler/interface.hpp>
 #include <morbid/idl_compiler/lookuped_type.hpp>
 #include <morbid/idl_compiler/kinds.hpp>
+#include <morbid/idl_parser/typedef_def.hpp>
+#include <morbid/idl_parser/struct_def.hpp>
 #include <morbid/idl_parser/wave_string.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
 
-namespace morbid { namespace idl_compiler {
+namespace morbid { namespace idlc {
 
 struct typedef_
 {
@@ -79,21 +81,21 @@ struct module
     : name(name) {}
 
   idl_parser::wave_string name;
-  std::vector<idl_compiler::interface_> interfaces;
-  std::vector<idl_compiler::typedef_> typedefs;
-  std::vector<idl_compiler::exception> exceptions;
-  std::vector<idl_compiler::struct_> structs;
+  std::vector<idlc::interface_> interfaces;
+  std::vector<idlc::typedef_> typedefs;
+  std::vector<idlc::exception> exceptions;
+  std::vector<idlc::struct_> structs;
 };
 
 inline boost::optional<kind_variant> search_type(module const& m, idl_parser::wave_string const& name)
 {
   std::cout << "Searching " << name << " at module " << m.name << std::endl;
 
-  std::vector<idl_compiler::interface_>const& interfaces = m.interfaces;
+  std::vector<idlc::interface_>const& interfaces = m.interfaces;
 
   std::cout << "This module has " << interfaces.size() << " interfaces" << std::endl;
 
-  std::vector<idl_compiler::interface_>::const_iterator interface_iterator
+  std::vector<idlc::interface_>::const_iterator interface_iterator
     = std::find_if(interfaces.begin(), interfaces.end(), find_interface_by_name(name));
   if(interface_iterator != interfaces.end())
   {
@@ -105,11 +107,11 @@ inline boost::optional<kind_variant> search_type(module const& m, idl_parser::wa
   //   std::cout << "No interface from this module" << std::endl;
   // }
 
-  std::vector<idl_compiler::typedef_>const& typedefs = m.typedefs;
+  std::vector<idlc::typedef_>const& typedefs = m.typedefs;
 
   std::cout << "This module has " << typedefs.size() << " typedefs" << std::endl;
 
-  std::vector<idl_compiler::typedef_>::const_iterator typedef_iterator
+  std::vector<idlc::typedef_>::const_iterator typedef_iterator
     = std::find_if(typedefs.begin(), typedefs.end(), find_typedef_by_name(name));
   if(typedef_iterator != typedefs.end())
   {
@@ -121,11 +123,11 @@ inline boost::optional<kind_variant> search_type(module const& m, idl_parser::wa
   //   std::cout << "No typedef from this module" << std::endl;
   // }
 
-  std::vector<idl_compiler::struct_>const& structs = m.structs;
+  std::vector<idlc::struct_>const& structs = m.structs;
 
   std::cout << "This module has " << structs.size() << " structs" << std::endl;
 
-  std::vector<idl_compiler::struct_>::const_iterator struct_iterator
+  std::vector<idlc::struct_>::const_iterator struct_iterator
     = std::find_if(structs.begin(), structs.end(), find_struct_by_name(name));
   if(struct_iterator != structs.end())
   {
@@ -143,8 +145,8 @@ inline boost::optional<kind_variant> search_type(module const& m, idl_parser::wa
 
 } }
 
-BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::struct_
+BOOST_FUSION_ADAPT_STRUCT( ::morbid::idlc::struct_
                            , ( ::morbid::idl_parser::struct_def, definition)
-                           (::morbid::idl_compiler::struct_::lookups_type, lookups));
+                           (::morbid::idlc::struct_::lookups_type, lookups));
 
 #endif

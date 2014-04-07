@@ -8,13 +8,15 @@
 #ifndef TECORB_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_IPP
 #define TECORB_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_IPP
 
+#include <morbid/idl_compiler/generator/wave_string.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
 #include <morbid/idl_compiler/generator/reference_model_generator.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
 
 #include <boost/spirit/home/karma.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 namespace std {
 
@@ -32,7 +34,7 @@ std::ostream& operator<<(std::ostream& os, std::vector<T> p)
 
 }
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
@@ -44,10 +46,17 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
   using karma::_1;
   using karma::_val; using karma::_r1; using karma::_r2; using karma::_r3;
   using karma::_a; using karma::eol;
-  using phoenix::at_c;
 
-  wave_string %= karma::string;
-  class_name %= karma::string << "_ref_impl";
+  using phoenix::at_c;
+  using phoenix::second;
+  using phoenix::find;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsequenced"
+#endif
+
+  class_name %= wave_string << "_ref_impl";
   // specialization =
   //   (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
   //   << "namespace morbid {" << eol
@@ -77,14 +86,14 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << "};" << eol << eol
     ;
   base_spec %=
-    type_spec(at_c<1>(_r1)[_val])
+    type_spec(second(*find(at_c<1>(_r1),_val)))
     << "_ref"
     ;
   attribute =
     indent
     << return_
     (
-     at_c<1>(_r1)[at_c<1>(_val)]
+     second(*find(at_c<1>(_r1), at_c<1>(_val)))
      , std::string("Dummy")
     )[_1 = at_c<1>(_val)]
     << karma::space << "_get_" << wave_string[_1 = at_c<2>(_val)] << "() const" << eol
@@ -95,7 +104,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
         << indent << indent << indent << "< "
         << type_spec
         (
-         at_c<1>(_r1)[at_c<1>(_val)] // interface_.lookups[type_spec]
+         second(*find(at_c<1>(_r1), at_c<1>(_val))) // interface_.lookups[type_spec]
         )
         [_1 = at_c<1>(_val)]
         << eol << indent << indent << indent << ">" << eol
@@ -113,7 +122,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     indent
     << return_
     (
-     at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
+     second(*find(at_c<1>(_r1), at_c<0>(_val))) // interface_.lookups[type_spec]
      , std::string("Dummy")
     )
     [_1 = at_c<0>(_val)]
@@ -131,7 +140,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
         << indent << indent << indent << "< "
         << type_spec
         (
-         at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
+         second(*find(at_c<1>(_r1), at_c<0>(_val))) // interface_.lookups[type_spec]
         )
         [_1 = at_c<0>(_val)]
         << eol << indent << indent << indent << ">" << eol
@@ -154,8 +163,9 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     ;
   return_ = "typename ::morbid::lazy_eval< " << return_traits(_r1)[_1 = _val] << ", " << karma::lit(_r2) << ">::type";
   // parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
-  parameter_select %= "typename ::morbid::lazy_eval< " << parameter(at_c<1>(_r1)[at_c<1>(_val)]) << ", Dummy>::type";
-  type_spec_select %= type_spec(at_c<1>(_r1)[_val]);
+  parameter_select %= "typename ::morbid::lazy_eval< "
+    << parameter(second(*find(at_c<1>(_r1), at_c<1>(_val)))) << ", Dummy>::type";
+  type_spec_select %= type_spec(second(*find(at_c<1>(_r1), _val)));
   in_tag = wave_string[_1 = "::morbid::type_tag::in_tag"];
   out_tag = wave_string[_1 = "::morbid::type_tag::out_tag"];
   inout_tag = wave_string[_1 = "::morbid::type_tag::inout_tag"];
@@ -219,6 +229,10 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
 
   start.name("header_reference_model_generator");
   karma::debug(start);
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 } } }

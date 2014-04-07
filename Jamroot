@@ -1,4 +1,4 @@
-# (c) Copyright 2012,2013 Felipe Magno de Almeida
+# (c) Copyright 2012,2013,2014 Felipe Magno de Almeida
 #
 # Distributed under the Boost Software License, Version 1.0. (See
 # accompanying file LICENSE_1_0.txt or copy at
@@ -7,9 +7,17 @@
 project morbid
  : build-dir bin
  : requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
+   <toolset>clang:<cxxflags>-ftemplate-depth=1000
+   <toolset>gcc:<cxxflags>-Wno-unused-local-typedefs
+   <toolset>gcc:<cxxflags>-Wno-sign-compare
    <define>BOOST_TYPE_ERASURE_MAX_ARITY=7
    <toolset>gcc:<cxxflags>-Wno-unused-local-typedefs # Avoids warnings with concept_check
+   <define>BOOST_SPIRIT_USE_PHOENIX_V3
  : usage-requirements <toolset>gcc:<cxxflags>-ftemplate-depth-1000
+   <toolset>clang:<cxxflags>-ftemplate-depth=1000
+   <toolset>gcc:<cxxflags>-Wno-unused-local-typedefs
+   <toolset>gcc:<cxxflags>-Wno-sign-compare
+   <define>BOOST_SPIRIT_USE_PHOENIX_V3
  : default-build <link>static <threading>multi
  ;
 
@@ -25,11 +33,20 @@ alias ior : iiop /boost//headers : : : <include>ior/include ;
 
 exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/concept_generator.cpp
+ idl_compiler/src/concept_interface.cpp
+ idl_compiler/src/generate_modules_visitor.cpp
+ idl_compiler/src/proxy_reference_generator.cpp
  idl_compiler/src/reference_model_generator.cpp
  idl_compiler/src/wave_impl.cpp
+ idl_compiler/src/type_spec.cpp
+ idl_compiler/src/scoped_name.cpp
+ idl_compiler/src/return.cpp
+ idl_compiler/src/parameter.cpp
+ idl_compiler/src/typedef_generator.cpp
+ idl_compiler/src/header_appendages.cpp
  idl_parser /boost//filesystem /boost//program_options
  /boost//thread /boost//wave
-  : <toolset>gcc:<cxxflags>-Wno-sign-compare
+  : 
     <include>idl_compiler/include
     <define>FUSION_MAX_VECTOR_SIZE=12
 #    <define>BOOST_WAVE_SEPARATE_GRAMMAR_INSTANTIATION=0
@@ -44,9 +61,7 @@ lib morbid :
  ior iiop /boost//headers /boost//system /boost//thread
  : <include>orb/include
    <include>orb/include_impl
-   <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  : : <include>orb/include
-   <toolset>gcc:<cxxflags>-ftemplate-depth=1000
  ; 
 explicit morbid ;
 

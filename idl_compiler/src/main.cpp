@@ -12,31 +12,36 @@
 #include <morbid/idl_parser/grammar/exception_def.hpp>
 #include <morbid/idl_parser/grammar/struct_def.hpp>
 #include <morbid/idl_parser/grammar/constant.hpp>
-#include <morbid/idl_compiler/interface.hpp>
+#include <morbid/idl_compiler/errors.hpp>
+#include <morbid/idl_compiler/generator/wave_string.hpp>
+// #include <morbid/idl_compiler/interface.hpp>
 #include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/lookup.hpp>
-#include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
+// #include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/generator/concept_generator.hpp>
-#include <morbid/idl_compiler/generator/reference_model_generator.hpp>
+// #include <morbid/idl_compiler/generator/reference_model_generator.hpp>
 #include <morbid/idl_compiler/generator/typedef_generator.hpp>
-#include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
+// #include <morbid/idl_compiler/generator/empty_reference_generator.ipp>
 #include <morbid/idl_compiler/generator/struct_generator.hpp>
 #include <morbid/idl_compiler/generate_header_modules_visitor.hpp>
+#include <morbid/idl_compiler/iterator.hpp>
+#include <morbid/idl_compiler/generate_header_appendage.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <boost/graph/breadth_first_search.hpp>
-#include <boost/graph/depth_first_search.hpp>
-#include <boost/graph/named_function_params.hpp>
+// #include <boost/graph/breadth_first_search.hpp>
+// #include <boost/graph/depth_first_search.hpp>
+// #include <boost/graph/named_function_params.hpp>
 #include <boost/spirit/home/karma.hpp>
 #include <boost/spirit/home/lex/qi.hpp>
+#include <boost/spirit/home/lex.hpp>
 #include <boost/wave.hpp>
 #include <boost/wave/cpplexer/cpp_lex_iterator.hpp>
 
-#include <iostream>
+// #include <iostream>
 
 int main(int argc, char** argv)
 {
@@ -118,28 +123,8 @@ int main(int argc, char** argv)
         namespace qi = boost::spirit::qi;
         namespace lex = boost::spirit::lex;
         namespace phoenix = boost::phoenix;
-
-        typedef morbid::idl_compiler::module module_type;
-        typedef morbid::idl_compiler::module_property_t module_property_t;
-        typedef morbid::idl_compiler::module_property_type module_property_type;
-        module_property_type module_property;
-        typedef morbid::idl_compiler::modules_tree_type modules_tree_type;
-        modules_tree_type modules_tree;
-
-        typedef morbid::idl_compiler::vertex_descriptor vertex_descriptor;
-        module_property_type p1(boost::shared_ptr<module_type>(new module_type("")));
-        vertex_descriptor global_module = add_vertex
-          (p1, modules_tree);
-        module_property_type p2(boost::shared_ptr<module_type>(new module_type("::morbid")));
-        vertex_descriptor primitive_types_module = add_vertex
-          (p2, modules_tree);
-
-        std::vector<vertex_descriptor> current_module;
-        current_module.push_back(primitive_types_module);
-        current_module.push_back(global_module);
-
-        typedef boost::property_map<modules_tree_type, module_property_t>
-          ::type module_map;
+        namespace spirit = boost::spirit;
+        namespace karma = spirit::karma;
 
         boost::filesystem::path header_path;
         if(vm.count("output"))
@@ -153,41 +138,67 @@ int main(int argc, char** argv)
         }
 
         boost::filesystem::ofstream header(header_path);
-        typedef std::map<vertex_descriptor, boost::default_color_type> color_map_container_t;
-        typedef boost::associative_property_map<color_map_container_t> color_map_t;
         if(header.is_open())
         {
-          namespace karma = boost::spirit::karma;
-          using morbid::idl_compiler::output_iterator_type;
-          output_iterator_type output_iterator(header);
+          // namespace karma = boost::spirit::karma;
+          namespace idlc = morbid::idlc;
+          idlc::output_iterator output_iterator(header);
 
-          bool r = karma::generate
-            (output_iterator
-             , karma::lit("// -*- c++ -*-") << karma::eol
-             << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
-             << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
-             << karma::lit("#include <morbid/reply.hpp>") << karma::eol
-             << karma::lit("#include <morbid/structured_ior.hpp>") << karma::eol
-             << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol << karma::eol
-             << karma::lit("#include <morbid/synchronous_call.hpp>") << karma::eol << karma::eol
-             << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
-             << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
-             << karma::lit("#include <morbid/object.hpp>") << karma::eol << karma::eol
-             << karma::lit("#include <morbid/lazy_eval.hpp>") << karma::eol << karma::eol
-             << karma::lit("#include <boost/integer.hpp>") << karma::eol
-             << karma::lit("#include <boost/spirit/home/karma.hpp>") << karma::eol
-             << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
-             << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
-             << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol
-             << karma::lit("#include <boost/fusion/include/vector40.hpp>") << karma::eol
-             << karma::lit("#include <boost/fusion/include/vector50.hpp>") << karma::eol
-             << karma::lit("#include <boost/type_erasure/any.hpp>") << karma::eol
-             << karma::lit("#include <boost/type_erasure/member.hpp>") << karma::eol
-             << karma::lit("#include <boost/type_erasure/concept_interface.hpp>") << karma::eol
-             << karma::eol
-             );
-          if(!r) 
-            throw std::runtime_error("Failed generating #includes for header");
+          idlc::generate_header_prefix(output_iterator);
+
+          using morbid::idlc::vertex_descriptor;
+          typedef std::map<vertex_descriptor, boost::default_color_type> color_map_container_t;
+          typedef boost::associative_property_map<color_map_container_t> color_map_t;
+
+          typedef morbid::idlc::module module_type;
+          typedef morbid::idlc::module_property_t module_property_t;
+          typedef morbid::idlc::module_property_type module_property_type;
+          module_property_type module_property;
+          typedef morbid::idlc::modules_tree_type modules_tree_type;
+          modules_tree_type modules_tree;
+
+          typedef morbid::idlc::vertex_descriptor vertex_descriptor;
+          module_property_type p1(boost::shared_ptr<module_type>(new module_type("")));
+          vertex_descriptor global_module = add_vertex
+            (p1, modules_tree);
+          module_property_type p2(boost::shared_ptr<module_type>(new module_type("::morbid")));
+          vertex_descriptor primitive_types_module = add_vertex
+            (p2, modules_tree);
+
+          std::vector<vertex_descriptor> current_module;
+          current_module.push_back(primitive_types_module);
+          current_module.push_back(global_module);
+
+        typedef boost::property_map<modules_tree_type, module_property_t>
+          ::type module_map;
+
+          // bool r = karma::generate
+          //   (output_iterator
+          //    , karma::lit("// -*- c++ -*-") << karma::eol
+          //    << "// Generated header. DO NOT EDIT" << karma::eol << karma::eol
+          //    << karma::lit("#include <morbid/handle_request_body.hpp>") << karma::eol
+          //    << karma::lit("#include <morbid/reply.hpp>") << karma::eol
+          //    << karma::lit("#include <morbid/structured_ior.hpp>") << karma::eol
+          //    << karma::lit("#include <morbid/in_out_traits.hpp>") << karma::eol << karma::eol
+          //    << karma::lit("#include <morbid/synchronous_call.hpp>") << karma::eol << karma::eol
+          //    << karma::lit("#include <morbid/orb.hpp>") << karma::eol << karma::eol
+          //    << karma::lit("#include <morbid/reference.hpp>") << karma::eol << karma::eol
+          //    << karma::lit("#include <morbid/object.hpp>") << karma::eol << karma::eol
+          //    << karma::lit("#include <morbid/lazy_eval.hpp>") << karma::eol << karma::eol
+          //    << karma::lit("#include <boost/integer.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/spirit/home/karma.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/fusion/include/vector10.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/fusion/include/vector20.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/fusion/include/vector30.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/fusion/include/vector40.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/fusion/include/vector50.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/type_erasure/any.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/type_erasure/member.hpp>") << karma::eol
+          //    << karma::lit("#include <boost/type_erasure/concept_interface.hpp>") << karma::eol
+          //    << karma::eol
+          //    );
+          // if(!r) 
+          //   throw std::runtime_error("Failed generating #includes for header");
         
         using morbid::idl_parser::token_id;
         module_map map = get(module_property_t(), modules_tree);
@@ -195,37 +206,47 @@ int main(int argc, char** argv)
         {
           try
           {
-          morbid::idl_parser::wave_string module_open;
-          morbid::idl_parser::interface_def interface;
-          morbid::idl_parser::typedef_def typedef_;
-          morbid::idl_parser::constant constant;
-          morbid::idl_parser::exception_def exception;
-          morbid::idl_parser::struct_def struct_;
-          if(boost::spirit::qi::phrase_parse(iterator, last, module_open_grammar
-                                             , skipper, module_open))
-          {
-            std::cout << "Opened module " << module_open << std::endl;
+            typedef boost::wave::cpplexer::lex_token<> token_type;
+            typedef boost::wave::cpplexer::lex_iterator
+              <token_type> lex_iterator_type;
+            typedef boost::wave::context
+              <std::vector<char>::const_iterator, lex_iterator_type> context_type;
 
-            karma::generate(output_iterator
-                            , karma::eol << karma::lit("namespace ") << karma::string << karma::lit(" {") << karma::eol
-                            , module_open);
+            typedef context_type::iterator_type parser_iterator_type;
 
-            typedef typename modules_tree_type::out_edge_iterator out_edge_iterator;
-            std::pair<out_edge_iterator, out_edge_iterator> child_modules
-              = out_edges(current_module.back(), modules_tree);
-
-            bool found = false;
-            vertex_descriptor v;
-            for(;child_modules.first != child_modules.second
-                  ;++child_modules.first)
+            morbid::idl_parser::wave_string module_open;
+            morbid::idl_parser::interface_def interface;
+            morbid::idl_parser::typedef_def typedef_;
+            morbid::idl_parser::constant constant;
+            morbid::idl_parser::exception_def exception;
+            morbid::idl_parser::struct_def struct_;
+            if(boost::spirit::qi::phrase_parse(iterator, last, module_open_grammar
+                                               , skipper, module_open))
             {
-              v = target(*child_modules.first, modules_tree);
-              morbid::idl_compiler::module const& module = *boost::get(map, v);
-              if(module.name == module_open)
+              std::cout << "Opened module " << module_open << std::endl;
+
+              karma::generate(output_iterator
+                              , karma::eol << karma::lit("namespace ")
+                              << morbid::idlc::wave_string
+                              << karma::lit(" {") << karma::eol
+                              , module_open);
+
+              typedef modules_tree_type::out_edge_iterator out_edge_iterator;
+              std::pair<out_edge_iterator, out_edge_iterator> child_modules
+                = out_edges(current_module.back(), modules_tree);
+
+              bool found = false;
+              vertex_descriptor v;
+              for(;child_modules.first != child_modules.second
+                    ;++child_modules.first)
               {
-                found = true;
+                v = target(*child_modules.first, modules_tree);
+                morbid::idlc::module const& module = *boost::get(map, v);
+                if(module.name == module_open)
+                {
+                  found = true;
+                }
               }
-            }
 
             if(found)
             {
@@ -252,7 +273,7 @@ int main(int argc, char** argv)
             if(current_module.size() > 1)
             {
               std::cout << "Closing module " << current_module.back() << std::endl;
-              karma::generate(output_iterator, karma::eol << karma::lit("}") << karma::eol);
+              // karma::generate(output_iterator, karma::eol << karma::lit("}") << karma::eol);
               current_module.pop_back();
             }
             else
@@ -264,25 +285,26 @@ int main(int argc, char** argv)
           {
             std::cout << "typedef " << typedef_ << std::endl;
 
-            typedef morbid::idl_compiler::typedef_ typedef_type;
+            typedef morbid::idlc::typedef_ typedef_type;
             typedef_type t(typedef_);
             try
             {
-              t.lookup = morbid::idl_compiler::lookup_type_spec
+              t.lookup = morbid::idlc::lookup_type_spec
                 (typedef_.alias, current_module, modules_tree);
             }
-            catch(morbid::idl_compiler::lookup_error const& e)
+            catch(morbid::idlc::lookup_error const& e)
             {
-              throw morbid::idl_compiler::compilation_error("Not found type of typedef", typedef_.file_position);
+              throw morbid::idlc::compilation_error("Not found type of typedef", typedef_.file_position);
             }
 
             module_map map = get(module_property_t(), modules_tree);
-            morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
+            morbid::idlc::module& module = *boost::get(map, current_module.back());
             std::cout << "Adding typedef " << typedef_.name << " at module " << module.name << std::endl;
             module.typedefs.push_back(t);
 
-            morbid::idl_compiler::generator::typedef_generator
-              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+
+            morbid::idlc::generator::typedef_generator
+              <idlc::output_iterator, parser_iterator_type>
               typedef_generator;
 
             bool r = karma::generate(output_iterator, typedef_generator
@@ -305,7 +327,7 @@ int main(int argc, char** argv)
           {
             std::cout << "struct " << struct_ << std::endl;
 
-            typedef morbid::idl_compiler::struct_ struct_type;
+            typedef morbid::idlc::struct_ struct_type;
             typedef morbid::idl_parser::member member_type;
             struct_type s(struct_);
 
@@ -320,23 +342,23 @@ int main(int argc, char** argv)
                 {                
                   s.lookups.insert(std::make_pair
                                    (first->type
-                                    , morbid::idl_compiler::lookup_type_spec
+                                    , morbid::idlc::lookup_type_spec
                                     (first->type, current_module, modules_tree)));
                 }
-                catch(morbid::idl_compiler::lookup_error const& e)
+                catch(morbid::idlc::lookup_error const& e)
                 {
-                  throw morbid::idl_compiler::compilation_error("Not found type of struct member"
+                  throw morbid::idlc::compilation_error("Not found type of struct member"
                                                                 , s.definition.file_position);
                 }
               }
             }
 
             module_map map = get(module_property_t(), modules_tree);
-            morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
+            morbid::idlc::module& module = *boost::get(map, current_module.back());
             module.structs.push_back(s);
             
-            morbid::idl_compiler::generator::struct_generator
-              <output_iterator_type, morbid::idl_compiler::parser_iterator_type>
+            morbid::idlc::generator::struct_generator
+              <idlc::output_iterator, parser_iterator_type>
               struct_generator;
 
             bool r = karma::generate(output_iterator, struct_generator
@@ -356,7 +378,7 @@ int main(int argc, char** argv)
                                                   , skipper, interface))
           {
             std::cout << "interface " << interface << std::endl;
-            typedef morbid::idl_compiler::interface_ interface_type;
+            typedef morbid::idlc::interface_ interface_type;
             typedef morbid::idl_parser::op_decl op_decl_type;
             typedef morbid::idl_parser::types::scoped_name scoped_name;
             typedef morbid::idl_parser::param_decl param_decl;
@@ -371,7 +393,7 @@ int main(int argc, char** argv)
                   , last = current_module.end()
                   ;first != last; ++first)
             {
-              morbid::idl_compiler::module const& mx = *boost::get(map, *first);
+              morbid::idlc::module const& mx = *boost::get(map, *first);
               modules_names.push_back(mx.name);
             }
 
@@ -379,8 +401,11 @@ int main(int argc, char** argv)
             i.definition.repoids.push_back("IDL:omg.org/CORBA/Object:1.0");
             wave_string repoid;
             namespace karma = boost::spirit::karma;
+            assert(!modules_names.empty());
             if(!karma::generate(std::back_insert_iterator<wave_string>(repoid)
-                                , "IDL:" << (karma::string % '/') << ":1.0"
+                                , "IDL:"
+                                << (idlc::wave_string % '/')
+                                << ":1.0"
                                 , modules_names))
               throw std::runtime_error("Failed constructing RepoID");
             i.definition.repoids.push_back(repoid);
@@ -397,12 +422,12 @@ int main(int argc, char** argv)
                 {
                   i.lookups.insert(std::make_pair
                                    (*first
-                                    , morbid::idl_compiler::lookup_type_spec
+                                    , morbid::idlc::lookup_type_spec
                                     (*first, current_module, modules_tree)));
                 }
-                catch(morbid::idl_compiler::lookup_error const& e)
+                catch(morbid::idlc::lookup_error const& e)
                 {
-                  throw morbid::idl_compiler::compilation_error("Not found type for base of interface"
+                  throw morbid::idlc::compilation_error("Not found type for base of interface"
                                                                 , i.definition.file_position);
                 }
               }
@@ -419,12 +444,12 @@ int main(int argc, char** argv)
                 {
                   i.lookups.insert(std::make_pair
                                    (first->type
-                                    , morbid::idl_compiler::lookup_type_spec
+                                    , morbid::idlc::lookup_type_spec
                                     (first->type, current_module, modules_tree)));
                 }
-                catch(morbid::idl_compiler::lookup_error const& e)
+                catch(morbid::idlc::lookup_error const& e)
                 {
-                  throw morbid::idl_compiler::compilation_error("Not found type for attribute of interface"
+                  throw morbid::idlc::compilation_error("Not found type for attribute of interface"
                                                                 , first->file_position);
                 }
               }
@@ -443,12 +468,12 @@ int main(int argc, char** argv)
                 {
                   i.lookups.insert(std::make_pair
                                    (first->type
-                                    , morbid::idl_compiler::lookup_type_spec
+                                    , morbid::idlc::lookup_type_spec
                                     (first->type, current_module, modules_tree)));
                 }
-                catch(morbid::idl_compiler::lookup_error const& e)
+                catch(morbid::idlc::lookup_error const& e)
                 {
-                  throw morbid::idl_compiler::compilation_error("Not found type for return of the operation", first->file_position);
+                  throw morbid::idlc::compilation_error("Not found type for return of the operation", first->file_position);
                 }
               }
               using morbid::idl_parser::param_decl;
@@ -463,23 +488,23 @@ int main(int argc, char** argv)
                   {
                   i.lookups.insert(std::make_pair
                                    (pfirst->type
-                                    , morbid::idl_compiler::lookup_type_spec
+                                    , morbid::idlc::lookup_type_spec
                                     (pfirst->type, current_module, modules_tree)));
                   }
-                  catch(morbid::idl_compiler::lookup_error const& e)
+                  catch(morbid::idlc::lookup_error const& e)
                   {
-                    throw morbid::idl_compiler::compilation_error("Not found type of operation parameter", pfirst->file_position);
+                    throw morbid::idlc::compilation_error("Not found type of operation parameter", pfirst->file_position);
                   }
                 }
               }
             }
 
-            morbid::idl_compiler::module& module = *boost::get(map, current_module.back());
+            morbid::idlc::module& module = *boost::get(map, current_module.back());
             module.interfaces.push_back(i);
 
             if(interface.fully_defined)
             {
-              morbid::idl_compiler::generator::header_concept_generator<output_iterator_type>
+              morbid::idlc::generator::header_concept_generator<idlc::output_iterator>
                 header_concept_generator;
 
               modules_names.pop_back();
@@ -493,17 +518,16 @@ int main(int argc, char** argv)
             {
               using morbid::idl_parser::wave_string;
               using karma::_1; using karma::_val;
-              using karma::eol; using karma::string;
-              using karma::attr_cast;
+              using karma::eol;
               namespace fusion = boost::fusion;
               namespace phoenix = boost::phoenix;
               karma::generate(output_iterator
-                              , "struct " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_concept;" << eol
-                              << "template <typename T> struct " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref_impl;" << eol
-                              << "typedef " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref_impl<void> "
-                              << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << "_ref;" << eol
-                              << "typedef ::morbid::reference< " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)]
-                              << "_concept> " << attr_cast<wave_string>(string)[_1 = phoenix::at_c<0>(_val)] << ";" << eol
+                              , "struct " << idlc::wave_string[_1 = phoenix::at_c<0>(_val)] << "_concept;" << eol
+                              << "template <typename T> struct " << idlc::wave_string[_1 = phoenix::at_c<0>(_val)] << "_ref_impl;" << eol
+                              << "typedef " << idlc::wave_string[_1 = phoenix::at_c<0>(_val)] << "_ref_impl<void> "
+                              << idlc::wave_string[_1 = phoenix::at_c<0>(_val)] << "_ref;" << eol
+                              << "typedef ::morbid::reference< " << idlc::wave_string[_1 = phoenix::at_c<0>(_val)]
+                              << "_concept> " << idlc::wave_string[_1 = phoenix::at_c<0>(_val)] << ";" << eol
                               , fusion::make_vector(module.interfaces.back().definition.name));
             }
           }
@@ -526,7 +550,7 @@ int main(int argc, char** argv)
                       << std::endl;
             return 1;
           }
-          catch(morbid::idl_compiler::compilation_error const& e)
+          catch(morbid::idlc::compilation_error const& e)
           {
             std::cout << e.file_position().get_file()
                       << ":" << e.file_position().get_line() 
@@ -546,13 +570,13 @@ int main(int argc, char** argv)
         color_map_container_t color_map_container;
         color_map_t color_map(color_map_container);
 
-        morbid::idl_compiler::generate_header_modules_visitor
+        morbid::idlc::generate_header_modules_visitor
           header_modules_visitor(output_iterator);
         depth_first_visit(modules_tree, global_module, header_modules_visitor
                           , color_map);
 
         color_map_container.clear();
-        morbid::idl_compiler::generate_reference_model_visitor
+        morbid::idlc::generate_reference_model_visitor
           generate_reference_model_visitor(output_iterator);
         depth_first_visit(modules_tree, global_module, generate_reference_model_visitor
                           , color_map);

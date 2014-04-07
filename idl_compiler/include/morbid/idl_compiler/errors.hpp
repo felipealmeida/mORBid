@@ -12,7 +12,7 @@
 
 #include <boost/exception/all.hpp>
 
-namespace morbid { namespace idl_compiler {
+namespace morbid { namespace idlc {
 
 struct lookup_error : boost::exception
 {

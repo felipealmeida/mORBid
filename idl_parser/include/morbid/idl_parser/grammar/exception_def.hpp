@@ -15,7 +15,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 namespace morbid { namespace idl_parser { namespace grammar {
 
@@ -38,7 +39,7 @@ struct exception_definition : boost::spirit::qi::grammar
       >> qi::omit[token_id(boost::wave::T_RIGHTBRACE)]
       ;
     start.name("exception_definition");
-    qi::debug(start);
+    // qi::debug(start);
   }
 
   grammar::member_definition<Iterator> member;

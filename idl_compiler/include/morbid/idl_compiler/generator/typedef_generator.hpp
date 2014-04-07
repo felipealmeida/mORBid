@@ -8,17 +8,14 @@
 #ifndef MORBID_IDL_COMPILER_TYPEDEF_GENERATOR_HPP
 #define MORBID_IDL_COMPILER_TYPEDEF_GENERATOR_HPP
 
-#include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
-#include <morbid/idl_compiler/generator/scoped_name.hpp>
 
-#include <boost/spirit/home/karma.hpp>
+#include <morbid/idl_compiler/lookuped_type.hpp>
+#include <morbid/idl_parser/typedef_def.hpp>
 
-#include <string>
-#include <ostream>
-#include <vector>
+#include <boost/spirit/home/karma/nonterminal.hpp>
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
@@ -26,39 +23,9 @@ template <typename OutputIterator, typename Iterator>
 struct typedef_generator : karma::grammar
   <OutputIterator, idl_parser::typedef_def(lookuped_type)>
 {
-  typedef_generator()
-    : typedef_generator::base_type(start)
-  {
-    using phoenix::at_c;
-    using karma::_r1;
-    using karma::_val;
-    using karma::_1;
-
-    wave_string = karma::string;
-    start =
-       "typedef "
-      <<
-      (
-        (
-         karma::eps(at_c<2>(_val))
-         << "::boost::array< " << type_spec(_r1)[_1 = at_c<0>(_val)]
-         << ", " << karma::uint_[_1 = *at_c<2>(_val)]
-         << ">"
-        )
-        |
-        type_spec(_r1)[_1 = at_c<0>(_val)]
-       )
-       << karma::space
-       << wave_string[_1 = at_c<1>(_val)]
-       << ';' << karma::eol
-      ;
-
-    // start.name("typedef");
-    // karma::debug(start);
-  }
+  typedef_generator();
 
   generator::type_spec<OutputIterator> type_spec;
-  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
   karma::rule<OutputIterator, idl_parser::typedef_def(lookuped_type)> start;
 };
 

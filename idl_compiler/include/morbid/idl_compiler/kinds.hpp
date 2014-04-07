@@ -12,7 +12,9 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
-namespace morbid { namespace idl_compiler {
+#include <boost/variant.hpp>
+
+namespace morbid { namespace idlc {
 
 struct is_interface_kind {};
 struct is_struct_kind {};
@@ -24,13 +26,13 @@ typedef boost::variant<is_interface_kind, is_struct_kind, is_primitive_kind
 
 } }
 
-BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::is_interface_kind
+BOOST_FUSION_ADAPT_STRUCT( ::morbid::idlc::is_interface_kind
                            , BOOST_PP_EMPTY())
-BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::is_struct_kind
+BOOST_FUSION_ADAPT_STRUCT( ::morbid::idlc::is_struct_kind
                            , BOOST_PP_EMPTY())
-BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::is_primitive_kind
+BOOST_FUSION_ADAPT_STRUCT( ::morbid::idlc::is_primitive_kind
                            , BOOST_PP_EMPTY())
-BOOST_FUSION_ADAPT_STRUCT( ::morbid::idl_compiler::is_typedef_kind
+BOOST_FUSION_ADAPT_STRUCT( ::morbid::idlc::is_typedef_kind
                            , BOOST_PP_EMPTY())
 
 #endif

@@ -5,10 +5,10 @@
  * http://www.boost.org/LICENSE_1_0.txt)
  */
 
-#include <morbid/idl_compiler/generator/reference_model_generator.ipp>
+#include <morbid/idl_compiler/generator/parameter.ipp>
 #include <morbid/idl_compiler/iterator.hpp>
 
 template struct
-morbid::idlc::generator::header_reference_model_generator
- < ::morbid::idlc::output_iterator >;
+morbid::idlc::generator::parameter
+ < ::morbid::idlc::output_iterator>;
 

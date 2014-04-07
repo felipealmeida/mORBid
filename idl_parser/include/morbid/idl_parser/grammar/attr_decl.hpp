@@ -12,7 +12,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <morbid/idl_parser/tokenizer.hpp>
 #include <morbid/idl_parser/attr_decl.hpp>

@@ -10,7 +10,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 #include <boost/wave/token_ids.hpp>
 
 #include <morbid/idl_parser/token.hpp>
@@ -40,7 +41,7 @@ struct module_open : boost::spirit::qi::grammar
       ;
 
     start.name("module_open");
-    qi::debug(start);
+    // qi::debug(start);
   }
 
   boost::spirit::qi::rule<Iterator, BOOST_WAVE_STRINGTYPE(), skipper<Iterator> > start;

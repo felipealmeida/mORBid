@@ -10,7 +10,6 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
 #include <boost/wave/token_ids.hpp>
 
 #include <morbid/idl_parser/token.hpp>

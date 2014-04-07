@@ -12,7 +12,8 @@
 #include <morbid/idl_parser/interface_def.hpp>
 
 #include <boost/spirit/home/karma.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 namespace std {
 
@@ -24,8 +25,9 @@ std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
 
 }
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
+asldsad
 namespace karma = boost::spirit::karma;
 
 template <typename OutputIterator>
@@ -38,6 +40,13 @@ empty_reference_generator<OutputIterator>::empty_reference_generator()
   using karma::_a; using karma::_r1;
   using karma::eol;
   using phoenix::at_c;
+  using phoenix::second;
+  using phoenix::find;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsequenced"
+#endif
 
   start = eol
     << "struct empty_reference" << eol
@@ -51,7 +60,7 @@ empty_reference_generator<OutputIterator>::empty_reference_generator()
     indent
     << return_
     (
-     at_c<1>(_r1)[at_c<0>(_val)] // interface_.lookups[type_spec]
+     second(*find(at_c<1>(_r1), at_c<0>(_val))) // interface_.lookups[type_spec]
     )
     [_1 = at_c<0>(_val)]
     << karma::space
@@ -65,14 +74,17 @@ empty_reference_generator<OutputIterator>::empty_reference_generator()
     << indent << "}" << eol
     << ";"
     ;
-  parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
+  parameter_select %= parameter(second(*find(at_c<1>(_r1), at_c<1>(_val))));
   indent = karma::space << karma::space;
-  wave_string %= karma::string;
-    
+
   start.name("empty_reference_generator");
   operation.name("operation");
   karma::debug(start);
   karma::debug(operation);
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 } } }

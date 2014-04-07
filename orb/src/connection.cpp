@@ -16,7 +16,8 @@
 #include <boost/algorithm/hex.hpp>
 #include <boost/utility.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 #include <boost/asio.hpp>
 
 #include <iomanip>

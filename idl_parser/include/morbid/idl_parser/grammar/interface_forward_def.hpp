@@ -10,7 +10,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_parser/op_decl.hpp>
@@ -56,7 +57,7 @@ struct interface_forward_definition : boost::spirit::qi::grammar
       ;
 
     start.name("interface_forward_def");
-    qi::debug(start);
+    // qi::debug(start);
   }
 
   boost::spirit::qi::rule<Iterator, idl_parser::interface_def()

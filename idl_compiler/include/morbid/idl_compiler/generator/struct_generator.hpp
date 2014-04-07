@@ -12,16 +12,20 @@
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/generator/scoped_name.hpp>
 #include <morbid/idl_compiler/generator/struct_generator_generator.hpp>
+#include <morbid/idl_compiler/generator/wave_string.hpp>
 
-#include <boost/spirit/home/karma.hpp>
+#include <boost/spirit/home/karma/nonterminal.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <string>
 #include <ostream>
 #include <vector>
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
 namespace karma = boost::spirit::karma;
+namespace phoenix = boost::phoenix;
 
 template <typename OutputIterator, typename Iterator>
 struct struct_generator : karma::grammar
@@ -32,15 +36,21 @@ struct struct_generator : karma::grammar
     : struct_generator::base_type(start)
   {
     using phoenix::at_c;
+    using phoenix::find;
+    using phoenix::second;
     using karma::eol;
     using karma::_1; using karma::_r1; using karma::_r2;
     using karma::_val; using karma::_a;
 
-    wave_string %= karma::string;
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsequenced"
+#endif
+
     mpl_member_type =
       type_spec
       (
-       at_c<1>(_r1)[at_c<0>(_val)]
+       second(*find(at_c<1>(_r1), at_c<0>(_val)))
       )[_1 = at_c<0>(_val)]
       ;    
     mpl_sequence_type =
@@ -66,7 +76,7 @@ struct struct_generator : karma::grammar
       << " = "
       << type_spec
          (
-          at_c<1>(_r1)[at_c<0>(_val)]
+          second(*find(at_c<1>(_r1), at_c<0>(_val)))
          )[_1 = at_c<0>(_val)]
       ;
     start =
@@ -101,6 +111,10 @@ struct struct_generator : karma::grammar
       "A" << karma::lit(_r2)
       << karma::space << wave_string[_1 = at_c<1>(_val)]
       ;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
   }
 
   generator::type_spec<OutputIterator> type_spec;
@@ -115,7 +129,6 @@ struct struct_generator : karma::grammar
   karma::rule<OutputIterator, idl_parser::member(struct_, unsigned int)> member;
   karma::rule<OutputIterator, idl_parser::struct_def(struct_)
               , karma::locals<unsigned int> > start;
-  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
 };
 
 } } }

@@ -11,7 +11,8 @@
 #include <morbid/iiop/profile_body.hpp>
 
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 namespace morbid { namespace ior { namespace grammar {
 

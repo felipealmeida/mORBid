@@ -10,7 +10,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
 #include <morbid/idl_parser/grammar/op_decl.hpp>
@@ -87,7 +88,7 @@ struct interface_definition : boost::spirit::qi::grammar
       ;
 
     start.name("interface_def");
-    qi::debug(start);
+    // qi::debug(start);
   }
 
   grammar::scoped_name<Iterator> scoped_name;

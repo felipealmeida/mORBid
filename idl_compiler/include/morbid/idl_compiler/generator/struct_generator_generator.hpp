@@ -12,15 +12,18 @@
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/generator/scoped_name.hpp>
 
-#include <boost/spirit/home/karma.hpp>
+#include <boost/spirit/home/karma/nonterminal.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <string>
 #include <ostream>
 #include <vector>
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
 namespace karma = boost::spirit::karma;
+namespace phoenix = boost::phoenix;
 
 template <typename OutputIterator>
 struct struct_generator_generator : karma::grammar
@@ -30,12 +33,19 @@ struct struct_generator_generator : karma::grammar
     : struct_generator_generator::base_type(start)
   {
     using phoenix::at_c;
+    using phoenix::second;
+    using phoenix::find;
     using karma::eol;
     using karma::string;
     using karma::_1; using karma::_r1;
     using karma::_val;
     
     namespace types = idl_parser::types;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunsequenced"
+#endif
 
     floating_point_generator = 
       (
@@ -93,11 +103,9 @@ struct struct_generator_generator : karma::grammar
 
     scoped_name_generator
       = "::morbid::arguments_traits(orb).call< ::morbid::type_tag::value_type_tag< "
-      << (karma::attr_cast<idl_parser::wave_string>
-          (karma::string) % "::")[_1 = at_c<0>(_r1)]
+      << (wave_string % "::")[_1 = at_c<0>(_r1)]
       << "::"
-      << karma::attr_cast<idl_parser::wave_string>
-      (karma::string)[_1 = phoenix::back(at_c<1>(_val))]
+      << wave_string[_1 = phoenix::back(at_c<1>(_val))]
       << " , ::morbid::type_tag::in_tag> , Domain, Iterator>()"
       ;
     sequence_generator = karma::string[_1 = "sequence_generator"];
@@ -108,11 +116,11 @@ struct struct_generator_generator : karma::grammar
        | any_generator | object_generator | value_base_generator | void_generator
        | scoped_name_generator
        (
-        at_c<1>(_r1)[at_c<0>(_val)]
+        second(*find(at_c<1>(_r1), at_c<0>(_val)))
        )
        | sequence_generator
        (
-        at_c<1>(_r1)[at_c<0>(_val)]
+        second(*find(at_c<1>(_r1), at_c<0>(_val)))
        )
        ) [_1 = phoenix::at_c<0>(at_c<0>(_val))]
       ;    
@@ -137,6 +145,10 @@ struct struct_generator_generator : karma::grammar
       << "};" << eol << eol
       ;
     indent = karma::space << karma::space;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
   }
 
   karma::rule<OutputIterator, idl_parser::types::scoped_name(lookuped_type_wrapper)> scoped_name_generator;

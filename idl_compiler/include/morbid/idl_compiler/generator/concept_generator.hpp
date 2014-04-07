@@ -15,13 +15,14 @@
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/interface.hpp>
 
+//#include <boost/spirit/home/karma/nonterminal.hpp>
 #include <boost/spirit/home/karma.hpp>
 
 #include <string>
 #include <ostream>
 #include <vector>
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
@@ -32,11 +33,11 @@ struct header_concept_generator : karma::grammar
 {
   header_concept_generator();
 
-  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
-  idl_compiler::generator::parameter<OutputIterator> parameter;
-  idl_compiler::generator::type_spec<OutputIterator> type_spec;
-  idl_compiler::generator::return_<OutputIterator> return_;
-  // idl_compiler::generator::proxy_reference_generator<OutputIterator> proxy_reference;
+  // karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
+  idlc::generator::parameter<OutputIterator> parameter;
+  idlc::generator::type_spec<OutputIterator> type_spec;
+  idlc::generator::return_<OutputIterator> return_;
+  // // idlc::generator::proxy_reference_generator<OutputIterator> proxy_reference;
   karma::rule<OutputIterator, idl_parser::direction::in()> in_tag;
   karma::rule<OutputIterator, idl_parser::direction::out()> out_tag;
   karma::rule<OutputIterator, idl_parser::direction::inout()> inout_tag;

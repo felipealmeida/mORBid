@@ -12,7 +12,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <morbid/idl_parser/op_decl.hpp>
 
@@ -70,9 +71,9 @@ struct op_decl : qi::grammar
     start.name("op_decl");
     param.name("param");
     direction.name("direction");
-    qi::debug(start);
-    qi::debug(param);
-    qi::debug(direction);
+    // qi::debug(start);
+    // qi::debug(param);
+    // qi::debug(direction);
   }
 
   grammar::scoped_name<Iterator> scoped_name;

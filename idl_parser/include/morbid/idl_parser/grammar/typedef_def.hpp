@@ -10,7 +10,8 @@
 
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi.hpp>
-#include <boost/spirit/home/phoenix.hpp>
+#include <boost/phoenix.hpp>
+#include <boost/phoenix/fusion/at.hpp>
 
 #include <morbid/idl_parser/grammar/type_spec.hpp>
 #include <morbid/idl_parser/grammar/integer_literal.hpp>
@@ -45,7 +46,7 @@ struct typedef_definition : boost::spirit::qi::grammar
       ;
 
     start.name("typedef_def");
-    qi::debug(start);
+    // qi::debug(start);
   }
 
   grammar::integer_literal_definition<Iterator> integer_literal;

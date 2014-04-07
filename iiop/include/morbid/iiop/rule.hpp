@@ -28,12 +28,11 @@ template <typename I, typename T1, typename T2, typename T3, typename T4>
 struct rule_base
 {
   typedef I param_iterator;
-  typedef mpl::vector<T1, T2, T3, T4> template_params;
   typedef typename
-    spirit::detail::extract_locals<template_params>::type
+    spirit::detail::extract_locals<T1, T2, T3, T4>::type
   locals_type;
   typedef typename
-    spirit::detail::extract_sig<template_params>::type
+    spirit::detail::extract_sig<T1, T2, T3, T4>::type
   sig_type;
   typedef typename
     spirit::detail::attr_from_sig<sig_type>::type

@@ -45,7 +45,7 @@ struct token_id_parser : qi::primitive_parser<token_id_parser<Id> >
     BOOST_MPL_ASSERT((boost::is_same<spirit::unused_type, attribute_type>));
     qi::skip_over(first, last, skipper);
 
-    if(first != last && first->get_id() == id)
+    if(first != last && first->get_token_id() == id)
       return (++first, true);
     else
       return false;
@@ -82,7 +82,7 @@ struct token_category_parser : qi::primitive_parser<token_category_parser<Catego
     qi::skip_over(first, last, skipper);
 
     assert(category == get_category(category));
-    if(first != last && get_category(first->get_id()) == category)
+    if(first != last && get_category(first->get_token_id()) == category)
       return (++first, true);
     else
       return false;

@@ -9,13 +9,14 @@
 #define MORBID_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_HPP
 
 #include <morbid/idl_parser/interface_def.hpp>
+#include <morbid/idl_compiler/interface.hpp>
 #include <morbid/idl_compiler/generator/parameter.hpp>
 #include <morbid/idl_compiler/generator/return.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
@@ -25,10 +26,9 @@ struct header_reference_model_generator : karma::grammar
 {
   header_reference_model_generator();
 
-  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
-  idl_compiler::generator::parameter<OutputIterator> parameter;
-  idl_compiler::generator::return_<OutputIterator> return_traits;
-  idl_compiler::generator::type_spec<OutputIterator> type_spec;
+  idlc::generator::parameter<OutputIterator> parameter;
+  idlc::generator::return_<OutputIterator> return_traits;
+  idlc::generator::type_spec<OutputIterator> type_spec;
   karma::rule<OutputIterator, idl_parser::type_spec(lookuped_type, std::string)> return_;
   karma::rule<OutputIterator, idl_parser::wave_string()>
     class_name;

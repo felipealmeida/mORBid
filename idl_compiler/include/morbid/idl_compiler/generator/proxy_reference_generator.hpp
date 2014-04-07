@@ -16,7 +16,7 @@
 
 #include <boost/spirit/home/karma.hpp>
 
-namespace morbid { namespace idl_compiler { namespace generator {
+namespace morbid { namespace idlc { namespace generator {
 
 namespace karma = boost::spirit::karma;
 
@@ -26,9 +26,8 @@ struct proxy_reference_generator : karma::grammar
 {
   proxy_reference_generator();
 
-  karma::rule<OutputIterator, idl_parser::wave_string()> wave_string;
-  idl_compiler::generator::parameter<OutputIterator> parameter;
-  idl_compiler::generator::return_<OutputIterator> return_traits;
+  idlc::generator::parameter<OutputIterator> parameter;
+  idlc::generator::return_<OutputIterator> return_traits;
   karma::rule<OutputIterator, idl_parser::type_spec(lookuped_type, std::string)> return_;
   karma::rule<OutputIterator, idl_parser::param_decl(interface_)>
     parameter_select;
