@@ -273,7 +273,7 @@ int main(int argc, char** argv)
             if(current_module.size() > 1)
             {
               std::cout << "Closing module " << current_module.back() << std::endl;
-              // karma::generate(output_iterator, karma::eol << karma::lit("}") << karma::eol);
+              karma::generate(output_iterator, karma::eol << karma::lit("}") << karma::eol);
               current_module.pop_back();
             }
             else

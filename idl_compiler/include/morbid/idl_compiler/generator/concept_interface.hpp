@@ -109,8 +109,6 @@ struct concept_interface : karma::grammar
   karma::rule<OutputIterator
               , idl_parser::attribute()> attribute_name;
   karma::rule<OutputIterator
-              , idl_parser::wave_string()> wave_string;
-  karma::rule<OutputIterator
               , idl_parser::op_decl(interface_, std::vector<idl_parser::wave_string>, idl_parser::wave_string)
               , karma::locals<unsigned int> > operation_concept_interface_specialization;
   karma::rule<OutputIterator
