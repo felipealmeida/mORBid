@@ -32,6 +32,20 @@ alias iiop : /boost//headers giop : : : <include>iiop/include ;
 alias ior : iiop /boost//headers : : : <include>ior/include ;
 
 exe morbid_idl : idl_compiler/src/main.cpp
+ idl_compiler/src/skipper.cpp
+ idl_compiler/src/parse_end_of_file.cpp
+ idl_compiler/src/parse_module.cpp
+ idl_compiler/src/generate_module.cpp
+ idl_compiler/src/parse_module_close.cpp
+ idl_compiler/src/generate_module_close.cpp
+ idl_compiler/src/parse_typedef.cpp
+ idl_compiler/src/generate_typedef.cpp
+ idl_compiler/src/parse_exception.cpp
+ idl_compiler/src/parse_struct.cpp
+ idl_compiler/src/generate_struct.cpp
+ idl_compiler/src/parse_constant.cpp
+ idl_compiler/src/parse_interface.cpp
+ idl_compiler/src/generate_interface.cpp
  idl_compiler/src/concept_generator.cpp
  idl_compiler/src/concept_interface.cpp
  idl_compiler/src/generate_modules_visitor.cpp

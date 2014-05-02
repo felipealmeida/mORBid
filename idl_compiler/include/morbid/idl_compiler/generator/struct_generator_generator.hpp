@@ -11,10 +11,12 @@
 #include <morbid/idl_compiler/module.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/generator/scoped_name.hpp>
+#include <morbid/idl_compiler/generator/wave_string.hpp>
 
 #include <boost/spirit/home/karma/nonterminal.hpp>
 #include <boost/phoenix.hpp>
 #include <boost/phoenix/fusion/at.hpp>
+#include <boost/spirit/home/karma.hpp>
 
 #include <string>
 #include <ostream>

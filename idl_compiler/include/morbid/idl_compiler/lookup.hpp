@@ -11,6 +11,7 @@
 #include <morbid/idl_compiler/common_types.hpp>
 #include <morbid/idl_compiler/lookuped_type.hpp>
 #include <morbid/idl_compiler/errors.hpp>
+#include <morbid/idl_compiler/module.hpp>
 
 #include <boost/optional.hpp>
 
