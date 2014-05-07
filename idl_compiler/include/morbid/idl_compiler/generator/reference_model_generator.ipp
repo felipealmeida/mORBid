@@ -8,31 +8,16 @@
 #ifndef TECORB_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_IPP
 #define TECORB_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_IPP
 
-#include <morbid/idl_compiler/generator/wave_string.hpp>
-#include <morbid/idl_compiler/generator/parameter.hpp>
 #include <morbid/idl_compiler/generator/reference_model_generator.hpp>
+
+#include <morbid/idl_compiler/stl_workarounds.hpp>
+#include <morbid/idl_compiler/generator/wave_string.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/phoenix.hpp>
 #include <boost/phoenix/fusion/at.hpp>
-
-namespace std {
-
-template <typename T, typename U>
-std::ostream& operator<<(std::ostream& os, std::pair<T, U> p)
-{
-  return os << "[pair first: " << p.first << " second: " << p.second << ']';
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& os, std::vector<T> p)
-{
-  return os << "[vector size: " << p.size() << ']';
-}
-
-}
 
 namespace morbid { namespace idlc { namespace generator {
 
@@ -55,7 +40,6 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsequenced"
 #endif
-
   class_name %= wave_string << "_ref_impl";
   // specialization =
   //   (*(karma::skip[wave_string] << karma::lit("}")))[_1 = _r2] << eol
@@ -85,10 +69,12 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << common_members
     << "};" << eol << eol
     ;
+
   base_spec %=
     type_spec(second(*find(at_c<1>(_r1),_val)))
     << "_ref"
     ;
+
   attribute =
     indent
     << return_
@@ -118,67 +104,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
        )
     << indent << "}" << eol
     ;
-  operation =
-    indent
-    << return_
-    (
-     second(*find(at_c<1>(_r1), at_c<0>(_val))) // interface_.lookups[type_spec]
-     , std::string("Dummy")
-    )
-    [_1 = at_c<0>(_val)]
-    << karma::space << wave_string[_1 = at_c<1>(_val)]
-    << "("
-    << -((parameter_select(_r1) << " arg" << karma::lit(++_a)) % ", ")[_1 = at_c<2>(_val)]
-    << ")" << eol
-    << indent << "{" << eol
-    << karma::eps[_a = 0]
-    << (
-        // indent << indent << "BOOST_MPL_ASSERT((boost::is_same<Dummy, int>));" << eol
-        // <<
-        indent << indent << "assert(!!_orb_);" << eol
-        << indent << indent << "return ::morbid::synchronous_call::call" << eol
-        << indent << indent << indent << "< "
-        << type_spec
-        (
-         second(*find(at_c<1>(_r1), at_c<0>(_val))) // interface_.lookups[type_spec]
-        )
-        [_1 = at_c<0>(_val)]
-        << eol << indent << indent << indent << ">" << eol
-        << indent << indent << indent
-        << "( *_orb_, \"IDL:"
-        << -((wave_string % '/')[_1 = _r2] << '/') << wave_string[_1 = _r3] << ":1.0\""
-        << ", \"" << wave_string[_1 = at_c<1>(_val)]
-        << "\", _structured_ior_"
-        << eol << indent << indent << indent << indent << ", "
-        << "boost::fusion::vector"
-        << eol << indent << indent << indent << indent << '<'
-        << eol << indent << indent << indent << indent << indent
-        << -(synchronous_template_args(_r1) % (eol << indent << indent << indent << indent << ", "))[_1 = at_c<2>(_val)]
-        << eol << indent << indent << indent << indent << '>'
-        << "("
-        << -(synchronous_args(_r1, ++_a) % (eol << indent << indent << indent << indent << ", "))[_1 = at_c<2>(_val)]
-        << "));" << eol
-       )
-    << indent << "}" << eol
-    ;
-  return_ = "typename ::morbid::lazy_eval< " << return_traits(_r1)[_1 = _val] << ", " << karma::lit(_r2) << ">::type";
-  // parameter_select %= parameter(at_c<1>(_r1)[at_c<1>(_val)]);
-  parameter_select %= "typename ::morbid::lazy_eval< "
-    << parameter(second(*find(at_c<1>(_r1), at_c<1>(_val)))) << ", Dummy>::type";
-  type_spec_select %= type_spec(second(*find(at_c<1>(_r1), _val)));
-  in_tag = wave_string[_1 = "::morbid::type_tag::in_tag"];
-  out_tag = wave_string[_1 = "::morbid::type_tag::out_tag"];
-  inout_tag = wave_string[_1 = "::morbid::type_tag::inout_tag"];
-  synchronous_template_args = 
-    wave_string[_1 = "::morbid::type_tag::value_type_tag< "]
-    << type_spec_select(_r1)[_1 = at_c<1>(_val)]
-    << ", " << (in_tag | out_tag | inout_tag)[_1 = at_c<0>(_val)]
-    << ">"
-    ;
-  synchronous_args %=
-    synchronous_template_args(_r1)
-    << "(arg" << karma::lit(_r2) << ")";
-  
+
   common_functions =
     indent
     << "// Constructors" << eol
@@ -220,7 +146,7 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << indent << "::morbid::structured_ior _structured_ior_;" << eol
     // << indent << "static const char* _repository_id;" << eol
     ;
-  indent = karma::space << karma::space;
+
   ior_function =
     indent
     << "::morbid::structured_ior _structured_ior() const { return _structured_ior_; }" << eol

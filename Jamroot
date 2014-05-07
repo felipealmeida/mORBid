@@ -58,6 +58,9 @@ exe morbid_idl : idl_compiler/src/main.cpp
  idl_compiler/src/parameter.cpp
  idl_compiler/src/typedef_generator.cpp
  idl_compiler/src/header_appendages.cpp
+ idl_compiler/src/operation.cpp
+ idl_compiler/src/operation_synchronous_call_exec.cpp
+ idl_compiler/src/return_lookuped.cpp
  idl_parser /boost//filesystem /boost//program_options
  /boost//thread /boost//wave
   : 
