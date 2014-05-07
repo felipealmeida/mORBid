@@ -10,7 +10,6 @@
 #include <morbid/idl_compiler/generator/parameter.hpp>
 #include <morbid/idl_compiler/generator/return_lookuped.hpp>
 #include <morbid/idl_compiler/generator/indent.hpp>
-#include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/generator/operation_synchronous_call_exec.hpp>
 
 #include <morbid/idl_parser/interface_def.hpp>

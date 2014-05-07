@@ -12,7 +12,6 @@
 
 #include <morbid/idl_compiler/stl_workarounds.hpp>
 #include <morbid/idl_compiler/generator/wave_string.hpp>
-#include <morbid/idl_compiler/generator/type_spec.hpp>
 
 #include <boost/spirit/home/karma.hpp>
 #include <boost/phoenix.hpp>
