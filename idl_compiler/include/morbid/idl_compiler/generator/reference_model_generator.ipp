@@ -75,36 +75,6 @@ header_reference_model_generator<OutputIterator>::header_reference_model_generat
     << "_ref"
     ;
 
-  attribute =
-    indent
-    << return_
-    (
-     second(*find(at_c<1>(_r1), at_c<1>(_val)))
-     , std::string("Dummy")
-    )[_1 = at_c<1>(_val)]
-    << karma::space << "_get_" << wave_string[_1 = at_c<2>(_val)] << "() const" << eol
-    << indent << "{" << eol
-    << (
-        indent << indent << "assert(!!_orb_);" << eol
-        << indent << indent << "return ::morbid::synchronous_call::call" << eol
-        << indent << indent << indent << "< "
-        << type_spec
-        (
-         second(*find(at_c<1>(_r1), at_c<1>(_val))) // interface_.lookups[type_spec]
-        )
-        [_1 = at_c<1>(_val)]
-        << eol << indent << indent << indent << ">" << eol
-        << indent << indent << indent
-        << "( *_orb_, \"IDL:"
-        << -((wave_string % '/')[_1 = _r2] << '/') << wave_string[_1 = _r3] << ":1.0\""
-        << ", \"_get_" << wave_string[_1 = at_c<2>(_val)]
-        << "\", _structured_ior_"
-        << eol << indent << indent << indent << indent << ", "
-        << "boost::fusion::vector0<>());" << eol
-       )
-    << indent << "}" << eol
-    ;
-
   common_functions =
     indent
     << "// Constructors" << eol

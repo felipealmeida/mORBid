@@ -9,10 +9,10 @@
 #define MORBID_IDL_COMPILER_REFERENCE_MODEL_GENERATOR_HPP
 
 #include <morbid/idl_compiler/interface.hpp>
-#include <morbid/idl_compiler/generator/return_lookuped.hpp>
 #include <morbid/idl_compiler/generator/type_spec.hpp>
 #include <morbid/idl_compiler/generator/indent.hpp>
 #include <morbid/idl_compiler/generator/operation.hpp>
+#include <morbid/idl_compiler/generator/attribute.hpp>
 #include <morbid/idl_parser/interface_def.hpp>
 
 #include <boost/spirit/home/karma.hpp>
@@ -29,8 +29,8 @@ struct header_reference_model_generator : karma::grammar
 
   idlc::generator::type_spec<OutputIterator> type_spec;
   idlc::generator::indent<OutputIterator> indent;
-  idlc::generator::return_lookuped<OutputIterator> return_;
   idlc::generator::operation<OutputIterator> operation;
+  idlc::generator::attribute<OutputIterator> attribute;
   
   karma::rule<OutputIterator, idl_parser::wave_string()>
     class_name;
@@ -40,10 +40,6 @@ struct header_reference_model_generator : karma::grammar
   karma::rule<OutputIterator> common_members;
   karma::rule<OutputIterator
               , idl_parser::interface_def(interface_)> common_functions;
-  karma::rule<OutputIterator
-              , idl_parser::attribute(interface_, std::vector<idl_parser::wave_string>, idl_parser::wave_string)
-              , karma::locals<unsigned int> > 
-    attribute;
   karma::rule<OutputIterator
               , idl_parser::interface_def(interface_, std::vector<idl_parser::wave_string>)> start;
   // karma::rule<OutputIterator
