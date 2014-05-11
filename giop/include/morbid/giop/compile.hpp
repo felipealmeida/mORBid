@@ -8,6 +8,8 @@
 #ifndef MORBID_GIOP_COMPILE_HPP
 #define MORBID_GIOP_COMPILE_HPP
 
+#include <boost/utility/result_of.hpp>
+
 namespace morbid { namespace giop {
 
 template <typename Domain>
